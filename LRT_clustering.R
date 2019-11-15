@@ -2,9 +2,10 @@ library(bigWig)
 library(DESeq2)
 library(DEGreport)
 library(tibble)
+library(lattice)
 source('https://raw.githubusercontent.com/mjg54/znf143_pro_seq_analysis/master/docs/ZNF143_functions.R')
 
-directory = setwd('/Volumes/GUERTIN_2/adipogenesis/atac/')
+directory = '/Volumes/GUERTIN_2/adipogenesis/atac/'
 setwd(directory)
 preadipo.file = read.table("4hour/atac4h_0.05/3T3_atac_summit_200window.bed")
 
@@ -65,8 +66,10 @@ cluster_rlog = rld_mat[rownames(siglrt.re),]
 meta = as.data.frame(sample.conditions)
 rownames(meta) = colnames(cluster_rlog)
 
+save.image('191115_adipogenesis.Rdata')
+
 #need to play around with this:
-clusters <- degPatterns(cluster_rlog, metadata = meta, minc = 200, time = "sample.conditions", col=NULL, eachStep = TRUE)
+clusters <- degPatterns(cluster_rlog[1:1000,], metadata = meta, minc = 200, time = "sample.conditions", col=NULL, eachStep = TRUE)
 
 
 class(clusters)
