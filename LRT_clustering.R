@@ -41,7 +41,7 @@ dds = DESeq(deseq.counts.table)
                                         #exploratory
 rld = rlog(dds, blind=TRUE)
 
-                                        #I think two ATAC-seq samples were labeled incorrectly.
+                                        #I think two ATAC-seq samples were labeled incorrectly. Contacted GEO, confirmed bwith an old email from Warren.
 #
 x = plotPCA(rld, intgroup="sample.conditions", returnData=TRUE)
 plotPCAlattice(x, file = 'PCA_adipogenesis_lattice_guertin.pdf')
