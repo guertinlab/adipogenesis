@@ -30,6 +30,9 @@ get.raw.counts.interval <- function(df, path.to.bigWig, file.prefix = 'H') {
 }
 
 df.preadipo = get.raw.counts.interval(preadipo.file, directory, file.prefix = '3')
+save(df.preadipo, file= 'df.preadipo.Rdata')
+
+load('df.preadipo.Rdata')
                                         #follow this: https://hbctraining.github.io/DGE_workshop/lessons/08_DGE_LRT.html
 sample.conditions = factor(sapply(strsplit(as.character(colnames(df.preadipo)), '_'), '[', 2))
 
