@@ -166,6 +166,17 @@ range.chr = sapply(strsplit(plot.df$genes, ':'), '[', 2)
 plot.df$start = sapply(strsplit(range.chr, '-'), '[', 1)
 plot.df$end = sapply(strsplit(range.chr, '-'), '[', 2)
 
+
+#I just noticed that I screwed this up, but no big deal because MEME skips the duplicate sequence names
+for (i in unique(plot.df$cluster)) {
+    print(i)
+    write.table(plot.df[plot.df$cluster == i,c('chr','start','end', 'value', 'cluster')],
+                file = paste0('cluster_bed_',
+                              gsub(" ", "", i, fixed = TRUE),'.bed'),
+                quote = FALSE, row.names = FALSE, col.names = FALSE, sep = '\t')
+}
+
+
 #use these for MEME in Rivanna
 #191122_meme_all_cluster_1.slurm
 #191122_meme_all_cluster_not1.slurm
@@ -174,13 +185,7 @@ plot.df$end = sapply(strsplit(range.chr, '-'), '[', 2)
 #191122_meme_cluster_1.sh
 #191122_meme_cluster_not1.sh
 
-for (i in unique(plot.df$cluster)) {
-    print(i)
-    write.table(plot.df[plot.df$cluster == i,c('chr','start','end', 'value', 'cluster')],
-                file = paste0('cluster_bed_',
-                              gsub(" ", "", i, fixed = TRUE),'.bed'),
-                quote = FALSE, row.names = FALSE, col.names = FALSE, sep = '\t')
-}
+
 
 #long vs wide conversion http://www.cookbook-r.com/Manipulating_data/Converting_data_between_wide_and_long_format/
 library(data.table)
@@ -381,6 +386,16 @@ xyplot(value ~  sample.conditions | cluster.final, group = genes, data = final.p
 
       )
 dev.off()
+
+for (i in unique(final.plot.df$cluster.final)) {
+    print(i)
+    write.table(final.plot.df[final.plot.df$cluster.final == i, c('chr','start','end', 'value', 'cluster.final')],
+                file = paste0('final_cluster_bed_',
+                              gsub(" ", "", i, fixed = TRUE),'.bed'),
+                quote = FALSE, row.names = FALSE, col.names = FALSE, sep = '\t')
+}
+
+
 
 
                                         #currently doing de novo for each sub cluster and combined clusters.
