@@ -168,9 +168,11 @@ plot.df$end = sapply(strsplit(range.chr, '-'), '[', 2)
 
 
 #I just noticed that I screwed this up, but no big deal because MEME skips the duplicate sequence names
+#I corrected the code here, but this is not what is running in MEME, although the outcome should be identical
 for (i in unique(plot.df$cluster)) {
     print(i)
-    write.table(plot.df[plot.df$cluster == i,c('chr','start','end', 'value', 'cluster')],
+    write.table(plot.df[plot.df$cluster == i,
+                        c('chr','start','end', 'value', 'cluster')][!duplicated(plot.df[plot.df$cluster == i,]$genes),],
                 file = paste0('cluster_bed_',
                               gsub(" ", "", i, fixed = TRUE),'.bed'),
                 quote = FALSE, row.names = FALSE, col.names = FALSE, sep = '\t')
@@ -387,9 +389,12 @@ xyplot(value ~  sample.conditions | cluster.final, group = genes, data = final.p
       )
 dev.off()
 
+
+
 for (i in unique(final.plot.df$cluster.final)) {
     print(i)
-    write.table(final.plot.df[final.plot.df$cluster.final == i, c('chr','start','end', 'value', 'cluster.final')],
+    write.table(final.plot.df[final.plot.df$cluster.final == i,
+                              c('chr','start','end', 'value', 'cluster.final')][!duplicated(final.plot.df[final.plot.df$cluster.final == i,]$genes),],
                 file = paste0('final_cluster_bed_',
                               gsub(" ", "", i, fixed = TRUE),'.bed'),
                 quote = FALSE, row.names = FALSE, col.names = FALSE, sep = '\t')
