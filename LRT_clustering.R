@@ -374,7 +374,7 @@ xyplot(value ~  sample.conditions | cluster.final, group = genes, data = final.p
        between=list(y=0.5, x=0.5),
        layout = c(3,2),
        index.cond=list(
-           c(1,2,3,4,5,6)),
+           c(1,2,3,6,5,4)),
        ylab = list(label = 'Normalized ATAC signal', cex =1.0),
        xlab = list(label = 'Time (minutes)', cex =1.0),
        par.settings = list(superpose.symbol = list(pch = c(16),
