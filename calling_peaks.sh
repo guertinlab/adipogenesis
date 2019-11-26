@@ -1,17 +1,8 @@
-wget https://raw.githubusercontent.com/WarrenDavidAnderson/manuscriptCode/master/preadipogenesisNetwork_code/motifAnalysis/ATACpeakCalling/call_4h_peaks.slurm
-wget https://raw.githubusercontent.com/WarrenDavidAnderson/manuscriptCode/master/preadipogenesisNetwork_code/motifAnalysis/ATACpeakCalling/call_6d_peaks.slurm
-wget https://raw.githubusercontent.com/WarrenDavidAnderson/manuscriptCode/master/preadipogenesisNetwork_code/motifAnalysis/ATACpeakCalling/empiricalSummits.R
-wget https://raw.githubusercontent.com/WarrenDavidAnderson/manuscriptCode/master/preadipogenesisNetwork_code/motifAnalysis/ATACpeakCalling/filter_sort_peaks.sh
-wget https://raw.githubusercontent.com/WarrenDavidAnderson/manuscriptCode/master/preadipogenesisNetwork_code/motifAnalysis/ATACpeakCalling/integrateReads.sh
-
 cd /Volumes/GUERTIN_2/adipogenesis/atac
 cp */*_sample_atac.bam ./
 mkdir 6day
 mv 3T3_6d_*bam 6day/
 samtools merge preadipMerged.bam *.bam
-
-##Ran code chunk 1 from calling_adipogenesisReaks.R
-
 
 # isolate only concordant alignments
 mv preadipMerged.bam pre.bam
@@ -39,8 +30,7 @@ https://data.cyverse.org/dav-anon/iplant/home/guertin/preadip.bigWig
 https://genome.ucsc.edu/s/Mike%20Guertin/mm10_0%2D4hr_merged
 
 
-
-
+#I ran this for the UCSC genome browser
 for fq in *rep1_atac_sample_atac.bam
 do
     name=$(echo $fq | awk -F"_rep1_atac_sample_atac.bam" '{print $1}')
@@ -48,22 +38,23 @@ do
     repfiles=$(ls ${name}*_atac_sample_atac.bam)
     samtools merge ${name}_merged.rmdup.bam $repfiles
     samtools view -b -f 0x2 ${name}_merged.rmdup.bam -o ${name}_merged.rmdup.1.bam
+    rm ${name}_merged.rmdup.bam
     samtools sort -n ${name}_merged.rmdup.1.bam -o ${name}_merged.rmdup.sorted.bam
+    rm ${name}_merged.rmdup.1.bam
     samtools fixmate ${name}_merged.rmdup.sorted.bam ${name}_merged.rmdup.fixed.bam
 #convert to bed 
     bedtools bamtobed -i ${name}_merged.rmdup.fixed.bam -bedpe > ${name}_merged.rmdup.fixed.bed
 #take columns that span the PE1 start and PE2 start
     awk '{OFS="\t";} {print $1,$2,$6,$7,$8,$9}' ${name}_merged.rmdup.fixed.bed > ${name}_merged.rmdup.final.bed
+    rm ${name}_merged.rmdup.fixed.bed
     sort -k1,1 -k2,2n ${name}_merged.rmdup.final.bed > ${name}_merged.rmdup.final.sorted.bed
     # from bed to bedgraph
     reads=$(wc -l ${name}_merged.rmdup.final.sorted.bed | awk -F" " '{print $1}')
 #three hard coded    
     norm=$(echo 10000000/$reads | bc -l | xargs printf "%.*f\n" 3)
-    genomeCoverageBed -bg -scale ${norm} -trackline -trackopts 'track type=bedGraph name='"${name}"' alwaysZero=on visibility=full' -i ${name}_merged.rmdup.final.sorted.bed -g mm10.chrom.sizes > ${name}.bedGraph
+    genomeCoverageBed -bg -scale ${norm} -trackline -trackopts 'track type=bedGraph name='"${name}"' alwaysZero=on visibility=full' -i ${name}_merged.rmdup.final.sorted.bed -g ../mm10.chrom.sizes > ${name}.bedGraph
     bedGraphToBigWig ${name}.bedGraph mm10.chrom.sizes ${name}.merged.bigWig
 done
-
-
 
 #6 day
 samtools merge sixdayMerged.bam *.bam
@@ -89,78 +80,6 @@ bedtools genomecov -bg -trackline -trackopts name=sixDay -i sorted.bed -g mm10.c
 bedGraphToBigWig sixdayMerged.bedGraph mm10.chrom.sizes sixdayMerged.bigWig
 
 
-
-for fq in *rep1_atac_sample_atac.bam
-do
-    name=$(echo $fq | awk -F"_rep1_atac_sample_atac.bam" '{print $1}')
-    echo $name
-    repfiles=$(ls ${name}*_atac_sample_atac.bam)
-    samtools merge ${name}_merged.rmdup.bam $repfiles
-    samtools view -b -f 0x2 ${name}_merged.rmdup.bam -o ${name}_merged.rmdup.1.bam
-    samtools sort -n ${name}_merged.rmdup.1.bam -o ${name}_merged.rmdup.sorted.bam
-    samtools fixmate ${name}_merged.rmdup.sorted.bam ${name}_merged.rmdup.fixed.bam
-#convert to bed 
-    bedtools bamtobed -i ${name}_merged.rmdup.fixed.bam -bedpe > ${name}_merged.rmdup.fixed.bed
-#take columns that span the PE1 start and PE2 start
-    awk '{OFS="\t";} {print $1,$2,$6,$7,$8,$9}' ${name}_merged.rmdup.fixed.bed > ${name}_merged.rmdup.final.bed
-    sort -k1,1 -k2,2n ${name}_merged.rmdup.final.bed > ${name}_merged.rmdup.final.sorted.bed
-    # from bed to bedgraph
-    reads=$(wc -l ${name}_merged.rmdup.final.sorted.bed | awk -F" " '{print $1}')
-#three hard coded    
-    norm=$(echo 10000000/$reads | bc -l | xargs printf "%.*f\n" 3)
-    genomeCoverageBed -bg -scale ${norm} -trackline -trackopts 'track type=bedGraph name='"${name}"' alwaysZero=on visibility=full' -i ${name}_merged.rmdup.final.sorted.bed -g mm10.chrom.sizes > ${name}.bedGraph
-    bedGraphToBigWig ${name}.bedGraph mm10.chrom.sizes ${name}.merged.bigWig
-done
-
-
-
-#cnt="$1"
-
-#dir=/nv/vol192/civeleklab/warren/MGlab/ATAC_WAFD/3T3_ATAC1-3/preadip_bams
-
-#cd ${dir}
-
-# subdirectory for specific analyses
-#mkdir params
-#cp *_atac_sample_atac.bam params
-#cp vars_*.txt params
-
-
-# isolate all motif identifiers
-#params=$(cat vars_${cnt}.txt)
-
-# load macs2
-#module load macs2
-
-# params
-#cd params
-
-#files=$(ls *_atac_sample_atac.bam)
-#name=3T3_atac
-#species=mm
-#for i in vars_1.txt
-#do
-#    params=$(cat $i)
-#    fdr=$(echo ${params} | awk -F" " '{print $1}')
-#    m1=$(echo ${params} | awk -F" " '{print $2}')
-#    m2=$(echo ${params} | awk -F" " '{print $3}')
-#    ndups=50
-#    output=atac4h_${fdr}_${m1}_${m2}
-#    echo ${name}
-#    echo fdr ${fdr}
-#    echo m1 ${m1}
-#    echo m2 ${m2}
-#    echo ${output}
-#    echo ""
-# run for all 3T3 files
-#    macs2 callpeak -t ${files} -f BAMPE -n ${name} --outdir ${output} -g ${species} -B --call-summits --keep-dup ${ndups} -q ${fdr} -m ${m1} ${m2}
-#    #rm *.bam
-#   gzip */*bdg
-#done
-
-#wget http://mitra.stanford.edu/kundaje/akundaje/release/blacklists/mm10-mouse/mm10.blacklist.bed.gz
-#gunzip mm10.blacklist.bed.gz
-
 #peak calling
 fdr=0.05
 files=$(ls *_atac_sample_atac.bam)
@@ -169,7 +88,7 @@ species=mm
 ndups=50
 macs2 callpeak -t ${files} -f BAMPE -n ${name} --outdir atac4h_${fdr} -g ${species} -B --call-summits --keep-dup ${ndups} -q ${fdr}
 
-cd../6day
+cd ../6day
 
 fdr=0.05
 files=$(ls *_atac_sample_atac.bam)
