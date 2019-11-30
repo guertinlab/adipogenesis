@@ -127,6 +127,9 @@ done
 #https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/mm10/3T3_4hr.merged.bigWig
 #https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/mm10/3T3_6d.merged.bigWig
 
+
+#the UCSC session is saved here:
+#https://genome.ucsc.edu/s/Mike%20Guertin/mm10_ATAC_seq_hub
 cd ..
 #peak calling
 fdr=0.05
