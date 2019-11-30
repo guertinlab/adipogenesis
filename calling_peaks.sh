@@ -1,8 +1,17 @@
+wget https://raw.githubusercontent.com/WarrenDavidAnderson/manuscriptCode/master/preadipogenesisNetwork_code/motifAnalysis/ATACpeakCalling/call_4h_peaks.slurm
+wget https://raw.githubusercontent.com/WarrenDavidAnderson/manuscriptCode/master/preadipogenesisNetwork_code/motifAnalysis/ATACpeakCalling/call_6d_peaks.slurm
+wget https://raw.githubusercontent.com/WarrenDavidAnderson/manuscriptCode/master/preadipogenesisNetwork_code/motifAnalysis/ATACpeakCalling/empiricalSummits.R
+wget https://raw.githubusercontent.com/WarrenDavidAnderson/manuscriptCode/master/preadipogenesisNetwork_code/motifAnalysis/ATACpeakCalling/filter_sort_peaks.sh
+wget https://raw.githubusercontent.com/WarrenDavidAnderson/manuscriptCode/master/preadipogenesisNetwork_code/motifAnalysis/ATACpeakCalling/integrateReads.sh
+
 cd /Volumes/GUERTIN_2/adipogenesis/atac
 cp */*_sample_atac.bam ./
 mkdir 6day
 mv 3T3_6d_*bam 6day/
 samtools merge preadipMerged.bam *.bam
+
+##Ran code chunk 1 from calling_adipogenesisReaks.R
+
 
 # isolate only concordant alignments
 mv preadipMerged.bam pre.bam
@@ -26,8 +35,56 @@ bedtools genomecov -bg -trackline -trackopts name=preadip -i sorted.bed -g mm10.
 #module load ucsc-tools
 bedGraphToBigWig preadip.bedGraph mm10.chrom.sizes preadip.bigWig
 
-https://data.cyverse.org/dav-anon/iplant/home/guertin/preadip.bigWig
-https://genome.ucsc.edu/s/Mike%20Guertin/mm10_0%2D4hr_merged
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/preadip.bigWig
+#https://genome.ucsc.edu/s/Mike%20Guertin/mm10_0%2D4hr_merged
+
+for fq in *rep1_atac_sample_atac.bam
+do
+    name=$(echo $fq | awk -F"_rep1_atac_sample_atac.bam" '{print $1}')
+    echo $name
+    repfiles=$(ls ${name}*_atac_sample_atac.bam)
+    samtools merge ${name}_merged.rmdup.bam $repfiles
+    samtools view -b -f 0x2 ${name}_merged.rmdup.bam -o ${name}_merged.rmdup.1.bam
+    samtools sort -n ${name}_merged.rmdup.1.bam -o ${name}_merged.rmdup.sorted.bam
+    samtools fixmate ${name}_merged.rmdup.sorted.bam ${name}_merged.rmdup.fixed.bam
+#convert to bed 
+    bedtools bamtobed -i ${name}_merged.rmdup.fixed.bam -bedpe > ${name}_merged.rmdup.fixed.bed
+#take columns that span the PE1 start and PE2 start
+    awk '{OFS="\t";} {print $1,$2,$6,$7,$8,$9}' ${name}_merged.rmdup.fixed.bed > ${name}_merged.rmdup.final.bed
+    sort -k1,1 -k2,2n ${name}_merged.rmdup.final.bed > ${name}_merged.rmdup.final.sorted.bed
+    # from bed to bedgraph
+    reads=$(wc -l ${name}_merged.rmdup.final.sorted.bed | awk -F" " '{print $1}')
+#three hard coded    
+    norm=$(echo 10000000/$reads | bc -l | xargs printf "%.*f\n" 3)
+    genomeCoverageBed -bg -scale ${norm} -trackline -trackopts 'track type=bedGraph name='"${name}"' alwaysZero=on visibility=full' -i ${name}_merged.rmdup.final.sorted.bed -g mm10.chrom.sizes > ${name}.bedGraph
+    bedGraphToBigWig ${name}.bedGraph mm10.chrom.sizes ${name}.merged.bigWig
+done
+
+
+
+#6 day
+cd 6day
+samtools merge sixdayMerged.bam *.bam
+mv sixdayMerged.bam pre.bam
+
+samtools view -b -f 0x2 pre.bam -o sixdayMerged.bam
+samtools sort -n sixdayMerged.bam -o sorted.bam
+samtools fixmate sorted.bam fixed.bam
+
+#convert to bed 
+bedtools bamtobed -i fixed.bam -bedpe > sixdayMerged.bed
+
+#take columns that span the PE1 start and PE2 start
+awk '{OFS="\t";} {print $1,$2,$6,$7,$8,$9}' sixdayMerged.bed > bed
+sort -k 1,1 bed > sorted.bed
+#sort -k1,1 -k2,2n 
+
+# from bed to bedgraph
+bedtools genomecov -bg -trackline -trackopts name=sixDay -i sorted.bed -g mm10.chrom.sizes > sixdayMerged.bedGraph
+
+# generate the bigwig
+#module load ucsc-tools
+bedGraphToBigWig sixdayMerged.bedGraph mm10.chrom.sizes sixdayMerged.bigWig
 
 
 #I ran this for the UCSC genome browser
@@ -53,33 +110,24 @@ do
 #three hard coded    
     norm=$(echo 10000000/$reads | bc -l | xargs printf "%.*f\n" 3)
     genomeCoverageBed -bg -scale ${norm} -trackline -trackopts 'track type=bedGraph name='"${name}"' alwaysZero=on visibility=full' -i ${name}_merged.rmdup.final.sorted.bed -g ../mm10.chrom.sizes > ${name}.bedGraph
-    bedGraphToBigWig ${name}.bedGraph mm10.chrom.sizes ${name}.merged.bigWig
+    bedGraphToBigWig ${name}.bedGraph ../mm10.chrom.sizes ${name}.merged.bigWig
 done
 
-#6 day
-samtools merge sixdayMerged.bam *.bam
-mv sixdayMerged.bam pre.bam
+#I loaded the following tracks on Cyverse:
 
-samtools view -b -f 0x2 pre.bam -o sixdayMerged.bam
-samtools sort -n sixdayMerged.bam -o sorted.bam
-samtools fixmate sorted.bam fixed.bam
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/hub.txt
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/genomes.txt
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/mm10/trackDb.txt
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/mm10/3T3_t0.merged.bigWig
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/mm10/3T3_20min.merged.bigWig
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/mm10/3T3_40min.merged.bigWig
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/mm10/3T3_60min.merged.bigWig
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/mm10/3T3_2hr.merged.bigWig
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/mm10/3T3_3hr.merged.bigWig
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/mm10/3T3_4hr.merged.bigWig
+#https://data.cyverse.org/dav-anon/iplant/home/guertin/adipo_hub/mm10/3T3_6d.merged.bigWig
 
-#convert to bed 
-bedtools bamtobed -i fixed.bam -bedpe > sixdayMerged.bed
-
-#take columns that span the PE1 start and PE2 start
-awk '{OFS="\t";} {print $1,$2,$6,$7,$8,$9}' sixdayMerged.bed > bed
-sort -k 1,1 bed > sorted.bed
-#sort -k1,1 -k2,2n 
-
-# from bed to bedgraph
-bedtools genomecov -bg -trackline -trackopts name=sixDay -i sorted.bed -g mm10.chrom.sizes > sixdayMerged.bedGraph
-
-# generate the bigwig
-#module load ucsc-tools
-bedGraphToBigWig sixdayMerged.bedGraph mm10.chrom.sizes sixdayMerged.bigWig
-
-
+cd ..
 #peak calling
 fdr=0.05
 files=$(ls *_atac_sample_atac.bam)
@@ -182,7 +230,6 @@ bedGraphToBigWig preadip_minus_merged.sorted.bedGraph ../atac/mm10.chrom.sizes p
 #LRT_atac-seq
 #TMixClust
 #count
-
 
 #for counts bigWig file
 
