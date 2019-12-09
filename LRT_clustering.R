@@ -159,7 +159,54 @@ xyplot(value ~  sample.conditions | cluster, group = genes, data = plot.df, type
       )
 dev.off()
 
+                                        #just plot loess
 
+
+
+                                        #Propose using these data and plotting on a single plot for clustering
+loess.df = data.frame(matrix(ncol = 3, nrow = 0),  stringsAsFactors = FALSE)
+colnames(loess.df) = c('ATAC','time','cluster')
+for (i in unique(plot.df$cluster)){
+    ATAC = loess.smooth(plot.df[plot.df$cluster == i,]$sample.conditions, plot.df[plot.df$cluster == i,]$value,  span = 1/2, degree = 1, family = c("gaussian"))$y
+    time = loess.smooth(plot.df[plot.df$cluster == i,]$sample.conditions, plot.df[plot.df$cluster == i,]$value, span = 1/2, degree = 1, family = c("gaussian"))$x
+    new = as.data.frame(cbind(ATAC, time, i),  stringsAsFactors = FALSE)
+    colnames(new) = c('ATAC','time','cluster')
+    new$ATAC = as.numeric(new$ATAC)
+    new$time = as.numeric(new$time)
+    loess.df = rbind(loess.df, new)
+}
+
+colors.clusters = rep('white', 21)
+colors.clusters[c(6,13,14)] = 'red'
+colors.clusters[c(19, 15,16,20,3)] = 'blue'
+colors.clusters[c(10)] = 'green'
+colors.clusters[c(21,18,1,4)] = 'black'
+colors.clusters[c(12,8,9,5,7)] = 'purple'
+colors.clusters[c(17, 2, 11)] = 'orange'
+
+
+
+pdf(paste('Clusters_individual_loess','.pdf', sep=''), width=4, height=4)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+xyplot(ATAC ~  time, groups = cluster, data = loess.df, type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'cluster loess of ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=colors.clusters, cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = colors.clusters, lwd=c(3),
+                                                 lty = c(1))))
+
+      )
+dev.off()
+    
 
 
 
@@ -284,11 +331,9 @@ print(
            c(6,13,14,
              19, 15,16,20,3,
              10,
-             21,18,
-             1,4,
+             21,18,1,4,
              12,8,9,5,7,
-             17,
-             2, 11)),
+             17, 2, 11)),
        skip = c(F, F, F, T, T,
                 F, F, F, F, F,
                 F, T, T, T, T,
@@ -405,14 +450,238 @@ for (i in unique(final.plot.df$cluster.final)) {
 
 
 
+#next thing I want to do is cluster motifs identified de novo using the method from our 2017 PLOS Gen paper
+python /Users/guertinlab/pyscripts/MEME_individual_from_db.py -i /Volumes/GUERTIN_2/adipogenesis/atac/twenty_one_clusters/cluster1.meme_output/meme.txt
+
+setwd('/Volumes/GUERTIN_2/adipogenesis/atac/meme_minimal_atac/mapping_list')
+
+
+
+
+
+
 
                                         #currently doing de novo for each sub cluster and combined clusters.
 
+                                        #dREG motif analysis
 
+get.raw.counts.dREG <- function(df.prefix, path.to.bigWig, file.prefix = 'G') {
+    vec.names = c()
+    df.plus = read.table(paste0(df.prefix, '.plus.bed'))
+    #dREG gives summits outside range for some reason
+    df.plus[,2] = df.plus[,2] - 11
+    df.plus[,3] = df.plus[,3] + 100
+    df.plus[,2][df.plus[,2] < 0] = 1
+    df.minus = read.table(paste0(df.prefix, '.minus.bed'))
+    df.minus[,3] = df.minus[,3] + 11
+    df.minus[,2] = df.minus[,2] -100
+    df.minus[,2][df.minus[,2] < 0] = 1
+    print('plus')
+    print(head(df.plus))
+    print('minus')
+    print(head(df.minus))
+    inten.df=data.frame(matrix(ncol = 0, nrow = nrow(df.plus)))
+    for (mod.bigWig in Sys.glob(file.path(path.to.bigWig, 
+                       paste(file.prefix, "*pro_plus.bigWig", sep ='')))) {
+        factor.name = strsplit(strsplit(mod.bigWig, 
+                        "/")[[1]][length(strsplit(mod.bigWig, "/")[[1]])], '_plus')[[1]][1]
+        print(factor.name)
+        vec.names = c(vec.names, factor.name)
+        loaded.bw.plus = load.bigWig(mod.bigWig)
+        print(mod.bigWig)
+        print(paste(path.to.bigWig,'/',factor.name, '_minus.bigWig', sep=''))
+        loaded.bw.minus = load.bigWig(paste(path.to.bigWig,'/',factor.name, 
+                        '_minus.bigWig', sep=''))
+        mod.inten.plus = bed.region.bpQuery.bigWig(loaded.bw.plus, df.plus)
+        mod.inten.minus = bed.region.bpQuery.bigWig(loaded.bw.minus, df.minus)
+        inten.df = cbind(inten.df, mod.inten.plus + mod.inten.minus)
+    }
+    colnames(inten.df) = vec.names
+    r.names = paste(df.plus[,1], ':', df.plus[,2] + 11, '-', df.plus[,2] + 12, sep='')
+    row.names(inten.df) = r.names
+    return(inten.df)
+}
+
+setwd('/Volumes/GUERTIN_2/adipogenesis/pro_dREG')
+
+direc = '/Volumes/GUERTIN_2/adipogenesis/pro_dREG'
+
+counts.dreg = get.raw.counts.dREG('3T3_adipogenesis.dREG.peak', 
+                                  direc, file.prefix = 'G')
+
+
+
+colnames(counts.dreg) = sapply(strsplit(colnames(counts.dreg), '3T3_t'), '[', 2)
+colnames(counts.dreg) = sapply(strsplit(colnames(counts.dreg), '_pro'), '[', 1)
+
+save(counts.dreg, file = 'adipogenesis.counts.dreg.Rdata')
+counts.dreg = counts.dreg[,1:21]
+                                      #follow this: https://hbctraining.github.io/DGE_workshop/lessons/08_DGE_LRT.html
+sample.conditions = factor(sapply(strsplit(as.character(colnames(counts.dreg)), '_'), '[', 1))
+
+sample.conditions = factor(sample.conditions, levels=c("0","20min","40min","60min","2h","3h","4h"))
+
+deseq.counts.table = DESeqDataSetFromMatrix(counts.dreg, as.data.frame(sample.conditions), ~ sample.conditions)
+
+dds = DESeq(deseq.counts.table)
+
+                                        #exploratory
+rld = rlog(dds, blind=TRUE)
+
+#
+x = plotPCA(rld, intgroup="sample.conditions", returnData=TRUE)
+plotPCAlattice(x, file = 'PCA_adipogenesis_pro_lattice_guertin.pdf')
+
+                                        #lrt
+
+dds.lrt = DESeq(dds, test="LRT", reduced = ~ 1)
+
+#use for outside R
+normalized.counts = counts(dds, normalized=TRUE)
+
+res.lrt = results(dds.lrt)
+
+padj.cutoff = 0.00001 #1e-5
+
+siglrt.re = res.lrt[res.lrt$padj < padj.cutoff & !is.na(res.lrt$padj),]
+
+dim(siglrt.re)                                    
+
+rld_mat <- assay(rld)
+cluster_rlog = rld_mat[rownames(siglrt.re),]
+meta = as.data.frame(sample.conditions)
+rownames(meta) = colnames(cluster_rlog)
+
+save(cluster_rlog, meta, sample.conditions, file = 'pro_cluster_rlog_pval_0.00001.Rdata')
+
+                                        #rivanna
+
+load('191130_clusters.all.pro.minc100.pval0.00001.Rdata')
+
+
+
+
+
+plot.df.pro = clusters.all.test.0.00001$normalized
+
+plot.df.pro$sample.conditions = as.character(plot.df.pro$sample.conditions)
+plot.df.pro$sample.conditions[plot.df.pro$sample.conditions == '20min'] = 20
+plot.df.pro$sample.conditions[plot.df.pro$sample.conditions == '40min'] = 40
+plot.df.pro$sample.conditions[plot.df.pro$sample.conditions == '60min'] = 60
+plot.df.pro$sample.conditions[plot.df.pro$sample.conditions == '2h'] = 120
+plot.df.pro$sample.conditions[plot.df.pro$sample.conditions == '3h'] = 180
+plot.df.pro$sample.conditions[plot.df.pro$sample.conditions == '4h'] = 240
+plot.df.pro$sample.conditions = as.numeric(plot.df.pro$sample.conditions)
+plot.df.pro = plot.df.pro[order(plot.df.pro$genes),]
+plot.df.pro = plot.df.pro[order(plot.df.pro$sample.conditions),]
+
+plot.df.pro$cluster = paste('cluster', as.character(plot.df.pro$cluster), sep = '')
+
+
+
+
+plot.df.pro$chr = sapply(strsplit(plot.df.pro$genes, ':'), '[', 1)
+range.chr = sapply(strsplit(plot.df.pro$genes, ':'), '[', 2)
+plot.df.pro$start = sapply(strsplit(range.chr, '-'), '[', 1)
+plot.df.pro$end = sapply(strsplit(range.chr, '-'), '[', 2)
+
+
+for (i in unique(plot.df.pro$cluster)) {
+    print(i)
+    write.table(plot.df.pro[plot.df.pro$cluster == i,
+                        c('chr','start','end', 'value', 'cluster')][!duplicated(plot.df.pro[plot.df.pro$cluster == i,]$genes),],
+                file = paste0('cluster_bed_pro_',
+                              gsub(" ", "", i, fixed = TRUE),'.bed'),
+                quote = FALSE, row.names = FALSE, col.names = FALSE, sep = '\t')
+}
+
+library(data.table)
+
+plot.df.pro.cluster = dcast(plot.df.pro, genes + cluster ~ sample.conditions, value.var="value")
+
+avg.clusters = as.data.frame(matrix(nrow = 0, ncol = 7))
+colnames(y) = colnames(plot.df.pro.cluster[3:9])
+for (i in unique(plot.df.pro.cluster$cluster)) {
+    z = data.frame(matrix(colMeans(plot.df.pro.cluster[plot.df.pro.cluster$cluster == i,3:9]), ncol = 7, nrow = 1))
+    rownames(z) = c(i)
+    colnames(z) = as.character(colnames(plot.df.pro.cluster)[3:9])
+    avg.clusters = rbind(avg.clusters, z)
+}
+
+
+dd = dist(avg.clusters)
+hc = hclust(dd, method = "complete")
+
+
+pdf(paste('dendrogram_HC_pro','.pdf', sep=''), width=8, height=5)
+plot(hc, xlab = "Clusters", main = ' ', hang = -1)
+abline(h = 1.8, lty = 2)
+dev.off()
+
+
+pdf(paste('Clusters_minc100_stringent_pvalue_post_HC_thirteen','.pdf', sep=''), width=11, height=32)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions | cluster, group = genes, data = plot.df.pro, type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       layout = c(6,13),
+       between=list(y=0.5, x=0.5),
+       index.cond=list(
+           c(10, 12, 24,
+             6, 39, 1,
+             15, 14,
+             27,26, 13, 30 , 23,
+             21,28, 19,
+             16,3,20,
+             22, 2, 9, 11,
+             33,
+             38, 34, 4,
+             25, 35, 17,
+             29, 5, 31, 7, 36, 8,
+             18,
+             37, 32)),
+       skip = c(F, F, F, T, T, T,
+                F, F, F, T, T, T,
+                F, F, T, T, T, T,
+                F, F, F, F, F, T,
+                F, F, F, T, T, T,
+                F, F, F, T, T, T,
+                F, F, F, F, T, T,
+                F, T, T, T, T, T,
+                F, F, F, T, T, T,
+                F, F, F, T, T, T ,
+                F, F, F, F, F, F,
+                F, T, T, T, T, T,
+                F, F, T, T, T, T),
+
+       ylab = list(label = 'Normalized PRO signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+#cloose number of clusters for de novo
 
                                         #useful for network inference section 5.6 two wave network
                                         #https://kateto.net/netscix2016.html
 #layered graph bipartite
 #made a cyclical https://rdrr.io/cran/igraph/man/layout_with_sugiyama.html
 #term sugiyama 
-#https://stackoverflow.com/questions/51194653/r-is-not-taking-the-parameter-hgap-in-layout-with-sugiyama
+                                        #https://stackoverflow.com/questions/51194653/r-is-not-taking-the-parameter-hgap-in-layout-with-sugiyama
+load.bigWig('/Volumes/GUERTIN_2/adipogenesis/pro_dREG/GSM3900969_3T3_t6d_rep2_pro_plus.bigWig')
+coverage = o$basesCovered*o$mean
