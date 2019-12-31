@@ -457,6 +457,233 @@ setwd('/Volumes/GUERTIN_2/adipogenesis/atac/meme_minimal_atac/mapping_list')
 
 
 
+                                        #DEseq2 pTA output
+
+library(bigWig)
+library(DESeq2)
+library(DEGreport)
+library(tibble)
+library(lattice)
+library(tidyr)
+source('https://raw.githubusercontent.com/mjg54/znf143_pro_seq_analysis/master/docs/ZNF143_functions.R')
+
+
+
+setwd('/Volumes/GUERTIN_2/adipogenesis/pro_dREG')
+
+direc = '/Volumes/GUERTIN_2/adipogenesis/pro_dREG'
+
+gene.file = read.table('/Volumes/GUERTIN_2/adipogenesis/primary_transcript_annotation.bed', header=FALSE)
+
+get.raw.counts.interval.pro <- function(df, path.to.bigWig, file.prefix = 'H') {
+    vec.names = c()
+    inten.df=data.frame(matrix(ncol = 0, nrow = nrow(df)))
+    
+    for (mod.bigWig in Sys.glob(file.path(path.to.bigWig, paste(file.prefix, "*plus.bigWig", sep ='')))) {
+        factor.name = strsplit(strsplit(mod.bigWig, "/")[[1]][length(strsplit(mod.bigWig, "/")[[1]])], '_plus')[[1]][1]
+        print(factor.name)
+        vec.names = c(vec.names, factor.name)
+        loaded.bw.plus = load.bigWig(mod.bigWig)
+        print(mod.bigWig)
+        print(paste(path.to.bigWig,'/',factor.name, '_minus.bigWig', sep=''))
+        loaded.bw.minus = load.bigWig(paste(path.to.bigWig,'/',factor.name, '_minus.bigWig', sep=''))
+        mod.inten = bed6.region.bpQuery.bigWig(loaded.bw.plus, loaded.bw.minus, df)
+        inten.df = cbind(inten.df, mod.inten)
+    }
+    colnames(inten.df) = vec.names
+    r.names = paste(df[,1], ':', df[,2], '-', df[,3],'_', df[,4], sep='')
+    row.names(inten.df) = r.names
+    return(inten.df)
+}
+
+
+df.3t3 = get.raw.counts.interval.pro(gene.file, direc, file.prefix = 'G')
+
+
+colnames(df.3t3) = sapply(strsplit(colnames(df.3t3), '3T3_t'), '[', 2)
+colnames(df.3t3) = sapply(strsplit(colnames(df.3t3), '_pro'), '[', 1)
+
+save(df.3t3, file = 'adipogenesis.df.3t3.Rdata')
+
+counts.pta = df.3t3[,1:21]
+                                      #follow this: https://hbctraining.github.io/DGE_workshop/lessons/08_DGE_LRT.html
+sample.conditions = factor(sapply(strsplit(as.character(colnames(counts.pta)), '_'), '[', 1))
+
+sample.conditions = factor(sample.conditions, levels=c("0","20min","40min","60min","2h","3h","4h"))
+
+deseq.counts.table = DESeqDataSetFromMatrix(counts.pta, as.data.frame(sample.conditions), ~ sample.conditions)
+
+dds = DESeq(deseq.counts.table)
+
+                                        #exploratory
+rld = rlog(dds, blind=TRUE)
+
+#
+x = plotPCA(rld, intgroup="sample.conditions", returnData=TRUE)
+plotPCAlattice(x, file = 'PCA_adipogenesis_pro_pTA_lattice_guertin.pdf')
+
+                                        #lrt
+
+dds.lrt = DESeq(dds, test="LRT", reduced = ~ 1)
+
+#use for outside R
+normalized.counts = counts(dds, normalized=TRUE)
+
+res.lrt = results(dds.lrt)
+
+padj.cutoff = 0.00001 #1e-25
+
+siglrt.re = res.lrt[res.lrt$padj < padj.cutoff & !is.na(res.lrt$padj),]
+
+dim(siglrt.re)                                    
+
+
+
+rld_mat <- assay(rld)
+cluster_rlog.pTA = rld_mat[rownames(siglrt.re),]
+meta.pTA = as.data.frame(sample.conditions)
+rownames(meta.pTA) = colnames(cluster_rlog.pTA)
+
+save(cluster_rlog.pTA, meta.pTA, sample.conditions, file = 'pTA_pro_cluster_rlog_pval_1e5.Rdata')
+
+library(DESeq2)
+library(DEGreport)
+library(tibble)
+library(lattice)
+
+#clusters.all.1e25 <- degPatterns(cluster_rlog.pTA, metadata = meta.pTA, minc = 100, time = "sample.conditions", col=NULL, eachStep = TRUE)
+#save(clusters.all.1e25, 'clusters.all.1e25.Rdata')
+
+                                        #rivanna
+
+#cd /home/mjg7y/pro_pTA
+#sbatch LRT_clustering_pTA.slurm
+#LRT_largemem_clustering_pTA.R
+
+load('/Volumes/GUERTIN_2/adipogenesis/pro_dREG/191230_clusters.pTA.pro.minc10.pval1e5.Rdata')
+
+plot.df.pTA = clusters.all.1e5$normalized
+
+plot.df.pTA$sample.conditions = as.character(plot.df.pTA$sample.conditions)
+plot.df.pTA$sample.conditions[plot.df.pTA$sample.conditions == '20min'] = 20
+plot.df.pTA$sample.conditions[plot.df.pTA$sample.conditions == '40min'] = 40
+plot.df.pTA$sample.conditions[plot.df.pTA$sample.conditions == '60min'] = 60
+plot.df.pTA$sample.conditions[plot.df.pTA$sample.conditions == '2h'] = 120
+plot.df.pTA$sample.conditions[plot.df.pTA$sample.conditions == '3h'] = 180
+plot.df.pTA$sample.conditions[plot.df.pTA$sample.conditions == '4h'] = 240
+plot.df.pTA$sample.conditions = as.numeric(plot.df.pTA$sample.conditions)
+plot.df.pTA = plot.df.pTA[order(plot.df.pTA$genes),]
+plot.df.pTA = plot.df.pTA[order(plot.df.pTA$sample.conditions),]
+
+plot.df.pTA$cluster = paste('cluster', as.character(plot.df.pTA$cluster), sep = '')
+
+
+
+
+plot.df.pTA$chr = sapply(strsplit(plot.df.pTA$genes, ':'), '[', 1)
+range.chr = sapply(strsplit(plot.df.pTA$genes, ':'), '[', 2)
+plot.df.pTA$start = sapply(strsplit(range.chr, '-'), '[', 1)
+plot.df.pTA$end = sapply(strsplit(range.chr, '-'), '[', 2)
+
+
+for (i in unique(plot.df.pTA$cluster)) {
+    print(i)
+    write.table(plot.df.pTA[plot.df.pTA$cluster == i,
+                        c('chr','start','end', 'value', 'cluster')][!duplicated(plot.df.pTA[plot.df.pTA$cluster == i,]$genes),],
+                file = paste0('cluster_bed_pro_pTA',
+                              gsub(" ", "", i, fixed = TRUE),'.bed'),
+                quote = FALSE, row.names = FALSE, col.names = FALSE, sep = '\t')
+}
+
+library(data.table)
+
+
+plot.df.pTA.cluster = dcast(plot.df.pTA, genes + cluster ~ sample.conditions, value.var="value")
+
+avg.clusters = as.data.frame(matrix(nrow = 0, ncol = 7))
+colnames(y) = colnames(plot.df.pTA.cluster[3:9])
+for (i in unique(plot.df.pTA.cluster$cluster)) {
+    z = data.frame(matrix(colMeans(plot.df.pTA.cluster[plot.df.pTA.cluster$cluster == i,3:9]), ncol = 7, nrow = 1))
+    rownames(z) = c(i)
+    colnames(z) = as.character(colnames(plot.df.pTA.cluster)[3:9])
+    avg.clusters = rbind(avg.clusters, z)
+}
+
+
+dd = dist(avg.clusters)
+hc = hclust(dd, method = "complete")
+
+
+pdf(paste('dendrogram_HC_pTA','.pdf', sep=''), width=8, height=5)
+plot(hc, xlab = "Clusters", main = ' ', hang = -1)
+abline(h = 2.1, lty = 2)
+dev.off()
+
+
+plot.df.pTA.cluster[grep('Egr', plot.df.pTA.cluster[,1]),]
+
+
+
+
+
+pdf(paste('Clusters_minc10_1e5_pvalue_pTA','.pdf', sep=''), width=11, height=32)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions | cluster, group = genes, data = plot.df.pTA, type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+#       layout = c(6,13),
+       between=list(y=0.5, x=0.5),
+#       index.cond=list(
+#           c(10, 12, 24,
+#             6, 39, 1,
+#             15, 14,
+#             27,26, 13, 30 , 23,
+#             21,28, 19,
+#             16,3,20,
+#             22, 2, 9, 11,
+#             33,
+#             38, 34, 4,
+#             25, 35, 17,
+#             29, 5, 31, 7, 36, 8,
+#             18,
+#             37, 32)),
+#       skip = c(F, F, F, T, T, T,
+#                F, F, F, T, T, T,
+#                F, F, T, T, T, T,
+#                F, F, F, F, F, T,
+#                F, F, F, T, T, T,
+#                F, F, F, T, T, T,
+#                F, F, F, F, T, T,
+#                F, T, T, T, T, T,
+#                F, F, F, T, T, T,
+#                F, F, F, T, T, T ,
+#                F, F, F, F, F, F,
+#                F, T, T, T, T, T,
+#               F, F, T, T, T, T),
+       ylab = list(label = 'Normalized PRO signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+
 
 
 
