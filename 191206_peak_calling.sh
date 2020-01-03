@@ -166,6 +166,20 @@ do
     echo $name
     seqOutBias mm10.fa $bam --skip-bed --no-scale --bw=${name}.bigWig --only-paired --shift-counts --read-size=38
 done
+#clusters
+
+for i in cluster_bed_cluster*.bed
+do
+    name=$(echo $i | awk -F"bed_" '{print $NF}' | awk -F".bed" '{print $1}')
+    echo $name
+    touch temp.txt
+    echo "track type=bed name=${name}" >> temp.txt
+    awk -v OFS='\t' '{print $1,$2,$3}' $i > bed3.bed
+    cat temp.txt bed3.bed > ${name}_ucsc.bed
+    rm bed3.bed
+    rm temp.txt
+done
+
 
 
 #start from here with new meme outputs
@@ -178,10 +192,14 @@ do
 done
 
 for i in /Volumes/GUERTIN_2/adipogenesis/atac/meme_minimal_atac/*_cluster*_meme.txt
+#for i in /Volumes/GUERTIN_2/adipogenesis/atac/meme_minimal_atac/TAATBRRAWMCAGATG_cluster4_meme.txt
+	 #for i in /Volumes/GUERTIN_2/adipogenesis/atac/meme_minimal_atac/MCATCTGS_cluster11_meme.txt
+for i in /Volumes/GUERTIN_2/adipogenesis/atac/meme_minimal_atac/KCCAGATGTTB_cluster4_meme.txt	 	 
 do
     name=$(echo $i | awk -F"/" '{print $NF}' | awk -F".txt" '{print $1}')
     echo $name
-    /Users/guertinlab/Desktop/meme/libexec/meme-5.0.5/ceqlogo -i $i -m 1 > $name.eps
+    /Users/guertinlab/Desktop/meme/libexec/meme-5.0.5/ceqlogo -i $i -m 1 -r > ${name}_rc.eps
+#    /Users/guertinlab/Desktop/meme/libexec/meme-5.0.5/ceqlogo -i $i -m 1 > ${name}.eps
 done
 
 cd ..
@@ -252,6 +270,59 @@ do
 done
 
 
+#get motifs in dynamic peaks
+intersectBed -wa -a /Volumes/GUERTIN_2/adipogenesis/atac/jaspar.bed/NR3C1_instances_jaspar.bed -b all_dynamic_peaks.bed > NR3C1_motifs_dynamic.bed
+#palindrome 
+awk '!seen[$0]++' NR3C1_motifs_dynamic.bed | sort -k1,1 -k2,2n > NR3C1_motifs_in_dynamic.bed
+rm NR3C1_motifs_dynamic.bed
+
+intersectBed -wa -a /Volumes/GUERTIN_2/adipogenesis/atac/jaspar.bed/TWIST1_instances_jaspar.bed -b all_dynamic_peaks.bed > TWIST1_motifs_dynamic.bed
+#palindrome 
+awk '!seen[$0]++' TWIST1_motifs_dynamic.bed | sort -k1,1 -k2,2n > TWIST1_motifs_in_dynamic.bed
+rm TWIST1_motifs_dynamic.bed
+
+#next find all the TWIST motifs in dynamic ATAC clusters and the which of these are near dynamic PRO-seq clusters
+
+cat cluster_bed_cluster3.bed cluster_bed_cluster4.bed cluster_bed_cluster7.bed cluster_bed_cluster11.bed > TWIST_de_novo_atac_peak_clusters.bed
+intersectBed -wa -a TWIST_de_novo_atac_peak_clusters.bed -b /Volumes/GUERTIN_2/adipogenesis/atac/jaspar.bed/TWIST1_instances_jaspar.bed > TWIST_motifs_in_dynamic_ATAC_clusters.txt
+awk '!seen[$0]++' TWIST_motifs_in_dynamic_ATAC_clusters.txt | sort -k1,1 -k2,2n > TWIST_motifs_in_dynamic_ATAC_clusters.bed
+rm TWIST_motifs_in_dynamic_ATAC_clusters.txt
+
+
+#use only the clusters with decreaing
+cat cluster_bed_pro_pTAcluster9.bed \
+    cluster_bed_pro_pTAcluster17.bed \
+    cluster_bed_pro_pTAcluster32.bed \
+    cluster_bed_pro_pTAcluster12.bed \
+    cluster_bed_pro_pTAcluster6.bed \
+    cluster_bed_pro_pTAcluster16.bed > decrease_late_clusters.bed
+
+#get TU nodes
+slopBed -i decrease_late_clusters.bed -g /Volumes/GUERTIN_2/adipogenesis/atac/mm10.chrom.sizes -b 10000 > decrease_late_clusters_plus10kb.bed
+intersectBed -wa -a decrease_late_clusters_plus10kb.bed -b /Volumes/GUERTIN_2/adipogenesis/atac/TWIST_motifs_in_dynamic_ATAC_clusters.bed > decrease_late_clusters_plus10kb_near_TWIST.txt
+awk '!seen[$0]++' decrease_late_clusters_plus10kb_near_TWIST.txt | sort -k1,1 -k2,2n > decrease_late_clusters_plus10kb_near_TWIST.bed
+rm decrease_late_clusters_plus10kb_near_TWIST.txt
+
+#get RE nodes
+intersectBed -wb -a decrease_late_clusters_plus10kb.bed -b /Volumes/GUERTIN_2/adipogenesis/atac/TWIST_motifs_in_dynamic_ATAC_clusters.bed > TWIST_RE_nodes_map_to_TUs.txt
+awk '!seen[$0]++' TWIST_RE_nodes_map_to_TUs.txt | sort -k1,1 -k2,2n > TWIST_RE_nodes_map_to_TUs.bed
+rm TWIST_RE_nodes_map_to_TUs.txt
+ 
+
+#RE nodes: TWIST_RE_nodes_map_to_TUs.bed
+#TU nodes: decrease_late_clusters_plus10kb_near_TWIST.bed
+
+
+
+dir=/Volumes/GUERTIN_2/adipogenesis/atac
+for file in $dir/*/*/tomtom.txt
+do
+    cut -f1,2,5 $file >> 3_col_combined_motif_db_pre.txt
+    #echo $file
+done
+grep -v '#' 3_col_combined_motif_db_pre.txt | grep -v Query |awk 'NF > 0' > 3_col_combined_motif_db.txt
+
+
 
 
 
@@ -296,18 +367,18 @@ for i in 3T3*rep1_pro_plus.bigWig
 do
     name=$(echo $i | awk -F"_rep1_pro_plus.bigWig" '{print $1}')
     echo $name
-#    plus_1=${name}_rep1_pro_plus.bigWig
-#    minus_1=${name}_rep1_pro_minus.bigWig
-#    plus_2=${name}_rep2_pro_plus.bigWig
-#    minus_2=${name}_rep2_pro_minus.bigWig
-#    plus_3=${name}_rep3_pro_plus.bigWig
-#    minus_3=${name}_rep3_pro_minus.bigWig
-#    Rscript /Users/guertinlab/rscripts/normalization_factor.R $plus_1 $minus_1 $plus_2 $minus_2 $plus_3 $minus_3
+    plus_1=${name}_rep1_pro_plus.bigWig
+    minus_1=${name}_rep1_pro_minus.bigWig
+    plus_2=${name}_rep2_pro_plus.bigWig
+    minus_2=${name}_rep2_pro_minus.bigWig
+    plus_3=${name}_rep3_pro_plus.bigWig
+    minus_3=${name}_rep3_pro_minus.bigWig
+    Rscript /Users/guertinlab/rscripts/normalization_factor.R $plus_1 $minus_1 $plus_2 $minus_2 $plus_3 $minus_3
     reads=`awk '{SUM+=$2}END{print SUM}' ${name}_normalization.txt`
     norm=$(echo 10000000/$reads | bc -l | xargs printf "%.*f\n" 3)
     #    seqOutBias  /Volumes/GUERTIN_2/adipogenesis/atac/mm10.fa $bam --regions=${reg}.plus.bed --no-scale --bw=PRO_plus_body_0-mer.bigWig --tail-edge --read-size=30
     echo $norm
-    bigWigMerge $plus_1  $plus_2 $plus_3  ${name}_plus_merged.bedGraph
+    bigWigMerge $plus_1 $plus_2 $plus_3  ${name}_plus_merged.bedGraph
     sort -k1,1 -k2,2n ${name}_plus_merged.bedGraph > ${name}_plus_merged_sorted.bedGraph
     python /Users/guertinlab/pyscripts/normalize_bedGraph.py -i ${name}_plus_merged_sorted.bedGraph -s ${norm} -o ${name}_plus_merged_scaled.bedGraph
     bedGraphToBigWig ${name}_plus_merged_scaled.bedGraph /Volumes/GUERTIN_2/adipogenesis/atac/mm10.chrom.sizes ${name}_plus_merged_normalized.bigWig

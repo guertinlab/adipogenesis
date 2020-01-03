@@ -562,6 +562,8 @@ library(lattice)
 
 load('/Volumes/GUERTIN_2/adipogenesis/pro_dREG/191230_clusters.pTA.pro.minc10.pval1e5.Rdata')
 
+#I am losing the strand somewhere I need to to maintain this
+
 plot.df.pTA = clusters.all.1e5$normalized
 
 plot.df.pTA$sample.conditions = as.character(plot.df.pTA$sample.conditions)
@@ -583,13 +585,14 @@ plot.df.pTA$cluster = paste('cluster', as.character(plot.df.pTA$cluster), sep = 
 plot.df.pTA$chr = sapply(strsplit(plot.df.pTA$genes, ':'), '[', 1)
 range.chr = sapply(strsplit(plot.df.pTA$genes, ':'), '[', 2)
 plot.df.pTA$start = sapply(strsplit(range.chr, '-'), '[', 1)
-plot.df.pTA$end = sapply(strsplit(range.chr, '-'), '[', 2)
+plot.df.pTA$end = sapply(strsplit(sapply(strsplit(plot.df.pTA$genes, '-'), '[', 2), '_'), '[', 1) #x=
+plot.df.pTA$gene = sapply(strsplit(sapply(strsplit(plot.df.pTA$genes, '-'), '[', 2), '_'), '[', 2) #x=
 
 
 for (i in unique(plot.df.pTA$cluster)) {
     print(i)
     write.table(plot.df.pTA[plot.df.pTA$cluster == i,
-                        c('chr','start','end', 'value', 'cluster')][!duplicated(plot.df.pTA[plot.df.pTA$cluster == i,]$genes),],
+                        c('chr','start','end', 'gene', 'cluster')][!duplicated(plot.df.pTA[plot.df.pTA$cluster == i,]$genes),],
                 file = paste0('cluster_bed_pro_pTA',
                               gsub(" ", "", i, fixed = TRUE),'.bed'),
                 quote = FALSE, row.names = FALSE, col.names = FALSE, sep = '\t')
@@ -621,6 +624,378 @@ dev.off()
 
 
 plot.df.pTA.cluster[grep('Egr', plot.df.pTA.cluster[,1]),]
+
+
+                                        #plot the raw PRO signal as opposed to standard deviations
+format.plot = plot.df.pTA[grep('Twist2',plot.df.pTA$genes),]
+
+twist2.pro = normalized.counts[grep('Twist2', rownames(normalized.counts)),]
+format.plot[1,'value'] = mean(twist2.pro[1:3])
+format.plot[2,'value'] = mean(twist2.pro[4:6])
+format.plot[5,'value'] = mean(twist2.pro[7:9])
+format.plot[6,'value'] = mean(twist2.pro[10:12])
+format.plot[3,'value'] = mean(twist2.pro[13:15])
+format.plot[7,'value'] = mean(twist2.pro[16:18])
+format.plot[4,'value'] = mean(twist2.pro[19:21])
+
+
+pdf(paste('Clusters_Twist2','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions , group = genes, data = plot.df.pTA[grep('Twist2',plot.df.pTA$genes),], type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized PRO signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =2.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(2),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+#           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           #panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+      )
+dev.off()
+
+
+
+pdf(paste('Clusters_Twist2_raw_PRO','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions , group = genes, data = format.plot, type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized PRO signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =2.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(2),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+#           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           #panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+      )
+dev.off()
+
+
+                                        #plot GRE
+load('../atac/191119_clusters.all.minc100.pval0.00000001.Rdata')
+
+plot.df = clusters.all.test.0.00000001$normalized
+
+plot.df$sample.conditions = as.character(plot.df$sample.conditions)
+plot.df$sample.conditions[plot.df$sample.conditions == 't0'] = 0
+plot.df$sample.conditions[plot.df$sample.conditions == '20min'] = 20
+plot.df$sample.conditions[plot.df$sample.conditions == '40min'] = 40
+plot.df$sample.conditions[plot.df$sample.conditions == '60min'] = 60
+plot.df$sample.conditions[plot.df$sample.conditions == '2hr'] = 120
+plot.df$sample.conditions[plot.df$sample.conditions == '3hr'] = 180
+plot.df$sample.conditions[plot.df$sample.conditions == '4hr'] = 240
+plot.df$sample.conditions = as.numeric(plot.df$sample.conditions)
+plot.df = plot.df[order(plot.df$genes),]
+plot.df = plot.df[order(plot.df$sample.conditions),]
+
+plot.df$cluster = paste('cluster', as.character(plot.df$cluster), sep = '')
+
+
+pdf(paste('GRE_near_twist','.pdf', sep=''), width=3, height=3)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+xyplot(value ~  sample.conditions , group = genes, data = plot.df[grep('chr1:91927918',plot.df$genes),], type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       main= 'chr1:91927918-91928118',
+       cex.main = 0.2,
+       ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =25),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(2),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+#           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+#           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+load("../atac/191119_adipogenesis.Rdata")
+format.plot.atac =plot.df[grep('chr1:91857151',plot.df$genes),]
+
+twist2.atac = normalized.counts[grep('chr1:91857151', rownames(normalized.counts)),]
+format.plot.atac[2,'value'] = mean(twist2.atac[1:3])
+format.plot.atac[5,'value'] = mean(twist2.atac[4:6])
+format.plot.atac[6,'value'] = mean(twist2.atac[7:9])
+format.plot.atac[3,'value'] = mean(twist2.atac[10:12])
+format.plot.atac[7,'value'] = mean(twist2.atac[13:15])
+format.plot.atac[4,'value'] = mean(twist2.atac[16:18])
+format.plot.atac[1,'value'] = mean(twist2.atac[19:21])
+
+
+pdf(paste('GRE_site_near_twist2','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+           print(
+ xyplot(value ~  sample.conditions , group = genes, data = format.plot.atac, type = c('l'),#type = c('l','p'),              chr1:91875333-91875533
+#               xyplot(value ~  sample.conditions , group = genes, data = plot.df[grep('chr1:91857151',plot.df$genes),], type = c('l'),#type = c('l','p'),
+#xyplot(value ~  sample.conditions , group = genes, data = plot.df[grep('91927918-91928118',plot.df$genes),], type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0, 
+       between=list(y=0.5, x=0.5),
+       main= list(
+           label='chr1:91857151-91857351',
+           cex=0.75),
+       ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey50'), cex =25),
+                           cex.main = 0.2,
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#4c4c4c80'), lwd=c(2),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+#           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+#           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+pdf(paste('Atf3_GRE_site_near_twist','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+           print(
+ xyplot(value ~  sample.conditions , group = genes, data = plot.df[grep('chr1:91857151',plot.df$genes),], type = c('l'),#type = c('l','p'),              chr1:91875333-91875533
+#               xyplot(value ~  sample.conditions , group = genes, data = plot.df[grep('chr1:91857151',plot.df$genes),], type = c('l'),#type = c('l','p'),
+#xyplot(value ~  sample.conditions , group = genes, data = plot.df[grep('91927918-91928118',plot.df$genes),], type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0, 
+       between=list(y=0.5, x=0.5),
+       main= list(
+           label='chr1:91857151-91857351',
+           cex=0.75),
+       ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey50'), cex =25),
+                           cex.main = 0.2,
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#4c4c4c80'), lwd=c(2),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+#           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+#           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+                                        #get coposite ATAC at gres
+source('https://raw.githubusercontent.com/guertinlab/seqOutBias/master/docs/R/seqOutBias_functions.R')
+
+bed.window <- function(bed, half.window) {
+    bed[,2] = (bed[,2] + bed[,3])/2 - half.window
+    bed[,3] = bed[,2] + 2 * half.window
+    return(bed)
+}
+
+
+
+get.ATAC.interval <- function(bed, tf, path.to.bigWig, stp = 20, half.win, file.suffix = '.bigWig') {
+    all.fimo = data.frame(matrix(ncol = 4, nrow = 0))
+    colnames(all.fimo) = c('density', 'tf', 'cond', 'range')
+    bed.win = bed.window(bed, half.win)
+    for (mod.bigWig in Sys.glob(file.path(path.to.bigWig,
+                                          paste('*', file.suffix, sep ='')))) {
+        cond = strsplit(strsplit(mod.bigWig, "/")[[1]][length(strsplit(mod.bigWig, '/')[[1]])], file.suffix)[[1]][1]
+        print(cond)
+        loaded.bw = load.bigWig(mod.bigWig)
+        inten = bed.step.probeQuery.bigWig(loaded.bw, bed.win,
+                                           gap.value = 0, step = stp, as.matrix = TRUE)
+        query.df = data.frame(cbind(colMeans(inten), tf, cond,
+                                 seq(-half.win+(0.5*stp), half.win-(0.5*stp), stp)), stringsAsFactors=F)
+        colnames(query.df) = c('density', 'tf', 'cond', 'range')
+        all.fimo = rbind(all.fimo, query.df)
+    }
+    all.fimo[,1] = as.numeric(all.fimo[,1])
+    all.fimo[,4] = as.numeric(all.fimo[,4])
+    return(all.fimo)
+}
+
+composites.func.panels.lattice <- function(dat, fact = 'ATAC', summit = 'Motif Summit', class= '', num.m = -400, num.p =400, y.low =0, y.high = 0.2,
+                                           col.lines = c("#3B82AE", "#547294", "#6D617A", "#865160", "#9F4046", "#B8302C", "#D11F12", "#DE1705"),
+                                           fill.poly = c(rgb(0,0,1,1/4), 
+                                                                                                        rgb(1,0,0,1/4), rgb(0.1,0.5,0.05,1/4),rgb(0,0,0,1/4), rgb(1/2,0,1/2,1/4))) {
+    pdf(paste('composite_', fact, '_signals_', summit, '_peaks', class, '.pdf', sep=''), width=8.83, 
+        height=4) 
+    print(xyplot(density ~ range|tf, group = cond, data = dat,
+                 type = 'l',
+               scales=list(x=list(cex=0.8,relation = "free"), y =list(cex=0.8, relation="free")),
+                 xlim=c(num.m,num.p),
+#                 ylim = c(y.low, y.high),
+                 col = col.lines,
+                 #main=list(label=class, cex=0.6),
+                 auto.key = list(points=F, lines=T, cex=0.8),
+               par.settings = list(superpose.symbol = list(pch = c(16), col=col.lines, cex =0.7), 
+                   superpose.line = list(col = col.lines, lwd=c(2,2,2,2,2,2), 
+                       lty = c(1,1,1,1,1,1,1,1,1))),
+                 cex.axis=1.0,
+                 par.strip.text=list(cex=0.9, font=1, col='black'),
+                 aspect=1.0,
+                 between=list(y=0.5, x=0.5),
+#                 index.cond = list(c(3, 2, 1)),
+                 lwd=2,
+                 ylab = list(label = paste(fact," Signal", sep=''), cex =1),
+                 xlab = list(label = paste("Distance from ", summit, sep=''), cex =1),
+                 #upper = dat$upper,
+                 #fill = fill.poly,
+                 #lower = dat$lower,
+                 strip = function(..., which.panel, bg) {
+                     bg.col = c("grey90")#,"#ce228e" , "#2290cf","grey60")
+                 strip.default(..., which.panel = which.panel, bg = rep(bg.col, length = which.panel)[which.panel])
+                 },
+                 #panel = function(x, y, ...){
+                     #panel.superpose(x, y, panel.groups = 'my.panel.bands', ...)
+                     #panel.xyplot(x, y, ...)
+       #}
+                 ))
+    dev.off()
+}
+
+nr3c1.bed = read.table('/Volumes/GUERTIN_2/adipogenesis/atac/NR3C1_motifs_in_dynamic.bed')
+twist.bed = read.table('/Volumes/GUERTIN_2/adipogenesis/atac/TWIST1_motifs_in_dynamic.bed')
+
+path.bw = '/Volumes/GUERTIN_2/adipogenesis/atac/4hour/'
+
+
+
+nrc31.comp = get.ATAC.interval(nr3c1.bed, tf = 'GR', path.bw, stp = 20, half.win = 500, file.suffix = '.merged.bigWig')
+nrc31.comp$cond = factor(nrc31.comp$cond, levels = c("3T3_t0", "3T3_20min", "3T3_40min", "3T3_60min", "3T3_2hr", "3T3_3hr", "3T3_4hr"))
+
+
+twist.comp = get.ATAC.interval(twist.bed, tf = 'TWIST', path.bw, stp = 20, half.win = 500, file.suffix = '.merged.bigWig')
+twist.comp$cond = factor(nrc31.comp$cond, levels = c("3T3_t0", "3T3_20min", "3T3_40min", "3T3_60min", "3T3_2hr", "3T3_3hr", "3T3_4hr"))
+
+#need to incorporate a bed file loop into the composite function
+composites.tfs = rbind(nrc31.comp, twist.comp)
+
+composites.func.panels.lattice(composites.tfs, num.m = -400, num.p =400)
+
+                                        #GRE de novo clusters
+
+
+pdf(paste('Clusters_with_GRE_de_novo','.pdf', sep=''), width=9, height=10)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions | cluster, group = genes, data = plot.df, type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       layout = c(5,3),
+       between=list(y=2.0, x=0.5),
+       index.cond=list(
+           c(4,
+             12,8,9,5,7,
+             17, 2, 11)),
+       skip = c(F, T, T, T, T,
+                F, F, F, F, F,
+                F, F, F, T, T) ,
+       ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+pdf(paste('Clusters_with_TWIST_de_novo','.pdf', sep=''), width=9, height=10)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions | cluster, group = genes, data = plot.df, type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       layout = c(5,1),
+       between=list(y=2.0, x=0.5),
+      index.cond=list(
+           c(
+             19, 15,16,3
+             )),
+       skip = c(
+                F, F, F, F, T
+              ) ,
+       ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+
 
 
 
@@ -680,6 +1055,44 @@ print(
 
       )
 dev.off()
+
+
+####working ith iGraph
+threecol=read.csv("fake_network_input.txt",
+header=F,stringsAsFactors = F,sep='\t')
+colnames(threecol)=c('from','to','e_value')
+threecol$weight=abs(log(threecol$e_value))
+library(igraph)
+                                        #create the graph variable
+
+g=graph.data.frame(threecol,directed=TRUE)
+
+vec.gene.names = c('TU1', 'TU2','TU3','TU4')
+V(g)$type <- ifelse(V(g)$name %in% vec.gene.names, TRUE, FALSE)
+
+
+
+
+
+V(g)$color <- ifelse(V(g)$type, "lightblue", "salmon")
+V(g)$shape <- ifelse(V(g)$type, "square", "circle")
+E(g)$color <- "gray30"
+
+V(g)$label <- ifelse(V(g)$type, V(g)$name, ' ')
+
+#ifelse(iris2$Species=='setosa', 'regular', iris2$Species)
+
+x = layout_with_sugiyama(g, attributes="all")
+
+
+
+
+plot(x$extd_graph, vertex.label.family = "Courier", vertex.label.font= 2, vertex.label.color = "black", vertex.size = 20)
+
+
+
+
+
 
 
 
