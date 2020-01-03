@@ -281,36 +281,180 @@ intersectBed -wa -a /Volumes/GUERTIN_2/adipogenesis/atac/jaspar.bed/TWIST1_insta
 awk '!seen[$0]++' TWIST1_motifs_dynamic.bed | sort -k1,1 -k2,2n > TWIST1_motifs_in_dynamic.bed
 rm TWIST1_motifs_dynamic.bed
 
-#next find all the TWIST motifs in dynamic ATAC clusters and the which of these are near dynamic PRO-seq clusters
 
+
+#get the RE regulating TWIST2
+#use only the ATAC clusters with increasing early--for the first wave we should to limit our analysis to increasing and decreasing early clusters
+cat cluster_bed_cluster5.bed \
+    cluster_bed_cluster10.bed \
+    cluster_bed_cluster2.bed \
+    cluster_bed_cluster21.bed \
+    cluster_bed_cluster16.bed \
+    cluster_bed_cluster17.bed \
+    cluster_bed_cluster13.bed \
+    cluster_bed_cluster15.bed > increase_early_atac_clusters.bed
+
+
+#Here we are speifically focusing on GRE, but we will ultimately need to pick a a representative database PSWM (probably
+# the one that is most enriched in the supercluster as per Arun's barchart/Fisher analysis) for each de novo/fimo
+#overlapping motif that is found within any of the clusters above.
+
+#I think it makes sense to only look for the motifs in immediate early (or whatever) clusters that the motif was found de novo, although
+#an arguement could be made for being more inclusive with clusters that have similar profiles
+#it so happens that a GRE was foudn in all the immediate early clusters
+
+cat cluster_bed_cluster5.bed \
+    cluster_bed_cluster10.bed \
+    cluster_bed_cluster2.bed \
+    cluster_bed_cluster21.bed \
+    cluster_bed_cluster16.bed \
+    cluster_bed_cluster17.bed \
+    cluster_bed_cluster13.bed \
+    cluster_bed_cluster15.bed > NR3C1_de_novo_atac_peak_clusters.bed
+
+intersectBed -wa -a NR3C1_de_novo_atac_peak_clusters.bed -b /Volumes/GUERTIN_2/adipogenesis/atac/jaspar.bed/NR3C1_instances_jaspar.bed > REs_w_NR3C1_motifs_in_early_immediate_ATAC_clusters.txt
+awk '!seen[$0]++' REs_w_NR3C1_motifs_in_early_immediate_ATAC_clusters.txt | sort -k1,1 -k2,2n > REs_w_NR3C1_motifs_in_early_immediate_ATAC_clusters.bed
+rm REs_w_NR3C1_motifs_in_early_immediate_ATAC_clusters.txt
+
+#use wc -l to show that 1076 / 4610 of these early response REs have a GRE
+
+
+#get RE overlap with immediate early response pTA genes
+#here I am just using the immediate activated, but the same should be done for
+#immediate repressed.
+# I have not exhaustively characterized pTA/PRO superclusters 
+
+cd ../pro_dREG/
+
+cat cluster_bed_pro_pTAcluster3.bed \
+    cluster_bed_pro_pTAcluster13.bed \
+    cluster_bed_pro_pTAcluster4.bed \
+    cluster_bed_pro_pTAcluster25.bed \
+    cluster_bed_pro_pTAcluster31.bed \
+    cluster_bed_pro_pTAcluster23.bed \
+    cluster_bed_pro_pTAcluster7.bed \
+    cluster_bed_pro_pTAcluster15.bed \
+    cluster_bed_pro_pTAcluster26.bed \
+    cluster_bed_pro_pTAcluster42.bed \
+    > increase_early_pro_clusters.bed
+
+
+#give a strict 10kb buffer--we can plan to weight by distance later
+
+slopBed -i increase_early_pro_clusters.bed -g /Volumes/GUERTIN_2/adipogenesis/atac/mm10.chrom.sizes -b 10000 > increase_early_pro_clusters_plus10kb.bed
+
+#next step is to get all the early immediate ATAC peaks (where the GRE was found de novo) with NR3C1 motifs to define all the GRE-containing RE
+#relevant files
+#REs_w_NR3C1_motifs_in_early_immediate_ATAC_clusters.bed
+#increase_early_pro_clusters_plus10kb.bed
+
+cd ../atac
+intersectBed -wa -wb -a /Volumes/GUERTIN_2/adipogenesis/pro_dREG/increase_early_pro_clusters_plus10kb.bed \
+	     -b /Volumes/GUERTIN_2/adipogenesis/atac/REs_w_NR3C1_motifs_in_early_immediate_ATAC_clusters.bed \
+	     > increase_early_TUs_near_REs_w_NR3C1.txt
+
+
+awk '!seen[$0]++' increase_early_TUs_near_REs_w_NR3C1.txt | sort -k1,1 -k2,2n > increase_early_TUs_near_REs_w_NR3C1.bed
+rm increase_early_TUs_near_REs_w_NR3C1.txt
+
+#this file "increase_early_TUs_near_REs_w_NR3C1.bed" has everything we need to draw RE-->TU edges
+#we can paste columns 6,7,8 together with a ":" and "-" to get unique RE names
+#column 4 is the TU --Most of the TUs will be terminal (leaf) node, because they do not encode TFs
+#many of the TU nodes ecodign TFs may not have their motif show up in the ATAC/dREG peaks
+#so we may want to impose sparsity for visualization by only focusing on those non-terminal (leaf) TUs that encode TFs
+#We will focus on TWIST2 here, because it is a clean case where a single family member
+#seems to be immediately activated by a GRE containing RE 
+#we are going to use the two Google Sheets to identify TFs that are immediately regulated by PRO
+#and have their motifs enriched in late response ATAC clusters.
+
+grep Twist2 increase_early_TUs_near_REs_w_NR3C1.bed > NR3C1_RE_to_Twist2_TU.bed
+
+#our First input node:
+#NR3C1_RE_to_Twist2_TU.bed
+#This works well for now, but I think it is going to be important to have a node attribute
+#that includes all the relevant motifs
+#for instance, I believe that this node also has an ATF site
+# I envision that this can just be a separate file that overlaps relevant FIMO outputs with each relevant RE node
+
+#load into R
+#NR3C1_RE_to_Twist2_TU.bed
+
+
+
+
+
+
+
+
+
+#next find all the TWIST motifs in dynamic ATAC clusters and then which of these are near dynamic PRO-seq clusters
+
+#these are all the atac clusters with teh Twist motif identified de novo
 cat cluster_bed_cluster3.bed cluster_bed_cluster4.bed cluster_bed_cluster7.bed cluster_bed_cluster11.bed > TWIST_de_novo_atac_peak_clusters.bed
-intersectBed -wa -a TWIST_de_novo_atac_peak_clusters.bed -b /Volumes/GUERTIN_2/adipogenesis/atac/jaspar.bed/TWIST1_instances_jaspar.bed > TWIST_motifs_in_dynamic_ATAC_clusters.txt
-awk '!seen[$0]++' TWIST_motifs_in_dynamic_ATAC_clusters.txt | sort -k1,1 -k2,2n > TWIST_motifs_in_dynamic_ATAC_clusters.bed
-rm TWIST_motifs_in_dynamic_ATAC_clusters.txt
+
+intersectBed -wa -a TWIST_de_novo_atac_peak_clusters.bed -b /Volumes/GUERTIN_2/adipogenesis/atac/jaspar.bed/TWIST1_instances_jaspar.bed > REs_w_TWIST_motifs_in_dynamic_ATAC_clusters.txt
+awk '!seen[$0]++' REs_w_TWIST_motifs_in_dynamic_ATAC_clusters.txt | sort -k1,1 -k2,2n > REs_w_TWIST_motifs_in_dynamic_ATAC_clusters.bed
+rm REs_w_TWIST_motifs_in_dynamic_ATAC_clusters.txt
 
 
-#use only the clusters with decreaing
-cat cluster_bed_pro_pTAcluster9.bed \
-    cluster_bed_pro_pTAcluster17.bed \
+#this is the input for hte first set of trans edges
+#REs_w_TWIST_motifs_in_dynamic_ATAC_clusters.bed
+
+
+#which are near relevant dynamic PRO clusters
+#use only the PRO pTA clusters with late decreasing--again I have not exhaustively characterized these
+
+cd ../pro_dREG
+
+cat cluster_bed_pro_pTAcluster9.bed  \
+    cluster_bed_pro_pTAcluster17.bed  \
     cluster_bed_pro_pTAcluster32.bed \
     cluster_bed_pro_pTAcluster12.bed \
     cluster_bed_pro_pTAcluster6.bed \
-    cluster_bed_pro_pTAcluster16.bed > decrease_late_clusters.bed
+    cluster_bed_pro_pTAcluster16.bed > decrease_late_pro_clusters.bed
 
-#get TU nodes
-slopBed -i decrease_late_clusters.bed -g /Volumes/GUERTIN_2/adipogenesis/atac/mm10.chrom.sizes -b 10000 > decrease_late_clusters_plus10kb.bed
-intersectBed -wa -a decrease_late_clusters_plus10kb.bed -b /Volumes/GUERTIN_2/adipogenesis/atac/TWIST_motifs_in_dynamic_ATAC_clusters.bed > decrease_late_clusters_plus10kb_near_TWIST.txt
-awk '!seen[$0]++' decrease_late_clusters_plus10kb_near_TWIST.txt | sort -k1,1 -k2,2n > decrease_late_clusters_plus10kb_near_TWIST.bed
-rm decrease_late_clusters_plus10kb_near_TWIST.txt
+#get TU nodes NEED both TU and RE
+
+slopBed -i decrease_late_pro_clusters.bed -g /Volumes/GUERTIN_2/adipogenesis/atac/mm10.chrom.sizes -b 10000 > decrease_late_pro_clusters_plus10kb.bed
+
+cd ../atac
+intersectBed -wa -wb -a /Volumes/GUERTIN_2/adipogenesis/pro_dREG/decrease_late_pro_clusters_plus10kb.bed \
+	     -b /Volumes/GUERTIN_2/adipogenesis/atac/REs_w_TWIST_motifs_in_dynamic_ATAC_clusters.bed \
+	     > decrease_late_TUs_near_REs_w_TWIST.txt
+
+
+awk '!seen[$0]++' decrease_late_TUs_near_REs_w_TWIST.txt | sort -k1,1 -k2,2n > decrease_late_TUs_near_REs_w_TWIST.bed
+rm decrease_late_TUs_near_REs_w_TWIST.txt
+
+#this is the input for the next set of edges:
+#decrease_late_TUs_near_REs_w_TWIST.bed
+
+#I looked a the output of TUs and I noticed the Nr3c2 is there
+#since the GRE is also found in late down (cluster 5) this could be negative ffedback, but it will complicate the graph making it cyclical for all GREs.
+#the next step for filling out this network's next wave is to identify all motifs within late decreasing (or inreasing) ATAC clusters, including the up down (down up) clusters
+#then overlap this with TWIST2 targets to see if we can observe the next wave
+
+
+
+
+
+
+
+
+
+
+intersectBed -wa --a decrease_late_pro_clusters_plus10kb.bed -b /Volumes/GUERTIN_2/adipogenesis/atac/TWIST_motifs_in_dynamic_ATAC_clusters.bed > decrease_late_pro_clusters_plus10kb_near_TWIST.txt
+awk '!seen[$0]++' decrease_late_pro_clusters_plus10kb_near_TWIST.txt | sort -k1,1 -k2,2n > decrease_late_pro_clusters_plus10kb_near_TWIST.bed
+rm decrease_late_pro_clusters_plus10kb_near_TWIST.txt
 
 #get RE nodes
-intersectBed -wb -a decrease_late_clusters_plus10kb.bed -b /Volumes/GUERTIN_2/adipogenesis/atac/TWIST_motifs_in_dynamic_ATAC_clusters.bed > TWIST_RE_nodes_map_to_TUs.txt
+intersectBed -wb -a decrease_late_pro_clusters_plus10kb.bed -b /Volumes/GUERTIN_2/adipogenesis/atac/TWIST_motifs_in_dynamic_ATAC_clusters.bed > TWIST_RE_nodes_map_to_TUs.txt
 awk '!seen[$0]++' TWIST_RE_nodes_map_to_TUs.txt | sort -k1,1 -k2,2n > TWIST_RE_nodes_map_to_TUs.bed
 rm TWIST_RE_nodes_map_to_TUs.txt
  
 
 #RE nodes: TWIST_RE_nodes_map_to_TUs.bed
-#TU nodes: decrease_late_clusters_plus10kb_near_TWIST.bed
+#TU nodes: decrease_late_pro_clusters_plus10kb_near_TWIST.bed
 
 
 

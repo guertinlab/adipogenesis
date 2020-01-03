@@ -159,6 +159,81 @@ xyplot(value ~  sample.conditions | cluster, group = genes, data = plot.df, type
       )
 dev.off()
 
+pdf(paste('Clusters_GRE_de_novo','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions , group = genes, data =
+                       plot.df[plot.df$cluster == 'cluster5' | 
+    plot.df$cluster == 'cluster10' | 
+    plot.df$cluster == 'cluster2' | 
+    plot.df$cluster == 'cluster21' | 
+    plot.df$cluster == 'cluster16' | 
+    plot.df$cluster == 'cluster17' | 
+    plot.df$cluster == 'cluster13' | 
+   plot.df$cluster == 'cluster15',]
+         , type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+pdf(paste('Clusters_TWIST_de_novo','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions , group = genes, data =
+                       plot.df[plot.df$cluster == 'cluster5' | 
+    plot.df$cluster == 'cluster3' | 
+    plot.df$cluster == 'cluster4' | 
+    plot.df$cluster == 'cluster7' | 
+    plot.df$cluster == 'cluster11',]
+         , type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+
+
+
                                         #just plot loess
 
 
@@ -527,7 +602,7 @@ plotPCAlattice(x, file = 'PCA_adipogenesis_pro_pTA_lattice_guertin.pdf')
 dds.lrt = DESeq(dds, test="LRT", reduced = ~ 1)
 
 #use for outside R
-normalized.counts = counts(dds, normalized=TRUE)
+normalized.counts.pro = counts(dds, normalized=TRUE)
 
 res.lrt = results(dds.lrt)
 
@@ -629,7 +704,7 @@ plot.df.pTA.cluster[grep('Egr', plot.df.pTA.cluster[,1]),]
                                         #plot the raw PRO signal as opposed to standard deviations
 format.plot = plot.df.pTA[grep('Twist2',plot.df.pTA$genes),]
 
-twist2.pro = normalized.counts[grep('Twist2', rownames(normalized.counts)),]
+twist2.pro = normalized.counts.pro[grep('Twist2', rownames(normalized.counts.pro)),]
 format.plot[1,'value'] = mean(twist2.pro[1:3])
 format.plot[2,'value'] = mean(twist2.pro[4:6])
 format.plot[5,'value'] = mean(twist2.pro[7:9])
@@ -694,6 +769,53 @@ print(
 dev.off()
 
 
+                                        #need to change normailzed count name to normal.ized.counts.pro
+
+format.plot.Smyd3 = plot.df.pTA[grep("Smyd3",plot.df.pTA$genes),]
+
+Smyd3.pro = normalized.counts.pro[grep("Smyd3", rownames(normalized.counts.pro)),]
+format.plot.Smyd3[1,'value'] = mean(Smyd3.pro[1:3])
+format.plot.Smyd3[2,'value'] = mean(Smyd3.pro[4:6])
+format.plot.Smyd3[5,'value'] = mean(Smyd3.pro[7:9])
+format.plot.Smyd3[6,'value'] = mean(Smyd3.pro[10:12])
+format.plot.Smyd3[3,'value'] = mean(Smyd3.pro[13:15])
+format.plot.Smyd3[7,'value'] = mean(Smyd3.pro[16:18])
+format.plot.Smyd3[4,'value'] = mean(Smyd3.pro[19:21])
+
+
+
+pdf(paste('Clusters_Smyd3_raw_PRO','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions , group = genes, data = format.plot.Smyd3, type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized PRO signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =2.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#4c4c4c80'), lwd=c(8),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+#           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           #panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+      )
+dev.off()
+
+
+
+
+
+
+
                                         #plot GRE
 load('../atac/191119_clusters.all.minc100.pval0.00000001.Rdata')
 
@@ -714,7 +836,7 @@ plot.df = plot.df[order(plot.df$sample.conditions),]
 plot.df$cluster = paste('cluster', as.character(plot.df$cluster), sep = '')
 
 
-pdf(paste('GRE_near_twist','.pdf', sep=''), width=3, height=3)
+pdf(paste('GRE_near_twist','.pdf', sep=''), width=3.5, height=3.5)
 
 trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
                 box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
@@ -742,6 +864,96 @@ xyplot(value ~  sample.conditions , group = genes, data = plot.df[grep('chr1:919
 
       )
 dev.off()
+
+format.plot.atac =plot.df[grep('chr1:179023571-179023771',plot.df$genes),]
+
+Smyd3_1.atac = normalized.counts[grep('chr1:179023571-179023771', rownames(normalized.counts)),]
+format.plot.atac[2,'value'] = mean(Smyd3_1.atac[1:3])
+format.plot.atac[5,'value'] = mean(Smyd3_1.atac[4:6])
+format.plot.atac[6,'value'] = mean(Smyd3_1.atac[7:9])
+format.plot.atac[3,'value'] = mean(Smyd3_1.atac[10:12])
+format.plot.atac[7,'value'] = mean(Smyd3_1.atac[13:15])
+format.plot.atac[4,'value'] = mean(Smyd3_1.atac[16:18])
+format.plot.atac[1,'value'] = mean(Smyd3_1.atac[19:21])
+
+
+pdf(paste('TWIST_near_Smyd3_1','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+xyplot(value ~  sample.conditions , group = genes, data = format.plot.atac, type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       main= 'chr1:179023571-179023771',
+       cex.main = 0.2,
+       ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =25),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#4c4c4c80'), lwd=c(8),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+#           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+#           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+format.plot.atac =plot.df[grep('chr1:179097150-179097350',plot.df$genes),]
+
+Smyd3_2.atac = normalized.counts[grep('chr1:179097150-179097350', rownames(normalized.counts)),]
+format.plot.atac[2,'value'] = mean(Smyd3_2.atac[1:3])
+format.plot.atac[5,'value'] = mean(Smyd3_2.atac[4:6])
+format.plot.atac[6,'value'] = mean(Smyd3_2.atac[7:9])
+format.plot.atac[3,'value'] = mean(Smyd3_2.atac[10:12])
+format.plot.atac[7,'value'] = mean(Smyd3_2.atac[13:15])
+format.plot.atac[4,'value'] = mean(Smyd3_2.atac[16:18])
+format.plot.atac[1,'value'] = mean(Smyd3_2.atac[19:21])
+
+
+pdf(paste('TWIST_near_Smyd3_2','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+xyplot(value ~  sample.conditions , group = genes, data = format.plot.atac, type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       main= 'chr1:179097150-179097350',
+       cex.main = 0.2,
+       ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =25),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#4c4c4c80'), lwd=c(8),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+#           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+#           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+
+
+
 
 
 load("../atac/191119_adipogenesis.Rdata")
@@ -1057,7 +1269,181 @@ print(
 dev.off()
 
 
+
+
+pdf(paste('Clusters_early_TWIST','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions, group = genes, data =
+                plot.df.pTA[plot.df.pTA$cluster == 'cluster3' |
+                           plot.df.pTA$cluster ==  'cluster13' |
+                           plot.df.pTA$cluster ==  'cluster4' |
+                          plot.df.pTA$cluster ==   'cluster25' |
+                        plot.df.pTA$cluster ==     'cluster31' |
+                          plot.df.pTA$cluster ==   'cluster23' |
+                          plot.df.pTA$cluster ==   'cluster7' |
+                          plot.df.pTA$cluster ==   'cluster15' |
+                          plot.df.pTA$cluster ==   'cluster26' |
+                           plot.df.pTA$cluster ==  'cluster42' ,]
+         , type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+#       layout = c(6,13),
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized PRO signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+
+pdf(paste('Clusters_decrease_late_SMYD3','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions, group = genes, data =
+                plot.df.pTA[plot.df.pTA$cluster == 'cluster9' ,]
+         , type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+#       layout = c(6,13),
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized PRO signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ####working ith iGraph
+
+nr3c1.twist2.node = read.table('/Volumes/GUERTIN_2/adipogenesis/atac/NR3C1_RE_to_Twist2_TU.bed')
+re.nodes = paste(paste(nr3c1.twist2.node$V6, nr3c1.twist2.node$V7, sep =':'), nr3c1.twist2.node$V8, sep = '-')
+
+first.cis.wave.edges = data.frame(cbind(re.nodes, as.character(nr3c1.twist2.node$V4)), stringsAsFactors =FALSE)
+
+colnames(first.cis.wave.edges) = c('from', 'to')
+
+#I do not carry over the Twist2 TU in this data frame, so I need to work on
+#how to do this systematically. We can do this manually for now because
+#the set of early modulated TFs that have de novo motifs identified in late response REs is probably very limited
+
+twist2.re.node = read.table('/Volumes/GUERTIN_2/adipogenesis/atac/REs_w_TWIST_motifs_in_dynamic_ATAC_clusters.bed', stringsAsFactors =FALSE)
+tu.nodes = paste(paste(twist2.re.node$V1, twist2.re.node$V2, sep =':'), twist2.re.node$V3, sep = '-')
+
+first.trans.wave.edges = data.frame(cbind('Twist2', tu.nodes), stringsAsFactors =FALSE)
+colnames(first.trans.wave.edges) = c('from', 'to')
+
+
+                                        #next set of cis edges
+
+
+twist2.tus.node = read.table('/Volumes/GUERTIN_2/adipogenesis/atac/decrease_late_TUs_near_REs_w_TWIST.bed')
+
+#I reduced it here to make it visible on the graph
+twist2.tus.node.cluster9 = twist2.tus.node[twist2.tus.node[,4] == 'cluster9',]
+
+tu.nodes.2 = paste(paste(twist2.tus.node.cluster9$V6, twist2.tus.node.cluster9$V7, sep =':'), twist2.tus.node.cluster9$V8, sep = '-')
+
+second.cis.wave.edges = data.frame(cbind(tu.nodes.2, as.character(twist2.tus.node$V4)), stringsAsFactors =FALSE)
+
+colnames(second.cis.wave.edges) = c('from', 'to')
+
+
+
+#full network
+full.network = rbind(first.cis.wave.edges, first.trans.wave.edges, second.cis.wave.edges)
+
+#this list is something I googled for.
+#we want a complete one from TFClass
+list.tfs = read.table('/Volumes/GUERTIN_2/adipogenesis/pro_dREG/list_tfs_putative.txt', sep = '\t')
+
+
+tu.w.cis = second.cis.wave.edges[ toupper(second.cis.wave.edges$to) %in% toupper(list.tfs[,1]) ,]
+
+#further reducing the $ nodes
+
+
+#I want to prune RE leaf nodes
+re.w.cis = first.trans.wave.edges[first.trans.wave.edges$to %in% tu.w.cis$from,]
+
+
+
+
+#includes leaf nodes in final layer only
+reduced.network = rbind(first.cis.wave.edges, re.w.cis, tu.w.cis )
+
+
+library(igraph)
+                                        #create the graph variable
+list.tfs 
+g=graph.data.frame(reduced.network, directed=TRUE)
+
+vec.gene.names = read.table('/Volumes/GUERTIN_2/adipogenesis/primary_transcript_annotation.bed', stringsAsFactors =FALSE)[,4]
+V(g)$type <- ifelse(V(g)$name %in% vec.gene.names, TRUE, FALSE)
+
+
+
+
+
+V(g)$color <- ifelse(V(g)$type, "#73F992", "#FF5AF3")
+V(g)$shape <- ifelse(V(g)$type, "square", "circle")
+E(g)$color <- "gray30"
+V(g)$size <- ifelse(V(g)$type, 16, 7)
+V(g)$label <- ifelse(V(g)$type, V(g)$name, ' ')
+V(g)$label.cex <- 0.75
+
+x = layout_with_sugiyama(g, attributes="all", hgap = 2, vgap = 1,)
+
+pdf(paste('Twist_network','.pdf', sep=''), width=10, height=10, useDingbats=FALSE)
+
+plot(x$extd_graph,  vertex.label.family = "Courier", vertex.label.font= 2, vertex.label.color = "black", edge.arrow.size=1.0)
+
+dev.off()
+
+
+
 threecol=read.csv("fake_network_input.txt",
 header=F,stringsAsFactors = F,sep='\t')
 colnames(threecol)=c('from','to','e_value')
@@ -1077,19 +1463,17 @@ V(g)$type <- ifelse(V(g)$name %in% vec.gene.names, TRUE, FALSE)
 V(g)$color <- ifelse(V(g)$type, "lightblue", "salmon")
 V(g)$shape <- ifelse(V(g)$type, "square", "circle")
 E(g)$color <- "gray30"
-
+V(g)$size <- ifelse(V(g)$type, 20, 10)
 V(g)$label <- ifelse(V(g)$type, V(g)$name, ' ')
-
-#ifelse(iris2$Species=='setosa', 'regular', iris2$Species)
-
 x = layout_with_sugiyama(g, attributes="all")
 
 
 
+pdf(paste('Twist_network','.pdf', sep=''), width=5, height=5)
 
-plot(x$extd_graph, vertex.label.family = "Courier", vertex.label.font= 2, vertex.label.color = "black", vertex.size = 20)
+plot(x$extd_graph, vertex.label.family = "Courier", vertex.label.font= 2, vertex.label.color = "black")
 
-
+dev.off()
 
 
 
