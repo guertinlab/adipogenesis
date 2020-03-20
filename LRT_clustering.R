@@ -196,6 +196,69 @@ print(
 dev.off()
 
 
+pdf(paste('Clusters_21_17_15','.pdf', sep=''), width=3.5, height=3.5, useDingbats =FALSE)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions , group = genes, data =
+                       plot.df[plot.df$cluster == 'cluster21' | 
+    plot.df$cluster == 'cluster17' | 
+    plot.df$cluster == 'cluster15' ,]
+         , type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+pdf(paste('Clusters_3_4','.pdf', sep=''), width=3.5, height=3.5, useDingbats =FALSE)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions , group = genes, data =
+                       plot.df[plot.df$cluster == 'cluster3' | 
+    plot.df$cluster == 'cluster4' ,]
+         , type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
 pdf(paste('Clusters_TWIST_de_novo','.pdf', sep=''), width=3.5, height=3.5)
 
 trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
@@ -291,6 +354,7 @@ range.chr = sapply(strsplit(plot.df$genes, ':'), '[', 2)
 plot.df$start = sapply(strsplit(range.chr, '-'), '[', 1)
 plot.df$end = sapply(strsplit(range.chr, '-'), '[', 2)
 
+write.table(cbind(chr, start, end), file = 'dynamic_peaks.bed', quote = FALSE, sep = '\t', col.names=FALSE, row.names=FALSE)
 
 #I just noticed that I screwed this up, but no big deal because MEME skips the duplicate sequence names
 #I corrected the code here, but this is not what is running in MEME, although the outcome should be identical
@@ -606,13 +670,22 @@ normalized.counts.pro = counts(dds, normalized=TRUE)
 
 res.lrt = results(dds.lrt)
 
-padj.cutoff = 0.00001 #1e-25
+#padj.cutoff = 0.00001 
+padj.cutoff = 1e-40
 
 siglrt.re = res.lrt[res.lrt$padj < padj.cutoff & !is.na(res.lrt$padj),]
 
+                                        #control
+padj.ctrl = 0.01 
+ctrl.re = res.lrt[res.lrt$padj > padj.ctrl & !is.na(res.lrt$padj),]
+
+
 dim(siglrt.re)                                    
 
-
+x = rbind(data.frame(cbind(siglrt.re$baseMean, 'significant')), data.frame(cbind(ctrl.re$baseMean, 'ctrl')))
+x[,1] = as.numeric(as.character(x[,1]))
+x = data.frame(x)
+densityplot(log(x[,1]), groups = y)
 
 rld_mat <- assay(rld)
 cluster_rlog.pTA = rld_mat[rownames(siglrt.re),]
@@ -629,8 +702,9 @@ library(lattice)
 #clusters.all.1e25 <- degPatterns(cluster_rlog.pTA, metadata = meta.pTA, minc = 100, time = "sample.conditions", col=NULL, eachStep = TRUE)
 #save(clusters.all.1e25, 'clusters.all.1e25.Rdata')
 
-                                        #rivanna
-
+  
+clusters.all.1e40 <- degPatterns(cluster_rlog.pTA, metadata = meta.pTA, minc = 10, time = "sample.conditions", col=NULL, eachStep = TRUE)
+save(clusters.all.1e40, file = 'clusters.all.1e40.Rdata')
 #cd /home/mjg7y/pro_pTA
 #sbatch LRT_clustering_pTA.slurm
 #LRT_largemem_clustering_pTA.R
@@ -639,7 +713,7 @@ load('/Volumes/GUERTIN_2/adipogenesis/pro_dREG/191230_clusters.pTA.pro.minc10.pv
 
 #I am losing the strand somewhere I need to to maintain this
 
-plot.df.pTA = clusters.all.1e5$normalized
+plot.df.pTA = clusters.all.1e40$normalized
 
 plot.df.pTA$sample.conditions = as.character(plot.df.pTA$sample.conditions)
 plot.df.pTA$sample.conditions[plot.df.pTA$sample.conditions == '20min'] = 20
@@ -679,7 +753,7 @@ library(data.table)
 plot.df.pTA.cluster = dcast(plot.df.pTA, genes + cluster ~ sample.conditions, value.var="value")
 
 avg.clusters = as.data.frame(matrix(nrow = 0, ncol = 7))
-colnames(y) = colnames(plot.df.pTA.cluster[3:9])
+colnames(avg.clusters) = colnames(plot.df.pTA.cluster[3:9])
 for (i in unique(plot.df.pTA.cluster$cluster)) {
     z = data.frame(matrix(colMeans(plot.df.pTA.cluster[plot.df.pTA.cluster$cluster == i,3:9]), ncol = 7, nrow = 1))
     rownames(z) = c(i)
@@ -692,7 +766,7 @@ dd = dist(avg.clusters)
 hc = hclust(dd, method = "complete")
 
 
-pdf(paste('dendrogram_HC_pTA','.pdf', sep=''), width=8, height=5)
+pdf(paste('dendrogram_HC_pTA_1e40','.pdf', sep=''), width=8, height=5)
 plot(hc, xlab = "Clusters", main = ' ', hang = -1)
 abline(h = 2.1, lty = 2)
 dev.off()
@@ -1213,7 +1287,11 @@ dev.off()
 
 
 
-pdf(paste('Clusters_minc10_1e5_pvalue_pTA','.pdf', sep=''), width=11, height=32)
+
+
+
+
+pdf(paste('Clusters_minc10_1e40_pvalue_pTA','.pdf', sep=''), width=15, height=24)
 
 trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
                 box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
@@ -1222,35 +1300,62 @@ print(
     xyplot(value ~  sample.conditions | cluster, group = genes, data = plot.df.pTA, type = c('l'),#type = c('l','p'),
        scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
        aspect=1.0,
-#       layout = c(6,13),
+       layout = c(8,11),
        between=list(y=0.5, x=0.5),
-#       index.cond=list(
-#           c(10, 12, 24,
-#             6, 39, 1,
-#             15, 14,
-#             27,26, 13, 30 , 23,
-#             21,28, 19,
-#             16,3,20,
-#             22, 2, 9, 11,
-#             33,
-#             38, 34, 4,
-#             25, 35, 17,
-#             29, 5, 31, 7, 36, 8,
-#             18,
-#             37, 32)),
-#       skip = c(F, F, F, T, T, T,
-#                F, F, F, T, T, T,
-#                F, F, T, T, T, T,
-#                F, F, F, F, F, T,
-#                F, F, F, T, T, T,
-#                F, F, F, T, T, T,
-#                F, F, F, F, T, T,
-#                F, T, T, T, T, T,
-#                F, F, F, T, T, T,
-#                F, F, F, T, T, T ,
-#                F, F, F, F, F, F,
-#                F, T, T, T, T, T,
-#               F, F, T, T, T, T),
+       ylab = list(label = 'Normalized PRO signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+
+pdf(paste('Clusters_minc10_1e5_pvalue_pTA','.pdf', sep=''), width=15, height=24)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions | cluster, group = genes, data = plot.df.pTA, type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       layout = c(8,11),
+       between=list(y=0.5, x=0.5),
+       index.cond=list(
+           c(31, 17,
+             33, 32, 2, 15,
+             16, 45, 7, 19, 37,
+             39, 24, 41, 43, 14, 6, 13, 11,
+             10, 20, 36, 35,
+             44, 8, 38, 47, 9, 26, 4,
+             28, 30,
+             23, 5, 34, 18, 25,
+             3, 29, 27, 1, 12,
+             40, 42,
+             21, 46, 22
+             )),
+       skip = c(F, F, T, T, T, T, T, T,
+                F, F, F, F, T, T, T, T,
+                F, F, F, F, F, T, T, T,
+                F, F, F, F, F, F, F, F,
+                F, F, F, F, T, T, T, T,
+                F, F, F, F, F, F, F, T,
+                F, F, T, T, T, T, T, T,
+                F, F, F, F, F, T, T, T,
+                F, F, F, F, F, T, T, T,
+                F, F, T, T, T, T, T, T,
+                F, F, F, T, T, T, T, T),
        ylab = list(label = 'Normalized PRO signal', cex =1.0),
        xlab = list(label = 'Time (minutes)', cex =1.0),
        par.settings = list(superpose.symbol = list(pch = c(16),
@@ -1311,6 +1416,68 @@ print(
 dev.off()
 
 
+
+pdf(paste('Clusters_7_23_pro','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions, group = genes, data =
+                plot.df.pTA[plot.df.pTA$cluster == 'cluster7' |
+                           plot.df.pTA$cluster ==  'cluster23' ,]
+         , type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+#       layout = c(6,13),
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized PRO signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+
+
+pdf(paste('Clusters_9_pro','.pdf', sep=''), width=3.5, height=3.5)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+    xyplot(value ~  sample.conditions, group = genes, data =
+                plot.df.pTA[plot.df.pTA$cluster == 'cluster9' ,]
+         , type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+#       layout = c(6,13),
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized PRO signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
 
 
 pdf(paste('Clusters_decrease_late_SMYD3','.pdf', sep=''), width=3.5, height=3.5)
