@@ -1,0 +1,16 @@
+KLF14
+KLF3
+KLF5
+Sp1
+Ascl2_secondary
+Bcl6b_secondary
+Klf7_primary
+Smad3_secondary
+Zfp410_secondary
+KLF14
+KLF16
+KLF5
+SP1
+SP2
+SP3
+SP8

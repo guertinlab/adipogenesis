@@ -1,0 +1,14 @@
+KLF14
+KLF3
+KLF5
+Maz
+Sp1
+Bcl6b_secondary
+Egr1_primary
+Sp4_primary
+Zfp410_secondary
+KLF14
+KLF5
+SP1
+SP2
+SP3
