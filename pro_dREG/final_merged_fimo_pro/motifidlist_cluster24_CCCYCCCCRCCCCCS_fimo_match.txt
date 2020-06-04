@@ -1,7 +1,0 @@
-Maz
-Ascl2_secondary
-Bcl6b_secondary
-Smad3_secondary
-Zfp410_secondary
-SP1
-SP2
