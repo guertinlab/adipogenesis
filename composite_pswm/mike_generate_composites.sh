@@ -90,9 +90,10 @@ cd ..
 
 
 fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_1/PSWM_family_1_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > AP1_composite_fimo.txt
-fimo --thresh 0.0001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_2/PSWM_family_2_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > GR_family_composite_fimo.txt
+fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_2/PSWM_family_2_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > GR_family_composite_fimo.txt
 fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_3/PSWM_family_3_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > SP_family_composite_fimo.txt
-
+fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_4/PSWM_family_4_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > bHLH_family_composite_fimo.txt
+fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_5/PSWM_family_5_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > TWIST_family_composite_fimo.txt
 
 #this was to get the order of conformity to consensus.
 for i in composite_motifs/PSWM_family_*/PSWM_family_*_meme.txt
