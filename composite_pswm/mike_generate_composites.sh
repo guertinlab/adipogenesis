@@ -89,11 +89,11 @@ done
 cd ..
 
 
-fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_1/PSWM_family_1_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > AP1_composite_fimo.txt
-fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_2/PSWM_family_2_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > GR_family_composite_fimo.txt
-fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_3/PSWM_family_3_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > SP_family_composite_fimo.txt
-fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_4/PSWM_family_4_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > bHLH_family_composite_fimo.txt
-fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_5/PSWM_family_5_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > TWIST_family_composite_fimo.txt
+fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_1/PSWM_family_1_meme.txt /Volumes/GUERTIN_2/adipogenesis/atac/mm10.fa > AP1_family_composite_fimo.txt
+fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_2/PSWM_family_2_meme.txt /Volumes/GUERTIN_2/adipogenesis/atac/mm10.fa > GR_family_composite_fimo.txt
+fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_3/PSWM_family_3_meme.txt /Volumes/GUERTIN_2/adipogenesis/atac/mm10.fa > SP_family_composite_fimo.txt
+fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_4/PSWM_family_4_meme.txt /Volumes/GUERTIN_2/adipogenesis/atac/mm10.fa > bHLH_family_composite_fimo.txt
+fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_5/PSWM_family_5_meme.txt /Volumes/GUERTIN_2/adipogenesis/atac/mm10.fa > TWIST_family_composite_fimo.txt
 
 
 #this takes top 1M
