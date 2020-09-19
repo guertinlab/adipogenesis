@@ -89,12 +89,24 @@ done
 cd ..
 
 
-fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_1/PSWM_family_1_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > AP1_family_composite_fimo.txt
+fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_1/PSWM_family_1_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > AP1_composite_fimo.txt
 fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_2/PSWM_family_2_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > GR_family_composite_fimo.txt
 fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_3/PSWM_family_3_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > SP_family_composite_fimo.txt
 fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_4/PSWM_family_4_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > bHLH_family_composite_fimo.txt
 fimo --thresh 0.001 --text /Users/guertinlab/Desktop/mike_generate_composites/composite_motifs/PSWM_family_5/PSWM_family_5_meme.txt /Users/guertinlab/genomes/hg38/hg38.fa > TWIST_family_composite_fimo.txt
 
+
+#this takes top 1M
+for i in /Users/guertinlab/Desktop/mike_generate_composites/*_family_composite_fimo.txt
+do
+    name=$(echo $i | awk -F"/" '{print $NF}' | awk -F".txt" '{print $1}')
+    echo $name
+    score=$(tail +2 $i | sort -nrk6,6 | awk 'FNR == 1000000 {print $6}')
+    echo $score
+    tail +2 $i | awk -v sco="$score" '{ if ($6 >= sco) { print } }' | awk '{OFS="\t";} {print $2,$3,$4,$7,$6,$5,$8}' > ${name}_1M.txt
+done
+
+    
 #this was to get the order of conformity to consensus.
 for i in composite_motifs/PSWM_family_*/PSWM_family_*_meme.txt
 do
