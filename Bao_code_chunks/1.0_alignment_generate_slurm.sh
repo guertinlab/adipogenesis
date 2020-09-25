@@ -1,6 +1,9 @@
 #!/bin/bash
 
-#require slurm headers
+###generate a unique slurm file for each replicate and run them in parallel
+#header_1 has sbatch settings 
+#header_2 has modules to load
+#header_3 has specific scripts
 for i in *_atac_PE1.fastq.gz
 do
     name=$(echo $i | awk -F"/" '{print $NF}' | awk -F"_atac_PE1.fastq.gz" '{print $1}')
