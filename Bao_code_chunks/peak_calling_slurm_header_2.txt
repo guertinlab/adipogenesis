@@ -1,0 +1,5 @@
+#SBATCH -p standard
+#SBATCH -A guertinlab
+
+module load bioconda/py3.6 gcc/7.1.0 bedtools/2.26.0 samtools/1.10  macs2/2.2.7.1
+source activate myenv 
