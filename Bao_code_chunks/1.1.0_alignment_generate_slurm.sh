@@ -2,7 +2,7 @@
 
 ###align .fastq to 10mm genome
 
-###generate a unique slurm file for each replicate and run them in parallel
+#generate a unique slurm file for each replicate and run them in parallel:
 #header_1   --> sbatch settings
 #temp.txt   --> name of .out file
 #header_2   --> modules to load
