@@ -8,7 +8,7 @@
 module load bioconda/py3.6 gcc/7.1.0 bedtools/2.26.0 samtools/1.10  macs2/2.2.7.1
 source activate myenv 
 
-#Call
+#Call peaks
 echo 'Calling Peaks'
 macs2 callpeak -t *rmdup.bam -f BAMPE -n 3T3_atac --outdir old_peak_calling_macs --keep-dup 50 -q 0.05
 
