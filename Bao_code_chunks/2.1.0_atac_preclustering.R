@@ -6,7 +6,7 @@ source('https://raw.githubusercontent.com/mjg54/znf143_pro_seq_analysis/master/d
 
 directory = '/scratch/bhn9by/ATAC'
 setwd(directory)
-preadipo.file = read.table("old_peak_calling_macs/old_peak_calling_summit_window.bed", header = F, sep = "\t")
+preadipo.file = read.table("/scratch/bhn9by/ATAC/old_peak_calling_macs/old_peak_calling_summit_window.bed", header = F, sep = "\t")
 
 get.raw.counts.interval <- function(df, path.to.bigWig, file.prefix = 'H') {
     df = df[,1:5]
