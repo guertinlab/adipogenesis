@@ -1,6 +1,6 @@
 #!/bin/bash
 
-###perform seqOutBias and convert .bam to .bigwig
+#perform seqOutBias and convert .bam to .bigwig
 
 #generate a unique slurm file for each replicate and run them in parallel:
 #header_1   --> sbatch settings
