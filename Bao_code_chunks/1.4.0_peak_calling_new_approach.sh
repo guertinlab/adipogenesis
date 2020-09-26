@@ -4,7 +4,7 @@
 mkdir 6day
 mv *6d* 6day/
 
-###merge .bam, call peaks, remove blacklisted regions, set summit windows
+#merge .bam, call peaks, remove blacklisted regions, set summit windows
 
 #generate a unique slurm file for each replicate and run them in parallel:
 #header_1   --> sbatch settings
