@@ -1,3 +1,5 @@
+#Rscript should be run in Rivanna cluster due to high memory requirement
+
 library(DESeq2)
 library(DEGreport)
 library(tibble)
