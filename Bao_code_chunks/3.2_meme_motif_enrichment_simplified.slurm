@@ -7,6 +7,7 @@
 
 module load gcc/7.1.0 mvapich2/2.3.1 bedtools/2.26.0 meme/5.1.0
 
+wget https://hgdownload-test.gi.ucsc.edu/goldenPath/mm10/bigZips/mm10.chrom.sizes
 mkdir meme_motif_enrichment
 
 #run MEME on each cluster to find enriched motifs
