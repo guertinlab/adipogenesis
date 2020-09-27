@@ -1,10 +1,10 @@
+cd meme_motif_enrichment
+
 name=$(echo $i | awk -F"_" '{print $NF}' | awk -F".bed" '{print $1}')
 echo $name
 
-cd meme_motif_enrichment
-
 slopBed -i ../$i \
-	-g mm10.chrom.sizes -b -50 | \
+	-g ../mm10.chrom.sizes -b -50 | \
     fastaFromBed -fi /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa -bed stdin \
     		  -fo ${name}.fasta
 head ${name}.fasta
