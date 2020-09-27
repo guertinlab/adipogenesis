@@ -5,7 +5,6 @@ mkdir 6day
 mv *6d* 6day/
 
 #merge .bam, call peaks, remove blacklisted regions, set summit windows
-
 for bam in *rep1_atac_rmdup.bam
 do
     name=$(echo $bam | awk -F"_rep1_atac_rmdup.bam" '{print $1}')
@@ -25,3 +24,6 @@ do
     awk '{OFS="\t";} {print $1,$2-99,$3+100,$4,$5}' ${name}_macs/${name}_summits_bl_removed.bed > \
         ${name}_summit_window.bed
 done
+
+#merge called peaks from individual time points into one file
+cat *_summit_window.bed | sort -k1,1 -k2,2n | awk ' $2 >= 0 ' | mergeBed -i stdin > merged_peaks.bed
