@@ -1,4 +1,4 @@
-#Rscript should be run in Rivanna cluster due to high memory requirement
+#Rscript should be run on Rivanna due to high memory requirement
 
 library(DESeq2)
 library(DEGreport)
