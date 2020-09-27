@@ -7,6 +7,8 @@
 
 module load gcc/7.1.0 mvapich2/2.3.1 bedtools/2.26.0 meme/5.1.0
 
+mkdir meme_motif_enrichment
+
 #run MEME on each cluster to find enriched motifs
 for i in *cluster*bed
 do
