@@ -114,7 +114,7 @@ xyplot(ATAC ~  time, groups = cluster, data = loess.df, type = c('l'),#type = c(
       )
 dev.off()
 
-#dendrogram
+#draw dendrogram
 x = as.data.table(plot.df)
 plot.df.cluster = dcast(x, genes + cluster ~ sample.conditions, value.var="value")
 
@@ -141,7 +141,6 @@ abline(h = 1.38, lty = 2)
 dev.off()
 
 #plot clusters again this time organized by supercluster
-
 df = data.frame(index=1:17,cluster=unique(plot.df$cluster)[order(unique(plot.df$cluster))])
 df$cluster.num = as.integer(sapply(strsplit(df$cluster, 'cluster'), '[', 2))
 df = df[order(df$cluster.num),]
