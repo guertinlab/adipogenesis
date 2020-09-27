@@ -1,3 +1,5 @@
+#prep motifs for running MEME
+
 wget http://meme-suite.org/meme-software/Databases/motifs/motif_databases.12.19.tgz
 tar -xzf motif_databases.12.19.tgz
 #JASPAR
