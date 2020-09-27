@@ -1,4 +1,0 @@
-#!/bin/bash
-
-#merge called peaks from individual time points into one file
-cat *_summit_window.bed | sort -k1,1 -k2,2n | awk ' $2 >= 0 ' | mergeBed -i stdin > merged_peaks.bed
