@@ -8,7 +8,6 @@
 module load genometools/1.5.10 wigtobigwig/2.8 gcc/7.1.0 seqoutbias/1.2.0
 
 #perform seqOutBias and convert .bam to .bigwig
-
 cd /scratch/bhn9by/ATAC
 
 for bam in *rmdup.bam
