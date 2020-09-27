@@ -18,7 +18,7 @@ do
     echo $name
 
     slopBed -i ../$i \
-      -g mm10.chrom.sizes -b -50 | \
+      -g ../mm10.chrom.sizes -b -50 | \
         fastaFromBed -fi /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa -bed stdin \
               -fo ${name}.fasta
     head ${name}.fasta
