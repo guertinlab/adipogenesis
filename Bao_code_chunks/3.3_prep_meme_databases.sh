@@ -1,4 +1,4 @@
-#prep motifs for running MEME
+#prep motifs for running TOMTOM
 
 wget http://meme-suite.org/meme-software/Databases/motifs/motif_databases.12.19.tgz
 tar -xzf motif_databases.12.19.tgz
