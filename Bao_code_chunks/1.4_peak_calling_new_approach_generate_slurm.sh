@@ -21,3 +21,8 @@ do
     cat peak_calling_slurm_header_1.txt temp.txt peak_calling_slurm_header_2.txt temp2.txt peak_calling_slurm_header_3.txt > $name.peak.calling.slurm
     sbatch $name.peak.calling.slurm
 done
+
+#ONLY RUN THIS LINE AFTER ALL SLURMs ARE COMPLETE: 
+#merge called peaks from individual time points into one file
+cat *_summit_window.bed | sort -k1,1 -k2,2n | awk ' $2 >= 0 ' | mergeBed -i stdin > merged_peaks.bed
+
