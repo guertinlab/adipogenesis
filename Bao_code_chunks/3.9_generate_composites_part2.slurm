@@ -5,7 +5,7 @@
 #SBATCH -p standard
 #SBATCH -A guertinlab
 
-#generate composite motif PSWM and corresponding ceqlogo
+#generate final composite motif PSWM and corresponding ceqlogo
 module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 
 cd /scratch/bhn9by/ATAC/composite_motifs
