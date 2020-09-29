@@ -1,4 +1,4 @@
-#Rscript should be run on Rivanna due to high memory requirement
+#Rscript should be run on Rivanna due to high memory requirement; see .slurm
 
 library(DESeq2)
 library(DEGreport)
