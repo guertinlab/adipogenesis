@@ -15,7 +15,7 @@ do
     name=$(echo $bam | awk -F"_atac_rmdup.bam" '{print $1}')
     echo $name
     
-    #if you are running seqOutBias for the first time, the majority will be spent generating the tallymer mappability files
+    #if you are running seqOutBias for the first time, the majority will be spent generating the tallymer mappability file
     seqOutBias /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa \
          $bam --skip-bed --no-scale --bw=${name}.bigWig --only-paired --shift-counts --read-size=38
 done
