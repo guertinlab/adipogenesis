@@ -7,6 +7,7 @@ mv motif_databases/MOUSE/uniprobe_mouse.meme $PWD
 
 #Homer
 #CAUTION: the HOMER_MEME_conversion.py will not work as downloaded because it was written for Python2
+#The corrected version of this file is available in misc_scripts directory
 wget https://raw.githubusercontent.com/mjg54/znf143_pro_seq_analysis/master/docs/HOMER_MEME_conversion.py
 wget http://homer.ucsd.edu/homer/custom.motifs
 python HOMER_MEME_conversion.py -i custom.motifs -o homer.motifs
