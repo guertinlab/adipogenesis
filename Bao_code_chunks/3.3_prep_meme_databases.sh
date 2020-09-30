@@ -1,5 +1,3 @@
-#prep motifs for running TOMTOM
-
 wget http://meme-suite.org/meme-software/Databases/motifs/motif_databases.12.19.tgz
 tar -xzf motif_databases.12.19.tgz
 #JASPAR
@@ -8,6 +6,7 @@ mv motif_databases/JASPAR/JASPAR2018_CORE_vertebrates_non-redundant.meme $PWD
 mv motif_databases/MOUSE/uniprobe_mouse.meme $PWD
 
 #Homer
+#CAUTION: the HOMER_MEME_conversion.py will not work as downloaded because it was written for Python2
 wget https://raw.githubusercontent.com/mjg54/znf143_pro_seq_analysis/master/docs/HOMER_MEME_conversion.py
 wget http://homer.ucsd.edu/homer/custom.motifs
 python HOMER_MEME_conversion.py -i custom.motifs -o homer.motifs
@@ -24,6 +23,7 @@ do
 done
 rm motifs.txt
 
+#edit databases to work with tomtom
 cp uniprobe_mouse.meme uniprobe_edited_meme.txt
 grep MOTIF uniprobe_edited_meme.txt > motifs.txt
 cat motifs.txt | while read motif
@@ -38,6 +38,7 @@ sed -i -e '4210,8365d;' uniprobe_edited_meme.txt
 
 rm motifs.txt
 
+#edit databases to work with tomtom
 cp homer.motifs_meme.txt homer_edited_meme.txt
 grep MOTIF homer_edited_meme.txt > motifs.txt
 cat motifs.txt | while read motif
