@@ -49,7 +49,7 @@ rld = rlog(dds, blind=TRUE)
 x = plotPCA(rld, intgroup="sample.conditions", returnData=TRUE)
 plotPCAlattice(x, file = 'PCA_atac.pdf')
 
-#clustering
+
 dds.lrt = DESeq(dds, test="LRT", reduced = ~ 1)
 
 res.lrt = results(dds.lrt)
