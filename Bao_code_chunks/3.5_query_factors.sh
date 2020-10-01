@@ -1,14 +1,6 @@
 #!/bin/bash
-#SBATCH -n 1
-#SBATCH -t 96:00:00
-#SBATCH -o motif.families.out
-#SBATCH -p standard
-#SBATCH -A guertinlab
-
-module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 
 #extract individual meme files from combined database
-
 mkdir individual_memes
 cd individual_memes
 
@@ -38,6 +30,6 @@ rm Ptf1a_homer_meme.txt
 #remove Tal1:Tcf3 motif b/c motif doesn't make biological sense - looks like neither Tal1 nor Tcf3
 rm TAL1::TCF3_jaspar_meme.txt
 #remove ZNF740 motif
-ZNF740_jaspar.bed
+rm ZNF740_jaspar_meme.txt
 
 cat *meme.txt > ../all_query_factors_meme.txt
