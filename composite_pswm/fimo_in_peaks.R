@@ -940,3 +940,367 @@ ceqlogo -i bHLH_activated.txt -m bHLH_activated -o bHLH_activated.eps
 ceqlogo -i bHLH_repressed.txt -m bHLH_repressed -o bHLH_repressed.eps
 ceqlogo -i KLF_activated.txt -m KLF_activated -o KLF_activated.eps
 ceqlogo -i KLF_repressed.txt -m KLF_repressed -o KLF_repressed.eps
+
+
+#barcharts with bigger text
+#red #ff6a6a blue #1e90ff
+#barchart df
+
+bar.chart = as.data.frame(matrix(ncol=3, nrow=0),stringsAsFactors = FALSE)
+colnames(bar.chart) = c('motif', 'p_n', 'status')
+
+
+bar.chart[1, 'p_n'] = sum(plot.df.atac$SP & plot.df.atac$status == 'Activated')/7
+bar.chart[2, 'p_n'] = sum(plot.df.atac$SP & plot.df.atac$status == 'Repressed')/7
+
+bar.chart[3, 'p_n'] = sum(plot.df.atac$AP1 & plot.df.atac$status == 'Activated')/7
+bar.chart[4, 'p_n'] = sum(plot.df.atac$AP1 & plot.df.atac$status == 'Repressed')/7
+
+bar.chart[5, 'p_n'] = sum(plot.df.atac$GR & plot.df.atac$status == 'Activated')/7
+bar.chart[6, 'p_n'] = sum(plot.df.atac$GR & plot.df.atac$status == 'Repressed')/7
+
+bar.chart[7, 'p_n'] = sum(plot.df.atac$TWIST & plot.df.atac$status == 'Activated')/7
+bar.chart[8, 'p_n'] = sum(plot.df.atac$TWIST & plot.df.atac$status == 'Repressed')/7
+
+bar.chart[9, 'p_n'] = sum(plot.df.atac$bHLH & plot.df.atac$status == 'Activated')/7 
+bar.chart[10, 'p_n'] = sum(plot.df.atac$bHLH & plot.df.atac$status == 'Repressed')/7
+
+
+
+bar.chart[1, 'motif'] = 'SP/KLF'
+bar.chart[2, 'motif'] = 'SP/KLF'
+
+bar.chart[3, 'motif'] = 'AP1'
+bar.chart[4, 'motif'] = 'AP1'
+
+bar.chart[5, 'motif'] = 'GR'
+bar.chart[6, 'motif'] = 'GR'
+
+bar.chart[7, 'motif'] = 'TWIST'
+bar.chart[8, 'motif'] = 'TWIST'
+
+bar.chart[9, 'motif'] = 'bHLH'
+bar.chart[10, 'motif'] = 'bHLH'
+
+
+
+
+bar.chart[seq(1,9,2), 'status'] = 'Activated'
+bar.chart[seq(2,10,2), 'status'] = 'Repressed'
+
+
+library(grid)
+pdf(paste("peaks_classification.pdf",sep=''), width=4, height=3.5)
+grid.newpage()
+playout = grid.layout(1,1, widths=unit(c(4),c("inches")),heights=unit(c(3.5),c("inches")),respect = matrix(data=1, nrow=1, ncol=1))
+pushViewport(viewport(layout=playout))
+pushViewport(viewport(layout.pos.col=1, layout.pos.row=1))
+seqchart <- barchart(p_n~factor(bar.chart$motif,
+                                      levels = c('AP1', 'GR', 'SP/KLF', 'bHLH', 'TWIST'), ordered = TRUE),
+                     groups=factor(bar.chart$status, levels = c('Repressed', 'Activated'), ordered = TRUE),
+                     data = bar.chart,
+                     stack=TRUE,
+                     ylim = c(0,13000),
+                     col = c('#1e90ff',  '#ff6a6a'),
+                     as.table=TRUE, box.ratio = 10,
+                     ylab = "Dynamic ATAC Peaks",
+#                     auto.key = list(space = "bottom"),
+                     between = list(x = 0.5, y=0.5),
+                     scales=list(x=list(rot=45)),
+                     panel=function(x,y,...){
+                         panel.barchart(x,y,...)
+                         panel.text(x,y, label = y,cex=.8)
+                     }
+           )
+print(seqchart, newpage=F)
+upViewport()
+popViewport()
+
+dev.off()
+
+
+
+
+
+get.enriched.from.categories <- function(category.peaks) {
+  query.file = category.peaks[!duplicated(category.peaks$genes),]
+  barchart.input = data.frame(matrix(NA, ncol= 4, nrow = 0))
+  for (i in 17:21) {
+    motif = colnames(query.file)[i]
+    print(motif)
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Activated' & query.file$TWIST == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Activated' & query.file$TWIST == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Activated', motif, 'With', 'TWIST'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Activated', motif, 'Without', 'TWIST'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$TWIST == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$TWIST == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Repressed', motif, 'With', 'TWIST'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Repressed', motif, 'Without', 'TWIST'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Activated' & query.file$bHLH == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Activated' & query.file$bHLH == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Activated', motif, 'With', 'bHLH'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Activated', motif, 'Without', 'bHLH'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$bHLH == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$bHLH == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Repressed', motif, 'With', 'bHLH'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Repressed', motif, 'Without', 'bHLH'), ncol=5))
+
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Activated' & query.file$SP == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Activated' & query.file$SP == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Activated', motif, 'With', 'SP'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Activated', motif, 'Without', 'SP'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$SP == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$SP == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Repressed', motif, 'With', 'SP'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Repressed', motif, 'Without', 'SP'), ncol=5))
+
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Activated' & query.file$AP1 == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Activated' & query.file$AP1 == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Activated', motif, 'With', 'AP1'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Activated', motif, 'Without', 'AP1'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$AP1 == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$AP1 == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Repressed', motif, 'With', 'AP1'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Repressed', motif, 'Without', 'AP1'), ncol=5))
+
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Activated' & query.file$GR == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Activated' & query.file$GR == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Activated', motif, 'With', 'GR'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Activated', motif, 'Without', 'GR'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$GR == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$GR == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Repressed', motif, 'With', 'GR'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Repressed', motif, 'Without', 'GR'), ncol=5))
+
+  }
+  colnames(barchart.input) = c('num', 'p_n', 'motif', 'fraction', 'factor')
+  barchart.input = barchart.input[barchart.input$num != 0 & barchart.input$num != 1,]
+  return(barchart.input)
+}
+
+tst = get.enriched.from.categories(plot.df.atac)
+
+trellis.par.set(superpose.line = list(col=c('#ff6a6a','#1e90ff'), lwd = 2),
+                superpose.symbol = list(col=c('#ff6a6a','#1e90ff'), cex = 1.3, pch = 20),
+                reference.line = list(col = "gray", lty ="dotted"))
+
+
+
+
+pdf(paste("modifier_TWIST.pdf",sep=''), width=6, height=3)
+grid.newpage()
+playout = grid.layout(1,1, widths=unit(c(6),c("inches")),heights=unit(c(3),c("inches")),respect = matrix(data=1, nrow=1, ncol=1))
+pushViewport(viewport(layout=playout))
+pushViewport(viewport(layout.pos.col=1, layout.pos.row=1))
+seqchart <- barchart(as.numeric(as.character(num))~factor(factor,
+               levels = c('AP1', 'GR', 'SP', 'bHLH', 'TWIST'), ordered = TRUE) | factor(motif, levels = c('AP1', 'GR', 'SP', 'bHLH', 'TWIST'), ordered = TRUE),
+              data = tst[ tst$fraction == 'With',], groups=p_n,#[tst$factor == 'TWIST' & tst$fraction == 'With',]
+                     horizontal = FALSE,
+                     scales=list(x=list(cex=0.7, rot = 45), y = list(cex=0.7, relation="free", axs = 'i')),
+                     par.settings=list(superpose.polygon=list(col=c('#ff6a6a','#1e90ff'))),
+                     stack=FALSE,drop.unused.levels = TRUE,
+par.strip.text=list(cex=0.7),              aspect = 1.2, 
+                     box.ratio = 3,
+               auto.key = list(points=FALSE,rectangles=TRUE,columns=1),
+#               index.cond=list(c(4,5,3,1,2)),
+       ylim = list(c(0.0, 0.70), c(0.0, 0.25),  c(0.0, 0.37), c(0, 0.5),  c(0.0, 0.70)),
+                     ylab = "Fraction of Peaks Containing Motif",
+                 between = list(x = 0.5, y=0.5),
+     strip = function(..., which.panel, bg) {
+                bg.col = c('gray80')
+                strip.default(...,  which.panel = which.panel, bg = rep(bg.col, length = which.panel)[which.panel])
+     },
+     panel=function(x,y,...){
+         panel.barchart(x,y,...)
+                     }
+     )
+
+print(seqchart, newpage=F)
+upViewport()
+popViewport()
+
+dev.off()
+
+
+
+
+#sp klf
+
+
+
+get.enriched.from.categories.2 <- function(category.peaks) {
+  query.file = category.peaks[!duplicated(category.peaks$genes),]
+  barchart.input = data.frame(matrix(NA, ncol= 4, nrow = 0))
+  for (i in 25:26) {
+    motif = colnames(query.file)[i]
+    print(motif)
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Activated' & query.file$TWIST == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Activated' & query.file$TWIST == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Activated', motif, 'With', 'TWIST'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Activated', motif, 'Without', 'TWIST'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$TWIST == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$TWIST == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Repressed', motif, 'With', 'TWIST'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Repressed', motif, 'Without', 'TWIST'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Activated' & query.file$bHLH == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Activated' & query.file$bHLH == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Activated', motif, 'With', 'bHLH'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Activated', motif, 'Without', 'bHLH'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$bHLH == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$bHLH == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Repressed', motif, 'With', 'bHLH'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Repressed', motif, 'Without', 'bHLH'), ncol=5))
+
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Activated' & query.file$SP_alone_T == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Activated' & query.file$SP_alone_T == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Activated', motif, 'With', 'SP_alone_T'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Activated', motif, 'Without', 'SP_alone_T'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$SP_alone_T == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$SP_alone_T == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Repressed', motif, 'With', 'SP_alone_T'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Repressed', motif, 'Without', 'SP_alone_T'), ncol=5))
+
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Activated' & query.file$KLF_alone_T == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Activated' & query.file$KLF_alone_T == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Activated', motif, 'With', 'KLF_alone_T'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Activated', motif, 'Without', 'KLF_alone_T'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$KLF_alone_T == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$KLF_alone_T == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Repressed', motif, 'With', 'KLF_alone_T'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Repressed', motif, 'Without', 'KLF_alone_T'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Activated' & query.file$AP1 == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Activated' & query.file$AP1 == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Activated', motif, 'With', 'AP1'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Activated', motif, 'Without', 'AP1'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$AP1 == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$AP1 == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Repressed', motif, 'With', 'AP1'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Repressed', motif, 'Without', 'AP1'), ncol=5))
+
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Activated' & query.file$GR == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Activated' & query.file$GR == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Activated', motif, 'With', 'GR'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Activated', motif, 'Without', 'GR'), ncol=5))
+    
+    num.idx.en = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$GR == TRUE)
+    num.idx.wo = sum(query.file[,i] & query.file$status == 'Repressed' & query.file$GR == FALSE)
+    sm = as.numeric(num.idx.en) + as.numeric(num.idx.wo)
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.en/sm), 'Repressed', motif, 'With', 'GR'), ncol=5))
+    barchart.input = rbind(barchart.input, matrix(c((num.idx.wo/sm), 'Repressed', motif, 'Without', 'GR'), ncol=5))
+
+  }
+  colnames(barchart.input) = c('num', 'p_n', 'motif', 'fraction', 'factor')
+  barchart.input = barchart.input[barchart.input$num != 0 & barchart.input$num != 1,]
+  return(barchart.input)
+}
+
+tst2 = get.enriched.from.categories.2(plot.df.atac)
+
+
+
+
+
+pdf(paste("modifier_TWIST2.pdf",sep=''), width=6, height=3)
+grid.newpage()
+playout = grid.layout(1,1, widths=unit(c(6),c("inches")),heights=unit(c(3),c("inches")),respect = matrix(data=1, nrow=1, ncol=1))
+pushViewport(viewport(layout=playout))
+pushViewport(viewport(layout.pos.col=1, layout.pos.row=1))
+seqchart <- barchart(as.numeric(as.character(num))~ factor(factor) | factor(motif),
+              data = tst2[ tst2$fraction == 'With',], groups=p_n,#[tst$factor == 'TWIST' & tst$fraction == 'With',]
+                     horizontal = FALSE,
+                     scales=list(x=list(cex=0.7, rot = 45), y = list(cex=0.7, relation="free", axs = 'i')),
+                     par.settings=list(superpose.polygon=list(col=c('#ff6a6a','#1e90ff'))),
+                     stack=FALSE,drop.unused.levels = TRUE,
+par.strip.text=list(cex=0.7),              aspect = 1.2, 
+                     box.ratio = 3,
+               auto.key = list(points=FALSE,rectangles=TRUE,columns=1),
+#               index.cond=list(c(4,5,3,1,2)),
+#       ylim = list(c(0.0, 0.70), c(0.0, 0.25),  c(0.0, 0.37), c(0, 0.5),  c(0.0, 0.70)),
+                     ylab = "Fraction of Peaks Containing Motif",
+                 between = list(x = 0.5, y=0.5),
+     strip = function(..., which.panel, bg) {
+                bg.col = c('gray80')
+                strip.default(...,  which.panel = which.panel, bg = rep(bg.col, length = which.panel)[which.panel])
+     },
+     panel=function(x,y,...){
+         panel.barchart(x,y,...)
+                     }
+     )
+
+print(seqchart, newpage=F)
+upViewport()
+popViewport()
+
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+library(latticeExtra)
+
+seqchart.twist <- barchart(as.numeric(as.character(num))~factor(factor,
+               levels = c('AP1', 'GR', 'SP', 'bHLH', 'TWIST'), ordered = TRUE) | motif,
+              data = tst[tst$motif == 'TWIST'& tst$fraction == 'With',], groups=p_n) 
+
+seqchart.ap1 <- barchart(as.numeric(as.character(num))~factor(factor,
+               levels = c('AP1', 'GR', 'SP', 'bHLH', 'TWIST'), ordered = TRUE) | motif,
+              data = tst[tst$motif == 'AP1'& tst$fraction == 'With',], groups=p_n) 
+
+
+pls <- c(seqchart.twist, seqchart.ap1)
+pls <- update(pls, scales=list(y="free"))
+pls
+
+
