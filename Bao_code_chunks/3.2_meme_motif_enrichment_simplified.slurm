@@ -1,8 +1,9 @@
 #!/bin/bash
-#SBATCH -n 1
+#SBATCH -n 60
+#SBATCH --mem-per-cpu=2000
 #SBATCH -t 96:00:00
 #SBATCH -o meme.enrichment.out
-#SBATCH -p largemem
+#SBATCH -p parallel
 #SBATCH -A guertinlab
 
 module load gcc/7.1.0 mvapich2/2.3.1 bedtools/2.26.0 meme/5.1.0
