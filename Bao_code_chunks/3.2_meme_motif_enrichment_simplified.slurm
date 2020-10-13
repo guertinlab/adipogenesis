@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -n 60
 #SBATCH --mem-per-cpu=2000
-#SBATCH -t 96:00:00
+#SBATCH -t 72:00:00
 #SBATCH -o meme.enrichment.out
 #SBATCH -p parallel
 #SBATCH -A guertinlab
