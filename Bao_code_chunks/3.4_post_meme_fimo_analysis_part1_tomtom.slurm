@@ -19,8 +19,8 @@ for i in ../meme_motif_enrichment/*output
 do
     name=$(echo $i | awk -F"/" '{print $NF}' | awk -F".meme" '{print $1}')
     echo $name
-    tomtom -no-ssc -o $name.tomtom_output -verbosity 1 -min-overlap 5 -mi 1 -dist ed -evalue -thresh 0.05 $i/meme.txt ../homer_uniprobe_jaspar_edited.txt
-    tomtom -no-ssc -o $name.tomtom_output -verbosity 1 -min-overlap 5 -mi 1 -dist ed -text -evalue -thresh 0.05 $i/meme.txt ../homer_uniprobe_jaspar_edited.txt > $name.tomtom_output/tomtom.txt
+    tomtom -no-ssc -o $name.tomtom_output -verbosity 1 -min-overlap 5 -mi 15 -dist ed -evalue -thresh 0.05 $i/meme.txt ../homer_uniprobe_jaspar_edited.txt
+    tomtom -no-ssc -o $name.tomtom_output -verbosity 1 -min-overlap 5 -mi 15 -dist ed -text -evalue -thresh 0.05 $i/meme.txt ../homer_uniprobe_jaspar_edited.txt > $name.tomtom_output/tomtom.txt
 done
 
 cd ..
