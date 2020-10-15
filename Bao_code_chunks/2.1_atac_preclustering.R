@@ -2,6 +2,7 @@ library(bigWig)
 library(DESeq2)
 library(lattice)
 library(DEGreport)
+source('https://raw.githubusercontent.com/mjg54/znf143_pro_seq_analysis/master/docs/ZNF143_functions.R')
 
 directory = '/scratch/bhn9by/ATAC'
 setwd(directory)
