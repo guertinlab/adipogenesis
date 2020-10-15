@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -n 60
-#SBATCH --mem-per-cpu=2000
+#SBATCH --mem-per-cpu=6000
 #SBATCH -t 72:00:00
 #SBATCH -o meme.enrichment.out
 #SBATCH -p parallel
