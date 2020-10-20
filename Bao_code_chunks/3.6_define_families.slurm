@@ -23,3 +23,4 @@ done
 grep -v '#' 3_col_combined_motif_db_pre.txt > 3_col_combined_motif_db.txt
 rm 3_col_combined_motif_db_pre.txt
 cp 3_col_combined_motif_db.txt ..
+cd ..
