@@ -1,3 +1,11 @@
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 96:00:00
+#SBATCH -o motif.clustering.spklf.out
+#SBATCH -p largemem
+#SBATCH -A guertinlab
+
+module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 cd /scratch/bhn9by/ATAC/composite_motifs
 
 #split SP/KLF
