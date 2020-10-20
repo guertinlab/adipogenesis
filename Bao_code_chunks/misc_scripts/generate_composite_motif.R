@@ -1,13 +1,8 @@
 Args=commandArgs(TRUE)
 arg.family = Args[1]
 
-dir='C:/School/UVA/Research_Main/Adipogenesis/composite_motifs/'
+dir='/scratch/bhn9by/ATAC/composite_motifs/'
 setwd(paste0(dir,arg.family))
-
-setwd("C:/School/UVA/Research_Main/Adipogenesis/composite_motifs/PSWM_family_1/")
-setwd("C:/School/UVA/Research_Main/Adipogenesis/composite_motifs/PSWM_family_2/")
-setwd("C:/School/UVA/Research_Main/Adipogenesis/composite_motifs/PSWM_family_3/")
-setwd("C:/School/UVA/Research_Main/Adipogenesis/composite_motifs/PSWM_family_4/")
 
 #read in values object
 values = read.table('composite.values.txt',sep='\t')
@@ -103,11 +98,6 @@ composite[,4] = med.t
 #some rows don't add up to 1 so normalize to row sum (?)
 composite = composite/rowSums(composite)
 composite = na.omit(composite)
-
-write.table(composite, file = "PSWM_family_1_meme.txt", sep='\t' ,row.names = F, col.names = F, quote = F)
-write.table(composite, file = "PSWM_family_2_meme.txt", sep='\t' ,row.names = F, col.names = F, quote = F)
-write.table(composite, file = "PSWM_family_3_meme.txt", sep='\t' ,row.names = F, col.names = F, quote = F)
-write.table(composite, file = "PSWM_family_4_meme.txt", sep='\t' ,row.names = F, col.names = F, quote = F)
 
 write.table(composite, file = paste0(dir,arg.family,'/',arg.family,'_composite_PSWM.txt'), sep='\t' ,row.names = F, col.names = F, quote = F)
 
