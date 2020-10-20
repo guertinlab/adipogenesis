@@ -1,6 +1,7 @@
 #!/bin/bash
 
 #pulls each de novo motif from all the clusters and saves each as its own file
+
 #NOTE: This wget doesn't work and the code you get is also not up-to-date with python3
 #wget https://github.com/guertinlab/adipogenesis/blob/2fdf0bbab4fe6f368f5a60e42f7899b6570ff71c/motif_analysis/MEME_individual_from_db.py
 
