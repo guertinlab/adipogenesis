@@ -7,9 +7,6 @@
 
 module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 
-#pulls each de novo motif from all the clusters and saves each as its own file
-wget https://github.com/guertinlab/adipogenesis/blob/2fdf0bbab4fe6f368f5a60e42f7899b6570ff71c/motif_analysis/MEME_individual_from_db.py
-
 #run tomtom on meme output
 mkdir tomtom
 cd tomtom
