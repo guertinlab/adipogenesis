@@ -41,10 +41,10 @@ cat ../sp.txt | { while read line
 	echo FINAL_QUERY IS $final_query
 	wc -l ${final_query}.tomtom_output/tomtom.tsv
 	cd ${final_query}.tomtom_output
-	python2.7 ../../../tomtom_output_to_composite.py -i tomtom.xml
+	python2.7 ../../tomtom_output_to_composite.py -i tomtom.xml
 	mv tomtom.xml_test_index_pswm.txt ../composite.values.txt
 	mv tomtom.xml_test_index_rc_offset.txt ../composite.index.txt
-	cd ../..
+	cd ..
 }
 
 module purge
