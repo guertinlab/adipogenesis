@@ -6,7 +6,7 @@
 #SBATCH -A guertinlab
 
 module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
-cd /scratch/bhn9by/ATAC/composite_motifs
+cd /scratch/bhn9by/ATAC/
 
 #split SP/KLF
 rm klf.txt
