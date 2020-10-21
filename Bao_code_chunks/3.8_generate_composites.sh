@@ -7,6 +7,7 @@ cd /scratch/bhn9by/ATAC
 mkdir composite_motifs
 cd composite_motifs
 
+#query tomtom for each factor against all others
 for txt in ../PSWM_family*.txt
 do
 
@@ -65,6 +66,8 @@ do
 
     if [[ $num -ge 2 ]]
     then
+    
+    #generate composite PSWM
     module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
     Rscript ../../generate_composite_motif.R $family
     cat ../../meme_header.txt ${family}_composite_PSWM.txt > ${family}_meme.txt	
@@ -74,9 +77,13 @@ do
     #sed command written for OS-X, not LINUX
     sed -i "s;${line};MOTIF   Composite;g" ${family}_meme.txt
     fi
+    
+    #generate logo
     module load gcc/7.1.0 meme/4.10.2
     ceqlogo -i ${family}_meme.txt -m Composite -o ${family}.eps
+    convert -density 300 ${family}.eps ${family}.png
     ceqlogo -i ${family}_meme.txt -m Composite -o ${family}.rc.eps -r
+    convert -density 300 ${family}.rc.eps ${family}.rc.png
     cd ..
     
 done
