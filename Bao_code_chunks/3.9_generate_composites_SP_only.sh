@@ -17,7 +17,7 @@ cd SP_composite
 cat ../sp.txt | while read line
 do
     echo $line
-    cp ../../individual_memes/${line}_meme.txt $PWD
+    cp ../individual_memes/${line}_meme.txt $PWD
 done
 
 #query tomtom for each factor against all others
