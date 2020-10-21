@@ -68,13 +68,13 @@ do
 
     if [[ $num -ge 2 ]]
     then
-	Rscript ../../generate_composite_motif.R $family
-	cat ../../meme_header.txt ${family}_composite_PSWM.txt > ${family}_meme.txt	
+    Rscript ../../generate_composite_motif.R $family
+    cat ../../meme_header.txt ${family}_composite_PSWM.txt > ${family}_meme.txt	
     else
-	line=`grep MOTIF *meme.txt`
-	cp *meme.txt ${family}_meme.txt
-	#sed command written for OS-X, not LINUX
-	sed -i '' "s;${line};MOTIF   Composite;g" ${family}_meme.txt
+    line=`grep MOTIF *meme.txt`
+    cp *meme.txt ${family}_meme.txt
+    #sed command written for OS-X, not LINUX
+    sed -i '' "s;${line};MOTIF   Composite;g" ${family}_meme.txt
     fi
     ceqlogo -i ${family}_meme.txt -m Composite -o ${family}.eps
     ceqlogo -i ${family}_meme.txt -m Composite -o ${family}.rc.eps -r
