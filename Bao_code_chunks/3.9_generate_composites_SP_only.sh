@@ -29,7 +29,7 @@ do
     mv ${query_factor}_meme.txt ..
     cat *_meme.txt > ref_factors_meme.txt
     mv ../${query_factor}_meme.txt $PWD
-    tomtom -no-ssc -o ${query_factor}.tomtom_output -verbosity 1 -incomplete-scores -min-overlap 1 -dist ed -evalue -thresh 0.005 ${query_factor}_meme.txt ref_factors_meme.txt
+    tomtom -no-ssc -o ${query_factor}.tomtom_output -verbosity 1 -incomplete-scores -min-overlap 1 -dist ed -evalue -thresh 0.05 ${query_factor}_meme.txt ref_factors_meme.txt
 
     if [[ $(wc -l < ${query_factor}.tomtom_output/tomtom.tsv) -ge $max_motif ]]
     then
@@ -51,7 +51,7 @@ module purge
 
 #generate composite PSWM
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
-Rscript ../generate_composite_motif_SPKLF.R SP
+Rscript ../generate_composite_motif_SPKLF.R SP_composite
 cat ../meme_header.txt SP_composite_PSWM.txt > SP_meme.txt
 
 #generate logo
