@@ -81,9 +81,7 @@ do
     #generate logo
     module load gcc/7.1.0 meme/4.10.2
     ceqlogo -i ${family}_meme.txt -m Composite -o ${family}.eps
-    convert -density 300 ${family}.eps ${family}.png
     ceqlogo -i ${family}_meme.txt -m Composite -o ${family}.rc.eps -r
-    convert -density 300 ${family}.rc.eps ${family}.rc.png
     cd ..
     
 done
