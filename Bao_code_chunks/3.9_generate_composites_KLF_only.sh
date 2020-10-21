@@ -51,12 +51,14 @@ module purge
 
 #generate composite PSWM
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
-Rscript ../generate_composite_motif.R KLF
+Rscript ../generate_composite_motif_SPKLF.R KLF_composite
 cat ../meme_header.txt KLF_composite_PSWM.txt > KLF_meme.txt
 
 #generate logo
 module load gcc/7.1.0 meme/4.10.2
 ceqlogo -i KLF_meme.txt -m Composite -o KLF.eps
+convert -density 300 KLF.eps KLF.png
 ceqlogo -i KLF_meme.txt -m Composite -o KLF.rc.eps -r
+convert -density 300 KLF.rc.eps KLF.rc.png
 
 cd ..
