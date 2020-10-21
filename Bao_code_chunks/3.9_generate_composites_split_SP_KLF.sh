@@ -14,6 +14,7 @@ rm sp.txt
 rm -r SP_composite
 rm -r KLF_composite
 
+#Change family number to match SP_KLF
 grep Klf PSWM_family_3.txt > klf.txt
 grep KLF PSWM_family_3.txt >> klf.txt
 
