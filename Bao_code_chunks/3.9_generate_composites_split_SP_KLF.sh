@@ -1,11 +1,5 @@
 #!/bin/bash
-#SBATCH -n 1
-#SBATCH -t 96:00:00
-#SBATCH -o motif.clustering.spklf.out
-#SBATCH -p largemem
-#SBATCH -A guertinlab
 
-module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 cd /scratch/bhn9by/ATAC/
 
 #split SP/KLF
@@ -21,6 +15,7 @@ grep KLF PSWM_family_4.txt >> klf.txt
 grep Sp PSWM_family_4.txt > sp.txt
 grep SP PSWM_family_4.txt >> sp.txt
 
+#generate composite for SP only
 mkdir SP_composite
 cd SP_composite
 
@@ -30,8 +25,8 @@ do
     cp ../../individual_memes/${line}_meme.txt $PWD
 done
 
-echo ''
-    
+#query tomtom for each factor against all others
+module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 cat ../sp.txt | { while read line
 	do
 	    query_factor=$line
@@ -69,6 +64,7 @@ ceqlogo -i SP_meme.txt -m Composite -o SP.rc.eps -r
 
 cd ..
 
+#generate composite for KLF only
 mkdir KLF_composite
 cd KLF_composite
 
@@ -78,8 +74,8 @@ do
     cp ../../individual_memes/${line}_meme.txt $PWD
 done
 
-echo ''
-    
+#query tomtom for each factor against all others
+module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 cat ../klf.txt | { while read line
 	do
 	    query_factor=$line
