@@ -17,7 +17,7 @@ cd KLF_composite
 cat ../klf.txt | while read line
 do
     echo $line
-    cp ../../individual_memes/${line}_meme.txt $PWD
+    cp ../individual_memes/${line}_meme.txt $PWD
 done
 
 #query tomtom for each factor against all others
@@ -46,6 +46,8 @@ cat ../klf.txt | { while read line
 	mv tomtom.xml_test_index_rc_offset.txt ../composite.index.txt
 	cd ../..
 }
+
+module purge
 
 #generate composite PSWM
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
