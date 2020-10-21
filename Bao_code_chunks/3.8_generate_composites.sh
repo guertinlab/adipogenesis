@@ -1,9 +1,4 @@
 #!/bin/bash
-#SBATCH -n 1
-#SBATCH -t 96:00:00
-#SBATCH -o motif.clustering.out
-#SBATCH -p standard
-#SBATCH -A guertinlab
 
 module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 
