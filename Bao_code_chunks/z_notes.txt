@@ -1,1 +1,2 @@
-no problem
+Why is -min-overlap 0 ???????
+meme doesn't generate .html for cluster 1 plus probably missing motif(s) because takes too long to run
