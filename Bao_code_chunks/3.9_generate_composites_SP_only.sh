@@ -51,7 +51,7 @@ module purge
 
 #generate composite PSWM
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
-Rscript ../generate_composite_motif.R SP
+Rscript ../generate_composite_motif_SPKLF.R SP
 cat ../meme_header.txt SP_composite_PSWM.txt > SP_meme.txt
 
 #generate logo
