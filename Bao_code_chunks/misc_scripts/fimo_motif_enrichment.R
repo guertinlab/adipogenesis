@@ -39,7 +39,7 @@ sig.clusters = c()
 for (cluster in colnames(result)) {
     small.table = result[,c(cluster,'nondynamic')]
     output = chisq.test(small.table)
-    if (output$p.value < 0.01) {
+    if (output$p.value < 0.1) {
         
         change = ''
         if (small.table[1,2] < small.table[1,1]) {
