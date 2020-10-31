@@ -39,6 +39,7 @@ sig.clusters = c()
 for (cluster in colnames(result)) {
     small.table = result[,c(cluster,'nondynamic')]
     output = chisq.test(small.table)
+    #more lenient threshold of 0.1
     if (output$p.value < 0.1) {
         
         change = ''
