@@ -73,7 +73,6 @@ do
     else
     line=`grep MOTIF *meme.txt`
     cp *meme.txt ${family}_meme.txt
-    #sed command written for OS-X, not LINUX
     sed -i "s;${line};MOTIF   Composite;g" ${family}_meme.txt
     fi
     
