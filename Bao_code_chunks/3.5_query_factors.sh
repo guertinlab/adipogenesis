@@ -9,7 +9,7 @@ wget https://github.com/guertinlab/adipogenesis/blob/2fdf0bbab4fe6f368f5a60e42f7
 mkdir individual_memes
 cd individual_memes
 
-python ../MEME_individual_from_db.py -i ../homer_uniprobe_jaspar_edited.txt
+python2.7 ../MEME_individual_from_db.py -i ../homer_uniprobe_jaspar_edited.txt
 
 for file in *meme.txt 
 do
