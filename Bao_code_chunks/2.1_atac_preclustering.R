@@ -45,11 +45,10 @@ save(normalized.counts.atac,file='normalized.counts.atac.Rdata')
 #PCA
 rld = rlog(dds, blind=TRUE)
 
-#I think two ATAC-seq samples were labeled incorrectly. Contacted GEO, confirmed with an old email from Warren.
 x = plotPCA(rld, intgroup="sample.conditions", returnData=TRUE)
 plotPCAlattice(x, file = 'PCA_atac.pdf')
 
-
+#clustering
 dds.lrt = DESeq(dds, test="LRT", reduced = ~ 1)
 
 res.lrt = results(dds.lrt)
@@ -63,4 +62,14 @@ cluster_rlog = rld_mat[rownames(siglrt.re),]
 meta = as.data.frame(sample.conditions)
 rownames(meta) = colnames(cluster_rlog)
 save(cluster_rlog, meta, sample.conditions, file = 'cluster_rlog_pval_1e8.Rdata')
+
+not.different = rownames(res.lrt[res.lrt$padj > 0.5 & !is.na(res.lrt$padj) & !is.na(res.lrt$log2FoldChange) & abs(res.lrt$log2FoldChange) < 0.25,])
+#not.different = rownames(res.lrt[res.lrt$padj > 0.1 & !is.na(res.lrt$padj) & !is.na(res.lrt$baseMean) & res.lrt$baseMean > 10,])
+chr = sapply(strsplit(not.different, ':'), '[', 1)
+x = sapply(strsplit(not.different, ':'), '[', 2)
+start = sapply(strsplit(x, '-'), '[', 1)
+end = sapply(strsplit(x, '-'), '[', 2)
+
+curated.not.different = data.frame(chr,start,end)
+write.table(curated.not.different,file='nondynamic_peaks.bed',sep='\t',col.names=F,row.names=F,quote=F)
 
