@@ -84,10 +84,34 @@ med.c = c()
 med.g = c()
 med.t = c()
 for (i in 1:nrow(df.a)) {
-    med.a = append(med.a,median(as.numeric(df.a[i,]),na.rm=T))
-    med.c = append(med.c,median(as.numeric(df.c[i,]),na.rm=T))
-    med.g = append(med.g,median(as.numeric(df.g[i,]),na.rm=T))
-    med.t = append(med.t,median(as.numeric(df.t[i,]),na.rm=T))
+    if (sum(is.na(df.a[i,]))==0) {
+        med.a = append(med.a,median(as.numeric(df.a[i,]),na.rm=T))
+    } else {
+        x.a = df.a[i,]
+        x.a[is.na(x.a)] <- 0.25
+        med.a = append(med.a, mean(as.numeric(x.a)))
+    }
+    if (sum(is.na(df.c[i,]))==0) {
+        med.c = append(med.c,median(as.numeric(df.c[i,]),na.rm=T))
+    } else {
+        x.c = df.c[i,]
+        x.c[is.na(x.c)] <- 0.25
+        med.c = append(med.c, mean(as.numeric(x.c)))
+    }
+    if (sum(is.na(df.g[i,]))==0) {
+        med.g = append(med.g,median(as.numeric(df.g[i,]),na.rm=T))
+    } else {
+        x.g = df.g[i,]
+        x.g[is.na(x.g)] <- 0.25
+        med.g = append(med.g, mean(as.numeric(x.g)))
+    }
+    if (sum(is.na(df.t[i,]))==0) {
+        med.t = append(med.t,median(as.numeric(df.t[i,]),na.rm=T))
+    } else {
+        x.t = df.t[i,]
+        x.t[is.na(x.t)] <- 0.25
+        med.t = append(med.t, mean(as.numeric(x.t)))
+    }
 }
 
 composite[,1] = med.a
