@@ -63,6 +63,7 @@ meta = as.data.frame(sample.conditions)
 rownames(meta) = colnames(cluster_rlog)
 save(cluster_rlog, meta, sample.conditions, file = 'cluster_rlog_pval_1e8.Rdata')
 
+#generate nondynamic peaks set for FIMO
 not.different = rownames(res.lrt[res.lrt$padj > 0.5 & !is.na(res.lrt$padj) & !is.na(res.lrt$log2FoldChange) & abs(res.lrt$log2FoldChange) < 0.25,])
 #not.different = rownames(res.lrt[res.lrt$padj > 0.1 & !is.na(res.lrt$padj) & !is.na(res.lrt$baseMean) & res.lrt$baseMean > 10,])
 chr = sapply(strsplit(not.different, ':'), '[', 1)
