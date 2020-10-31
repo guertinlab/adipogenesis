@@ -7,7 +7,7 @@ def matrix(filename):
         line = infile.readline()
         if not line: break
         splitline = line.split()
-        cluster = filename.split('.dREG_meme_output/meme.txt')[0].split('/')[-1]
+        cluster = filename.split('.meme_output/meme.txt')[0].split('/')[-1]
         count = 0
         if line.startswith('MEME version'):
             meme_line = line
@@ -22,7 +22,7 @@ def matrix(filename):
                 outfilename_prefix = splitline[2]
             else:
                 outfilename_prefix = splitline[1]
-            outfile=open(str(cluster) + '_' + str(outfilename_prefix) +'_meme.txt', 'w')
+            outfile=open(str(outfilename_prefix) + '_'+ str(cluster) +'_meme.txt', 'w')
             outfile.write(meme_line)
             outfile.write('\n')
             outfile.write(alphabet_line)
@@ -46,21 +46,19 @@ def matrix(filename):
 def main(argv):
     try:
         opts, args = getopt.getopt(argv, "hi:", ["help", "input="])
-    except getopt.GetoptError as err:
-        print(str(err))
+    except getopt.GetoptError, err:
+        print str(err)
         sys.exit(2)
     name = False
     for opt, arg in opts:
         if opt in ('-i', '--input'):
             name = arg
         elif opt in ('-h', '--help'):
-            print('python ~/pyscripts/MEME_individual_from_db.py -i /Users/guertinlab/Desktop/tomtom_db/combined_motif_db.txt')
+            print 'python ~/pyscripts/MEME_individual_from_db.py -i /Users/guertinlab/Desktop/tomtom_db/combined_motif_db.txt'
             sys.exit()
     if name:
         matrix(name)
     else:
-        print('python ~/pyscripts/MEME_individual_from_db.py -i /Users/guertinlab/Desktop/tomtom_db/combined_motif_db.txt')
+        print 'python ~/pyscriptsMEME_individual_from_db.py -i /Users/guertinlab/Desktop/tomtom_db/combined_motif_db.txt'
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-
