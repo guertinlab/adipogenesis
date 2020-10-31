@@ -10,8 +10,9 @@ module load gcc/7.1.0 bedtools/2.26.0 openmpi/3.1.4 R/4.0.0
 #change the directory to wherever you are keeping the dREG cluster .bed files
 cd /scratch/bhn9by/ATAC
 
+#outdated nondynamic peaks--ignore
 #collect dREG peaks that were not sorted into clusters - this will serve as a nondynamic control set of regions
-intersectBed -v -a all_peaks.bed -b cluster*bed > nondynamic_peaks.bed
+#intersectBed -v -a all_peaks.bed -b cluster*bed > nondynamic_peaks.bed
 
 tab=$'\t'
 
