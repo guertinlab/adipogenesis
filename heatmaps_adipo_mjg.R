@@ -377,7 +377,7 @@ mjg = create.composites.heatmaps('/Users/guertinlab/Desktop/fimo_stuff/dREG_bigW
 
 
 
-draw.heatmap.both.pro.overlap(mjg[[2]], file = '3t3heatmap_MJG_full_final.pdf', upstream = -2000, downstream = 2000, sub.set = 30000, arrangement = 'pro', order.buffer =25,
+draw.heatmap.both.pro.overlap(mjg[[2]], file = '3t3heatmap_MJG_full_final.pdf', upstream = -2000, downstream = 2000, sub.set = 30000, arrangement = 'pro', order.buffer = 25,
                               colors.ramp = c("#ffffff00","#FF0000FF", "#590000FF", "#510000FF", "#2F0000FF", "#2d0101FF","#2E0000FF"),
                               colors.ramp.2 = c("#ffffff00","#0000FF80", "#00105980", "#00115180", "#00072F80", "#00072E80", "#01072d80"),  width.vp = 2, height.vp = 4)
 
