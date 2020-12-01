@@ -10,6 +10,9 @@ module load gcc/7.1.0 bedtools/2.26.0 openmpi/3.1.4 R/4.0.0
 #change the directory to wherever you are keeping the ATAC cluster .bed files
 cd /scratch/bhn9by/ATAC
 
+#Generate nondynamic peaks set as control
+intersectBed -v -a all_peaks.bed -b cluster*bed > nondynamic_peaks.bed
+
 tab=$'\t'
 
 mkdir fimo_motif_enrichment
