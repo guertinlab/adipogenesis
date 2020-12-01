@@ -16,7 +16,7 @@ mkdir fimo_motif_enrichment
 cd fimo_motif_enrichment
 
 #loop through each motif
-for motif in /scratch/bhn9by/bed_files/*bed
+for motif in /scratch/bhn9by/ATAC/Top_motif/*bed
 do
     motif_name=$(echo $motif | awk -F"/" '{print $NF}' | awk -F".bed" '{print $1}')
     echo $motif_name
