@@ -6,6 +6,7 @@
 wget https://github.com/guertinlab/adipogenesis/blob/2fdf0bbab4fe6f368f5a60e42f7899b6570ff71c/motif_analysis/MEME_individual_from_db.py
 
 #extract individual meme files from combined database
+#CAUTION: you only need to run this once, even if you're working through the code again
 mkdir individual_memes
 cd individual_memes
 
