@@ -14,8 +14,9 @@ python2.7 ../MEME_individual_from_db.py -i ../homer_uniprobe_jaspar_edited.txt
 
 for file in *meme.txt 
 do
-    name=$(echo $file | awk -F"homer_uniprobe_jaspar_edited.txt_" '{print $2}')
-    mv $file $name
+    name=$(echo $file | awk -F"homer_uniprobe_jaspar_edited.txt_" '{print $1}')
+    mv $file ${name}meme.txt
+    
 done
 
 cd ..
