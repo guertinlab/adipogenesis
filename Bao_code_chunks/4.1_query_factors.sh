@@ -16,7 +16,6 @@ for file in *meme.txt
 do
     name=$(echo $file | awk -F"homer_uniprobe_jaspar_edited.txt_" '{print $2}')
     mv $file $name
-    
 done
 
 cd ..
