@@ -1,7 +1,7 @@
 library(lattice)
 library(bigWig)
 
-dir = '/scratch/abd3x/Adipogenesis/ATAC/fimo_composites/'
+dir = '/scratch/bhn9by/ATAC/fimo_composites/'
 setwd(dir)
 
 bed.window <- function(bed, half.window) {
@@ -45,8 +45,8 @@ plot.fimo.lattice <- function(dat, fact = 'Motif', summit = 'Hypersensitivity Su
     dev.off()
 }
 
-load('/scratch/abd3x/Adipogenesis/ATAC/plot.df.atac.Rdata')
-load('/scratch/abd3x/Adipogenesis/ATAC/fimo.scores.atac.Rdata')
+load('/scratch/bhn9by/ATAC/plot.df.atac.Rdata')
+load('/scratch/bhn9by/ATAC/fimo.scores.atac.Rdata')
 
 plot.df = data.frame()
 for(i in 1:ncol(fimo.scores.atac)) {
@@ -63,7 +63,7 @@ colnames(all.fimo) = c('density', 'tf', 'category', 'range')
 
 half.win = 600
 file.suffix = '_mm10_instances.bigWig'
-dir = '/scratch/abd3x/Adipogenesis/ATAC/fimo_composites/main_figure_beds/'
+dir = '/scratch/bhn9by/ATAC/fimo_composites/main_figure_beds/'
 
 decreased = plot.df[plot.df$status == 'Repressed',7:9]
 decreased[,2] = as.numeric(decreased[,2])
@@ -75,7 +75,7 @@ increased[,2] = as.numeric(increased[,2])
 increased[,3] = as.numeric(increased[,3])
 increased = bed.window(increased,half.win)
 
-not.different = read.table('/scratch/abd3x/Adipogenesis/ATAC/nondynamic_peaks.bed')
+not.different = read.table('/scratch/bhn9by/ATAC/nondynamic_peaks.bed')
 not.different = not.different[not.different$V1 != 'chrM',]
 not.different = bed.window(not.different,half.win)
 
