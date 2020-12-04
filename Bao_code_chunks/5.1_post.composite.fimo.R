@@ -4,13 +4,13 @@ library(pheatmap)
 library(fabricatr)
 library(ggseqlogo)
 
-load('/scratch/abd3x/Adipogenesis/ATAC/plot.df.atac.Rdata')
+load('/scratch/bhn9by/ATAC/plot.df.atac.Rdata')
 
-dir = '/scratch/abd3x/Adipogenesis/ATAC/fimo_composites/'
+dir = '/scratch/bhn9by/ATAC/fimo_composites/'
 setwd(dir)
 
 #generate 'fimo.scores.atac.Rdata' object
-res = unique(read.table('/scratch/abd3x/Adipogenesis/ATAC/dynamic_peaks.bed'))
+res = unique(read.table('/scratch/bhn9by/ATAC/dynamic_peaks.bed'))
 colnames(res) = c('chr', 'start', 'end')
 res$start = as.numeric(as.character(res$start))
 res$end = as.numeric(as.character(res$end))
@@ -46,7 +46,7 @@ for(bed.file in Sys.glob(file.path(paste0(dir,'main_figure_beds/*_fimo.bed')))) 
 res = res[,-c(1:3)]
 
 #add in SP and KLF after separation
-load('/scratch/abd3x/Adipogenesis/ATAC/SP_KLF_split/sp.klf.scores.atac.Rdata')
+load('/scratch/bhn9by/ATAC/SP_KLF_split/sp.klf.scores.atac.Rdata')
 
 x = sp.klf.scores.atac[,4:5]
 colnames(x) = c('SP','KLF')
@@ -56,7 +56,7 @@ rownames(res) = res[,1]
 res = res[,-1]
 
 fimo.scores.atac = res
-save(fimo.scores.atac, file = '/scratch/abd3x/Adipogenesis/ATAC/fimo.scores.atac.Rdata')
+save(fimo.scores.atac, file = '/scratch/bhn9by/ATAC/fimo.scores.atac.Rdata')
 
 #save as bed files
 for(i in 1:ncol(fimo.scores.atac)) {
@@ -672,7 +672,7 @@ for(bed.file in Sys.glob(file.path(paste0(dir,'main_figure_beds/*fimo.bed')))) {
 }
 
 #now add SP and KLF
-sp = read.table('/scratch/abd3x/Adipogenesis/ATAC/SP_KLF_split/output_sp1.txt', stringsAsFactors=FALSE, sep = '\t', header = TRUE)[,c(3,10)]
+sp = read.table('/scratch/bhn9by/ATAC/SP_KLF_split/output_sp1.txt', stringsAsFactors=FALSE, sep = '\t', header = TRUE)[,c(3,10)]
 
 out.sp <- strsplit(as.character(sp[,1]), ':') 
 sp <- data.frame(do.call(rbind, out.sp, quote=FALSE), sp[,c(2)])
@@ -683,7 +683,7 @@ sp$re = paste0(sp$chr,':',sp$start,'-',sp$end)
 
 df.seq = rbind(df.seq,sp)
 
-klf = read.table('/scratch/abd3x/Adipogenesis/ATAC/SP_KLF_split/output_klf.txt', stringsAsFactors=FALSE, sep = '\t', header = TRUE)[,c(3,10)]
+klf = read.table('/scratch/bhn9by/ATAC/SP_KLF_split/output_klf.txt', stringsAsFactors=FALSE, sep = '\t', header = TRUE)[,c(3,10)]
 
 out.klf <- strsplit(as.character(klf[,1]), ':') 
 klf <- data.frame(do.call(rbind, out.klf, quote=FALSE), klf[,c(2)])
