@@ -6,6 +6,7 @@ mkdir composite_motifs
 cd composite_motifs
 
 #query tomtom for each factor against all others
+module purge
 module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 for txt in ../PSWM_family*.txt
 do
