@@ -37,6 +37,8 @@ rm Ptf1a_homer_meme.txt
 rm TAL1::TCF3_jaspar_meme.txt
 #remove ZNF740 motif
 rm ZNF740_jaspar_meme.txt
+#remove Pitx1:Ebox b/c it's conflated with TWIST1
+rm Pitx1:Ebox_homer_meme.txt
 
 cat *meme.txt > ../all_query_factors_meme.txt
 
