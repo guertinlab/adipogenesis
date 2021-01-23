@@ -2,8 +2,6 @@
 
 cd /scratch/bhn9by/ATAC
 
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/tomtom_output_to_composite.py
-
 mkdir composite_motifs
 cd composite_motifs
 
