@@ -1,4 +1,4 @@
-cd /scratch/abd3x/Adipogenesis/ATAC/fimo_composites
+cd /scratch/bhn9by/ATAC/fimo_composites
 
 name=$(echo $i | awk -F"/" '{print $NF}'| awk -F"_meme.txt" '{print $1}')
 
