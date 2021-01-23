@@ -2,14 +2,13 @@
 
 #pulls each de novo motif from all the clusters and saves each as its own file
 
-#NOTE: This wget doesn't work because folder is private
-wget https://github.com/guertinlab/adipogenesis/blob/2fdf0bbab4fe6f368f5a60e42f7899b6570ff71c/motif_analysis/MEME_individual_from_db.py
-
 #extract individual meme files from combined database
 #CAUTION: you only need to run this once, even if you're working through the code again
 mkdir individual_memes
 cd individual_memes
 
+#CAUTION: the MEME_individual_from_db.py was written for Python2 so remember to specify python2.7 when running.
+wget https://github.com/guertinlab/adipogenesis/blob/2fdf0bbab4fe6f368f5a60e42f7899b6570ff71c/motif_analysis/MEME_individual_from_db.py
 python2.7 ../MEME_individual_from_db.py -i ../homer_uniprobe_jaspar_edited.txt
 
 for file in *meme.txt 
