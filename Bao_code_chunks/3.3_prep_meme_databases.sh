@@ -8,11 +8,10 @@ mv motif_databases/JASPAR/JASPAR2018_CORE_vertebrates_non-redundant.meme $PWD
 mv motif_databases/MOUSE/uniprobe_mouse.meme $PWD
 
 #Homer
-#CAUTION: the HOMER_MEME_conversion.py will not work as downloaded because it was written for Python2
-#The version updated for Python3 is available in misc_scripts directory
+#CAUTION: the HOMER_MEME_conversion.py was written for Python2 so remember to specify python2.7 when running.
 wget https://raw.githubusercontent.com/mjg54/znf143_pro_seq_analysis/master/docs/HOMER_MEME_conversion.py
 wget http://homer.ucsd.edu/homer/custom.motifs
-python HOMER_MEME_conversion.py -i custom.motifs -o homer.motifs
+python2.7 HOMER_MEME_conversion.py -i custom.motifs -o homer.motifs
 
 #edit databases to work with tomtom
 cp JASPAR2018_CORE_vertebrates_non-redundant.meme JASPAR_edited_meme.txt
