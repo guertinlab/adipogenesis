@@ -124,6 +124,7 @@ cat ../../meme_header.txt KLF_composite_PSWM.txt > KLF_composite_meme.txt
 
 module load gcc/7.1.0 meme/4.10.2
 
+#generate composite KLF logo
 ceqlogo -i KLF_composite_meme.txt -m Composite -o KLF_composite.eps
 ceqlogo -i KLF_composite_meme.txt -m Composite -o KLF_composite.rc.eps -r
 
