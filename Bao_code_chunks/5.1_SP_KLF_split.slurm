@@ -7,11 +7,14 @@
 
 cd /scratch/bhn9by/ATAC/
 
+#generate new directory
 rm -r SP_KLF_split
 mkdir SP_KLF_split
 cd SP_KLF_split
 
 echo Generate composite SP and KLF motifs
+
+#separating SP motifs
 mkdir SP
 cd SP
 
@@ -27,6 +30,7 @@ done
 max_motif=0
 final_query=''
 
+#query tomtom for each SP factor against all others
 for line in *meme.txt
 do
     name=$(echo $line | awk -F"_meme.txt" '{print $1}')
@@ -55,17 +59,20 @@ cd ..
 
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
 
+#generate composite SP PSWM
 Rscript ../../generate_composite_motif.SP.R
 
 cat ../../meme_header.txt SP_composite_PSWM.txt > SP_composite_meme.txt	
 
 module load gcc/7.1.0 meme/4.10.2
 
+#generate composite SP logo
 ceqlogo -i SP_composite_meme.txt -m Composite -o SP_composite.eps
 ceqlogo -i SP_composite_meme.txt -m Composite -o SP_composite.rc.eps -r
 
 cd ..
 
+#separating KLF motifs
 mkdir KLF
 cd KLF
 
@@ -81,6 +88,7 @@ done
 max_motif=0
 final_query=''
 
+#query tomtom for each KLF factor against all others
 for line in *meme.txt
 do
     name=$(echo $line | awk -F"_meme.txt" '{print $1}')
@@ -107,6 +115,7 @@ mv tomtom.xml_test_index_pswm.txt ../composite.values.txt
 mv tomtom.xml_test_index_rc_offset.txt ../composite.index.txt
 cd ..
 
+#generate composite KLF PSWM
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
 
 Rscript ../../generate_composite_motif.KLF.R
