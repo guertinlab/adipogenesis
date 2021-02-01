@@ -14,8 +14,8 @@ index$offset = as.numeric(index$offset)
 #add PSWM length and eventual starting row to index object
 pswm.length = c()
 for (count in index$count) {
-    df = values[values$count == count,]
-    pswm.length = append(pswm.length,nrow(df))
+  df = values[values$count == count,]
+  pswm.length = append(pswm.length,nrow(df))
 }
 index$pswm.length = pswm.length
 
@@ -31,7 +31,7 @@ index$end.row = index$start.row + index$pswm.length - 1
 #the final length of the composite is the length of the query plus the extra positions on the right and left
 composite.length = max(index$end.row)
 
-                                        #list of all the members of the family
+#list of all the members of the family
 #changed this
 factors=as.vector(unique(values$name))
 
@@ -45,33 +45,33 @@ df.c = df.g = df.t = df.a
 
 #iterate through each factor
 for (count in index$count) {
-
-    #isolate values from each factor for convenience
-    df = values[values$count == count,]
-
-    #deal with RC
-    if (index[index$count == count,]$rc == 'y') {
-        df = df[order(nrow(df):1),]
-        colnames(df) = c('count','name','tfreq','gfreq','cfreq','afreq')
-    }
-
-    #determine appropriate starting row for each PSWM in the final df
-    start.row = index[index$count == count,]$start.row
-    end.row = index[index$count == count,]$end.row
-    #determine range of row values for the final df
-    range = start.row:end.row
-    #determine corresponding factor
-    col = unique(as.vector(df$name))
-    #iterate through relevant rows
-    for (i in 1:length(range)) {
-        #convert row numbers in final df to row numbers in original df
-        j = range[i]
-        #assign values in final dfs from orginial df
-        df.a[j,col] = df$afreq[i]       
-        df.c[j,col] = df$cfreq[i]
-        df.g[j,col] = df$gfreq[i]
-        df.t[j,col] = df$tfreq[i]
-    }   
+  
+  #isolate values from each factor for convenience
+  df = values[values$count == count,]
+  
+  #deal with RC
+  if (index[index$count == count,]$rc == 'y') {
+    df = df[order(nrow(df):1),]
+    colnames(df) = c('count','tfreq','gfreq','cfreq','afreq','name')
+  }
+  
+  #determine appropriate starting row for each PSWM in the final df
+  start.row = index[index$count == count,]$start.row
+  end.row = index[index$count == count,]$end.row
+  #determine range of row values for the final df
+  range = start.row:end.row
+  #determine corresponding factor
+  col = unique(as.vector(df$name))
+  #iterate through relevant rows
+  for (i in 1:length(range)) {
+    #convert row numbers in final df to row numbers in original df
+    j = range[i]
+    #assign values in final dfs from orginial df
+    df.a[j,col] = df$afreq[i]       
+    df.c[j,col] = df$cfreq[i]
+    df.g[j,col] = df$gfreq[i]
+    df.t[j,col] = df$tfreq[i]
+  }   
 }
 
 #initalize final composite PSWM
@@ -83,34 +83,34 @@ med.c = c()
 med.g = c()
 med.t = c()
 for (i in 1:nrow(df.a)) {
-    if (sum(is.na(df.a[i,]))==0) {
-        med.a = append(med.a,median(as.numeric(df.a[i,]),na.rm=T))
-    } else {
-        x.a = df.a[i,]
-        x.a[is.na(x.a)] <- 0.25
-        med.a = append(med.a, mean(as.numeric(x.a)))
-    }
-    if (sum(is.na(df.c[i,]))==0) {
-        med.c = append(med.c,median(as.numeric(df.c[i,]),na.rm=T))
-    } else {
-        x.c = df.c[i,]
-        x.c[is.na(x.c)] <- 0.25
-        med.c = append(med.c, mean(as.numeric(x.c)))
-    }
-    if (sum(is.na(df.g[i,]))==0) {
-        med.g = append(med.g,median(as.numeric(df.g[i,]),na.rm=T))
-    } else {
-        x.g = df.g[i,]
-        x.g[is.na(x.g)] <- 0.25
-        med.g = append(med.g, mean(as.numeric(x.g)))
-    }
-    if (sum(is.na(df.t[i,]))==0) {
-        med.t = append(med.t,median(as.numeric(df.t[i,]),na.rm=T))
-    } else {
-        x.t = df.t[i,]
-        x.t[is.na(x.t)] <- 0.25
-        med.t = append(med.t, mean(as.numeric(x.t)))
-    }
+  if (sum(is.na(df.a[i,]))==0) {
+    med.a = append(med.a,median(as.numeric(df.a[i,]),na.rm=T))
+  } else {
+    x.a = df.a[i,]
+    x.a[is.na(x.a)] <- 0.25
+    med.a = append(med.a, mean(as.numeric(x.a)))
+  }
+  if (sum(is.na(df.c[i,]))==0) {
+    med.c = append(med.c,median(as.numeric(df.c[i,]),na.rm=T))
+  } else {
+    x.c = df.c[i,]
+    x.c[is.na(x.c)] <- 0.25
+    med.c = append(med.c, mean(as.numeric(x.c)))
+  }
+  if (sum(is.na(df.g[i,]))==0) {
+    med.g = append(med.g,median(as.numeric(df.g[i,]),na.rm=T))
+  } else {
+    x.g = df.g[i,]
+    x.g[is.na(x.g)] <- 0.25
+    med.g = append(med.g, mean(as.numeric(x.g)))
+  }
+  if (sum(is.na(df.t[i,]))==0) {
+    med.t = append(med.t,median(as.numeric(df.t[i,]),na.rm=T))
+  } else {
+    x.t = df.t[i,]
+    x.t[is.na(x.t)] <- 0.25
+    med.t = append(med.t, mean(as.numeric(x.t)))
+  }
 }
 
 composite[,1] = med.a
@@ -122,4 +122,3 @@ composite[,4] = med.t
 composite = composite/rowSums(composite)
 
 write.table(composite, file = paste0('SP_composite_PSWM.txt'), sep='\t' ,row.names = F, col.names = F, quote = F)
-
