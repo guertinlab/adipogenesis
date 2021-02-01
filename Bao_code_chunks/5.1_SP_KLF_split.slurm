@@ -17,7 +17,7 @@ cd SP
 
 module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 
-motifs=`grep -E 'SP|Sp' ../../PSWM_family_7.txt`
+motifs=`grep -E 'SP|Sp' ../../PSWM_family_8.txt`
 
 for motif in $motifs
 do
@@ -71,7 +71,7 @@ cd KLF
 
 module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 
-motifs=`grep -E 'KLF|Klf' ../../PSWM_family_7.txt`
+motifs=`grep -E 'KLF|Klf' ../../PSWM_family_8.txt`
 
 for motif in $motifs
 do
