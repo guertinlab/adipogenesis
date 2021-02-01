@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#run fimo against PSWM and take top 2 million hits
 rm -r fimo_composites
 mkdir fimo_composites
 
