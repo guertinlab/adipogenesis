@@ -1,6 +1,6 @@
 setwd('/scratch/bhn9by/ATAC/SP_KLF_split')
 
-x = read.table('/scratch/bhn9by/ATAC/fimo_composites/PSWM_family_8_fimo.bed', stringsAsFactors=FALSE)
+x = read.table('/scratch/bhn9by/ATAC/fimo_composites/PSWM_family_7_fimo.bed', stringsAsFactors=FALSE)
 x = x[x[,6] != -1,]
 
 a <- apply(x[,c(1:9) ], 1 ,paste0, collapse = ":" )
@@ -11,7 +11,7 @@ for (i in 1:length(a)) {
     write.table(b[i], file = 'sp_fimo.txt', append=TRUE, col.names=FALSE, row.names=FALSE, sep ='', quote= FALSE)
 }
 
-x = read.table('/scratch/bhn9by/ATAC/fimo_composites/PSWM_family_8_fimo_nondyn.bed', stringsAsFactors=FALSE)
+x = read.table('/scratch/bhn9by/ATAC/fimo_composites/PSWM_family_7_fimo_nondyn.bed', stringsAsFactors=FALSE)
 x = x[x[,6] != -1,]
 
 a <- apply(x[,c(1:9) ], 1 ,paste0, collapse = ":" )
@@ -23,7 +23,7 @@ for (i in 1:length(a)) {
 }
 
 #takes a long time, should figure out a better way
-x = read.table('/scratch/bhn9by/ATAC/fimo_composites/PSWM_family_8_2M.txt', stringsAsFactors=FALSE)
+x = read.table('/scratch/bhn9by/ATAC/fimo_composites/PSWM_family_7_2M.txt', stringsAsFactors=FALSE)
 a <- apply(x[,c(1:6) ], 1 ,paste0, collapse = ":" )
 a = gsub(" ", "", a, fixed = TRUE)
 b = x[,7]
