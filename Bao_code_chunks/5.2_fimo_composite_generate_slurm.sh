@@ -13,5 +13,5 @@ do
     rm temp2.txt
 done
 
-#For this pipeline, you only need to run the slurm for KLF/SP
+#For this pipeline, you only need to run the slurm for SP/KLF
 sbatch PSWM_family_8.fimo_slurm
