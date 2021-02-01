@@ -1,5 +1,7 @@
 #module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0 bedtools/2.29.2
 
+cd /scratch/bhn9by/ATAC/SP_KLF_split
+
 #bedtools getfasta -fo sp.klf.fasta -fi /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa -bed /scratch/bhn9by/ATAC/fimo_composites/PSWM_family_8_fimo.bed
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
 
