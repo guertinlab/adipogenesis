@@ -1,3 +1,5 @@
+#!/bin/bash
+
 rm -r fimo_composites
 mkdir fimo_composites
 
