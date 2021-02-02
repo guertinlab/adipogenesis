@@ -14,6 +14,12 @@ do
     cat $i | cut -f1-3,5 | sort -k1,1 -k2,2n > ${name}_2M.bed 
 done
 
+mv PSWM_family_1_fimo_all.bed AP1_fimo_all.bed
+mv PSWM_family_3_fimo_all.bed GR_fimo_all.bed
+mv PSWM_family_5_fimo_all.bed CEBP_fimo_all.bed
+mv PSWM_family_18_fimo_all.bed TWIST_fimo_all.bed
+rm PSWM*all.bed
+
 #check that family number matches up to corresponding motif
 mkdir main_figure_beds
 cp PSWM_family_1_fimo.bed main_figure_beds/AP1_fimo.bed
