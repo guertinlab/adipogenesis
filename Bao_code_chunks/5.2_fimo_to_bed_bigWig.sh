@@ -10,7 +10,7 @@ do
     echo $name
     intersectBed -loj -a ../dynamic_peaks.bed -b $i > ${name}_fimo.bed
     intersectBed -loj -a ../nondynamic_peaks.bed -b $i > ${name}_fimo_nondyn.bed
-    #intersectBed -loj -a ../all_peaks.bed -b $i > ${name}_fimo_all.bed #is this necessary???
+    intersectBed -loj -a ../all_peaks.bed -b $i > ${name}_fimo_all.bed
     cat $i | cut -f1-3,5 | sort -k1,1 -k2,2n > ${name}_2M.bed 
 done
 
