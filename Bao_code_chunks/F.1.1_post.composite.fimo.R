@@ -3,7 +3,7 @@ library(lattice)
 library(pheatmap)
 library(fabricatr)
 library(ggseqlogo)
-
+ 
 load('/scratch/bhn9by/ATAC/plot.df.atac.Rdata')
 
 dir = '/scratch/bhn9by/ATAC/fimo_composites/'
