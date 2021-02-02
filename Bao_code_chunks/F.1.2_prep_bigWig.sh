@@ -1,4 +1,4 @@
-cd /scratch/bhn9by/Adipogenesis/ATAC/fimo_composites/main_figure_beds
+cd /scratch/bhn9by/ATAC/fimo_composites/main_figure_beds
 
 cat SP_unsorted.bed | sort -k1,1 -k2,2n > SP_2M.bed
 cat KLF_unsorted.bed | sort -k1,1 -k2,2n > KLF_2M.bed
