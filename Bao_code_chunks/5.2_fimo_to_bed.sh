@@ -2,7 +2,7 @@
 
 module load gcc/9.2.0 bedtools/2.29.2
 
-cd /scratch/abd3x/Adipogenesis/ATAC/fimo_composites
+cd /scratch/bhn9by/ATAC/fimo_composites
 
 for i in *_2M.txt
 do
