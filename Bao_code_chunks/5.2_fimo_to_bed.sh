@@ -20,6 +20,7 @@ mv PSWM_family_5_fimo_all.bed CEBP_fimo_all.bed
 mv PSWM_family_18_fimo_all.bed TWIST_fimo_all.bed
 rm PSWM*all.bed
 
+#transfer bed files for AP1, GR, CEBP, and TWIST into main figures directory
 #check that family number matches up to corresponding motif
 mkdir main_figure_beds
 cp PSWM_family_1_fimo.bed main_figure_beds/AP1_fimo.bed
