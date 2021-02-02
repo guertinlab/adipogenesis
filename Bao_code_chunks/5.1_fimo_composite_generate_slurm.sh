@@ -11,10 +11,7 @@ do
     echo '#SBATCH -o' $name'.fimo.out' > temp.txt
     echo 'i='../composite_motifs/$name/${name}_meme.txt > temp2.txt
     cat fimo_slurm_header_1.txt temp.txt fimo_slurm_header_2.txt temp2.txt fimo_slurm_header_3.txt > $name.fimo.slurm
-    #sbatch $name.fimo.slurm                                                                                                                                                           
+    sbatch $name.fimo.slurm                                                                                                                                                           
     rm temp.txt
     rm temp2.txt
 done
-
-#For this pipeline, you only need to run the slurm for SP/KLF
-sbatch PSWM_family_8.fimo_slurm
