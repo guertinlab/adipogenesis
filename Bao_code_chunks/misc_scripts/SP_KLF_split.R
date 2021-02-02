@@ -112,8 +112,10 @@ intercept <- const/fit$scaling[2]
 
 slope
 #1.551901
+#1.910971
 intercept
 #-5.454026
+#-10.8391
 
 res.lda$status = as.factor(res.lda$status)
 
