@@ -52,7 +52,7 @@ for bed in *2M.bed
 do
     name=$(echo $bed | awk -F"/" '{print $NF}' | awk -F"_2M.bed" '{print $1}')
     echo $name
-    #summing scores of motifs w/in peak
+    #summing scores of motifs w/in overlapping genomic interval
     cat $bed | mergeBed -i stdin -c 4 -o sum > ${name}_merged_2M.bed
     bedGraphToBigWig ${name}_merged_2M.bed ../../mm10.chrom.sizes ${name}_mm10_instances.bigWig
     rm ${name}_merged_2M.bed
