@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#align .fastq to 10mm genome
+#align .fastq to mm10 genome
 for i in *_atac_PE1.fastq.gz
 do
     name=$(echo $i | awk -F"/" '{print $NF}' | awk -F"_atac_PE1.fastq.gz" '{print $1}')
