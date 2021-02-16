@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#align .fastq to 10mm genome
+#align .fastq to mm10 genome
 
 #generate a unique slurm file for each replicate and run them in parallel:
 #header_1   --> sbatch settings
