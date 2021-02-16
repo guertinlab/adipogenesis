@@ -10,6 +10,7 @@ mkdir fimo_composites
 #header_2   --> more sbatch settings and modules to load
 #temp2.txt  --> name of relevant file
 #header_3   --> actual commands
+
 for i in PSWM*txt
 do
     name=$(echo $i | awk -F".txt" '{print $1}')
