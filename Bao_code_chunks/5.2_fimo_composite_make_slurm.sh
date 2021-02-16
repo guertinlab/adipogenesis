@@ -4,6 +4,12 @@
 rm -r fimo_composites
 mkdir fimo_composites
 
+#generate a unique slurm file for each PSWM and run them in parallel:
+#header_1   --> sbatch settings
+#temp.txt   --> name of .out file
+#header_2   --> modules to load
+#temp2.txt  --> name of relevant file
+#header_3   --> actual commands
 for i in PSWM*txt
 do
     name=$(echo $i | awk -F".txt" '{print $1}')
