@@ -1,4 +1,3 @@
-#TO USE THE FOLLOWING SCRIPTS, YOU NEED TO HAVE COMPLETED STEP 5.3_prep_main_figure_1.sh
 #organize supplemental families
 cd /scratch/bhn9by/Adipogenesis/ATAC/fimo_composites
 
