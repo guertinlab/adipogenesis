@@ -4,7 +4,7 @@
 rm -r fimo_composites
 mkdir fimo_composites
 
-#generate a unique slurm file for each PSWM and run them in parallel:
+#make a unique slurm file for each PSWM and run them in parallel:
 #header_1   --> sbatch settings
 #temp.txt   --> name of .out file
 #header_2   --> more sbatch settings and modules to load
@@ -22,4 +22,4 @@ do
     rm temp2.txt
 done
 
-#Honestly, FIMO runs fast enough that you don't need this loop. Check simplified version.
+#Honestly, FIMO runs fast enough that you don't need this make_slurm loop. Check simplified version.
