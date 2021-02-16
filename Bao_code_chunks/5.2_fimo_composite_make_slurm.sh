@@ -21,5 +21,3 @@ do
     rm temp.txt
     rm temp2.txt
 done
-
-#Honestly, FIMO runs fast enough that you don't need this make_slurm loop. Check simplified version.
