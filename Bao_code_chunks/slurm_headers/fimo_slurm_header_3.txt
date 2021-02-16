@@ -2,6 +2,7 @@ cd /scratch/bhn9by/ATAC/fimo_composites
 
 name=$(echo $i | awk -F"/" '{print $NF}'| awk -F"_meme.txt" '{print $1}')
 
+#run FIMO
 fimo --thresh 0.001 --text $i /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa > ${name}_composite_fimo.txt
 
 #this takes top 2M
@@ -9,7 +10,6 @@ score=$(tail -n +2 ${name}_composite_fimo.txt | sort -nrk6,6 | awk 'FNR == 20000
 echo $score
 tail -n +2 ${name}_composite_fimo.txt | awk -v sco="$score" '{ if ($6 >= sco) { print } }' | awk '{OFS="\t";} {print $2,$3,$4,$7,$6,$5,$8}' > ${name}_2M.txt
 
-    
 #this was to get the order of conformity to consensus.
 tomtom -no-ssc -oc ${name}_ranks.tomtom_output -verbosity 1 -incomplete-scores -min-overlap 1 -dist ed -evalue -thresh 0.05 ../all_query_factors_meme.txt ${name}_composite_fimo.txt
 
