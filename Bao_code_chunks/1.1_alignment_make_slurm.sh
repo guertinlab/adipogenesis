@@ -8,6 +8,7 @@
 #header_2   --> more sbatch settings and modules to load
 #temp2.txt  --> name of relevant file
 #header_3   --> actual commands
+
 for i in *_atac_PE1.fastq.gz
 do
     name=$(echo $i | awk -F"/" '{print $NF}' | awk -F"_atac_PE1.fastq.gz" '{print $1}')
