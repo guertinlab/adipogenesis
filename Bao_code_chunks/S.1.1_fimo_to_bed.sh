@@ -1,5 +1,5 @@
-#TO USE THE FOLLOWING SCRIPTS, YOU NEED TO HAVE COMPLETED STEP 5.3_Prep_main_figure_1.sh
-#supplemental families
+#TO USE THE FOLLOWING SCRIPTS, YOU NEED TO HAVE COMPLETED STEP 5.3_prep_main_figure_1.sh
+#organize supplemental families
 cd /scratch/bhn9by/Adipogenesis/ATAC/fimo_composites
 
 mkdir supp_figure_beds
@@ -23,7 +23,8 @@ cp PSWM_family_6_2M.bed supp_figure_beds/CTCFL_2M.bed
 #cp PSWM_family_8_2M.bed supp_figure_beds/EGR_2M.bed
 cp PSWM_family_8_2M.bed supp_figure_beds/ELF_2M.bed
 
-cd supp_figure_beds
+#prepare bigWigs for motif enrichment plot
+cd /scratch/bhn9by/ATAC/fimo_composites/supp_figure_beds
 
 module load ucsc-tools/3.7.4 gcc/9.2.0 bedtools/2.29.2
 
@@ -36,6 +37,7 @@ do
     bedGraphToBigWig ${name}_merged_2M.bed ../../mm10.chrom.sizes ${name}_mm10_instances.bigWig
 done
 
+#Similar to Rscripts for main figure 1, but revised for supplemental families
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
 
 Rscript /scratch/bhn9by/Adipogenesis/ATAC/post.composite.fimo.supp.R
