@@ -1,4 +1,4 @@
-#module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0 bedtools/2.29.2
+#!/bin/bash
 
 cd /scratch/bhn9by/ATAC/SP_KLF_split
 
@@ -16,6 +16,7 @@ fimo --thresh 0.01 --text SP/SP_composite_meme.txt sp_fimo.txt > output_sp1.txt
 echo Starting KLF FIMO
 fimo --thresh 0.01 --text KLF/KLF_composite_meme.txt sp_fimo.txt > output_klf.txt
 
+#Run fimo against SP and KLF separately, using the top 2 million hits of SP/KLF as input (see fimo_composite step)
 module load gcc/7.1.0 bedtools/2.26.0
 cp /scratch/bhn9by/ATAC/fimo_composites/PSWM_family_7_2M.bed $PWD/sp_klf_2M.bed
 bedtools getfasta -fi /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa -bed sp_klf_2M.bed > sp_klf_2M.fasta
