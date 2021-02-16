@@ -11,6 +11,7 @@ do
     name=$(echo $i | awk -F".txt" '{print $1}')
     echo $name
     
+    #run FIMO
     cd /scratch/bhn9by/ATAC/fimo_composites
     fimo --thresh 0.001 --text ../composite_motifs/$name/{name}_meme.txt /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa > ${name}_composite_fimo.txt
 
