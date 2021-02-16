@@ -10,6 +10,7 @@ mkdir meme_motif_enrichment
 #header_2   --> more sbatch settings and modules to load
 #temp2.txt  --> name of relevant file
 #header_3   --> actual commands
+
 for i in *cluster*bed
 do
     name=$(echo $i | awk -F"_" '{print $NF}' | awk -F".bed" '{print $1}')
