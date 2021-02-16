@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -n 1
 #SBATCH -t 96:00:00
-#SBATCH -o PSWM.fimo.out
+#SBATCH -o PSWM.family.fimo.out
 #SBATCH -p standard
 #SBATCH -A guertinlab
 
