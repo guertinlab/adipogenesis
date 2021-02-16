@@ -5,7 +5,7 @@
 #generate a unique slurm file for each replicate and run them in parallel:
 #header_1   --> sbatch settings
 #temp.txt   --> name of .out file
-#header_2   --> modules to load
+#header_2   --> more sbatch settings and modules to load
 #temp2.txt  --> name of relevant file
 #header_3   --> actual commands
 for bam in *rmdup.bam
