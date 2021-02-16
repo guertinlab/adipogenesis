@@ -1,3 +1,4 @@
+#TO USE THE FOLLOWING SCRIPTS, YOU NEED TO HAVE COMPLETED STEP F.1.2
 #supplemental families
 cd /scratch/bhn9by/Adipogenesis/ATAC/fimo_composites
 
