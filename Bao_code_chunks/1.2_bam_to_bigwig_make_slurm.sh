@@ -8,6 +8,7 @@
 #header_2   --> more sbatch settings and modules to load
 #temp2.txt  --> name of relevant file
 #header_3   --> actual commands
+
 for bam in *rmdup.bam
 do
     name=$(echo $bam | awk -F"_atac_rmdup.bam" '{print $1}')
