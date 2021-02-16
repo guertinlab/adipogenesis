@@ -1,4 +1,9 @@
 #!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 96:00:00
+#SBATCH -o PSWM.fimo.out
+#SBATCH -p standard
+#SBATCH -A guertinlab
 
 module load gcc/7.1.0  meme/4.10.2
 
