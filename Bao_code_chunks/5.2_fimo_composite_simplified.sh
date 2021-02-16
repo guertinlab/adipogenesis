@@ -2,7 +2,7 @@
 
 module load gcc/7.1.0  meme/4.10.2
 
-#run fimo against PSWM and take top 2 million hits
+#run FIMO against PSWM and take top 2 million hits
 rm -r fimo_composites
 mkdir fimo_composites
 
