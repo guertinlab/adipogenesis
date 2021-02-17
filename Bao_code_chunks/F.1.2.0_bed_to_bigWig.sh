@@ -22,7 +22,7 @@ do
     rm ${name}_merged_2M.bed
 done
 
-#CAUTION: If you want to rerun the precedeing post.composite.fimo.R, rm SP_fimo.bed and KLF_fimo.bed or it will error.
+#CAUTION: If you want to rerun the preceding post.composite.fimo.R, rm SP_fimo.bed and KLF_fimo.bed or it will error.
 
 #extract up / down composite motifs from combined SP.KLF
 cd /scratch/bhn9by/ATAC/SP_KLF_split
