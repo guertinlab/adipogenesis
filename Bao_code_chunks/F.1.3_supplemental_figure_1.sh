@@ -2,6 +2,9 @@
 cd /scratch/bhn9by/Adipogenesis/ATAC/fimo_composites
 
 mkdir supp_figure_beds
+
+#transfer bed files for supplemental factors
+#check that family number matches up to corresponding motif
 cp PSWM_family_12_fimo.bed supp_figure_beds/NFY_fimo.bed
 cp PSWM_family_13_fimo.bed supp_figure_beds/NRF_fimo.bed
 cp PSWM_family_15_fimo.bed supp_figure_beds/STAT_fimo.bed
@@ -9,7 +12,6 @@ cp PSWM_family_16_fimo.bed supp_figure_beds/TFAP2_fimo.bed
 cp PSWM_family_17_fimo.bed supp_figure_beds/TEAD_fimo.bed
 cp PSWM_family_2_fimo.bed supp_figure_beds/bHLH_fimo.bed
 cp PSWM_family_6_fimo.bed supp_figure_beds/CTCFL_fimo.bed
-#cp PSWM_family_8_fimo.bed supp_figure_beds/EGR_fimo.bed
 cp PSWM_family_8_fimo.bed supp_figure_beds/ELF_fimo.bed
 
 cp PSWM_family_12_2M.bed supp_figure_beds/NFY_2M.bed
@@ -19,7 +21,6 @@ cp PSWM_family_16_2M.bed supp_figure_beds/TFAP2_2M.bed
 cp PSWM_family_17_2M.bed supp_figure_beds/TEAD_2M.bed
 cp PSWM_family_2_2M.bed supp_figure_beds/bHLH_2M.bed
 cp PSWM_family_6_2M.bed supp_figure_beds/CTCFL_2M.bed
-#cp PSWM_family_8_2M.bed supp_figure_beds/EGR_2M.bed
 cp PSWM_family_8_2M.bed supp_figure_beds/ELF_2M.bed
 
 #prepare bigWigs for motif enrichment plot
@@ -36,7 +37,7 @@ do
     bedGraphToBigWig ${name}_merged_2M.bed ../../mm10.chrom.sizes ${name}_mm10_instances.bigWig
 done
 
-#Similar to Rscripts for main figure 1, but revised for supplemental families
+#Similar to Rscripts for main figure 1, but slightly revised for supplemental families
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
 
 Rscript /scratch/bhn9by/Adipogenesis/ATAC/post.composite.fimo.supp.R
