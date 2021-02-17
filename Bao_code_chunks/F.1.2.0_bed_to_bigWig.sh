@@ -23,7 +23,7 @@ do
 done
 
 #CAUTION: If you want to rerun the preceding post.composite.fimo.R,
-#rm SP_fimo.bed and KLF_fimo.bed
+#rm SP_fimo.bed KLF_fimo.bed
 #else, they will error
 
 #extract up / down composite motifs from combined SP.KLF
