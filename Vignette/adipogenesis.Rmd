@@ -1766,6 +1766,29 @@ echo DONE
 knitr::include_graphics("LDA_analysis.pdf")
 ```
 
+##Extracting up/down composite motifs from combined SP/KLF
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.5_extract_up_down_SP_KLF.sh)
+```{r eval=FALSE}
+#extract up/down composite motifs from combined SP.KLF
+cd /scratch/bhn9by/ATAC/SP_KLF_split
+
+module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
+
+Rscript ../extract.motifs.from.combined.family.R
+
+module load gcc/7.1.0 meme/4.10.2
+
+ceqlogo -i SP.KLF_activated.txt -m SP.KLF_activated -o SP.KLF.activated.eps
+ceqlogo -i SP.KLF_activated.txt -m SP.KLF_activated -o SP.KLF.activated.rc.eps -r
+
+ceqlogo -i SP.KLF_repressed.txt -m SP.KLF_repressed -o SP.KLF.repressed.eps
+ceqlogo -i SP.KLF_repressed.txt -m SP.KLF_repressed -o SP.KLF.repressed.rc.eps -r
+```
+
+```{r spklfdynamicaccessibility, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
+knitr::include_graphics("SP_KLF_dynamic_accessibility.pdf")
+```
+
 \pagebreak
 
 # Figure 1
@@ -2542,7 +2565,7 @@ for(i in unique(df.seq$factor)) {
 }
 ```
 
-## Generating bigWig and extracting up/down composite motifs from SP/KLF
+## Generating bigWig for motif enrichment plot
 
 [github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/F.1.2_bed_to_bigWig.sh)
 ```{r eval=FALSE}
@@ -2573,26 +2596,8 @@ done
 #CAUTION: If you want to rerun the preceding post.composite.fimo.R,
 #rm SP_fimo.bed KLF_fimo.bed
 #else, they will error
-
-#extract up / down composite motifs from combined SP.KLF
-cd /scratch/bhn9by/ATAC/SP_KLF_split
-
-module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
-
-Rscript ../extract.motifs.from.combined.family.R
-
-module load gcc/7.1.0 meme/4.10.2
-
-ceqlogo -i SP.KLF_activated.txt -m SP.KLF_activated -o SP.KLF.activated.eps
-ceqlogo -i SP.KLF_activated.txt -m SP.KLF_activated -o SP.KLF.activated.rc.eps -r
-
-ceqlogo -i SP.KLF_repressed.txt -m SP.KLF_repressed -o SP.KLF.repressed.eps
-ceqlogo -i SP.KLF_repressed.txt -m SP.KLF_repressed -o SP.KLF.repressed.rc.eps -r
 ```
 
-```{r spklfdynamicaccessibility, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
-knitr::include_graphics("SP_KLF_dynamic_accessibility.pdf")
-```
 
 
 ## Plot motif enrichment around summits
