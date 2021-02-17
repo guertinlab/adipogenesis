@@ -38,7 +38,7 @@ do
     bedGraphToBigWig ${name}_merged_2M.bed ../../mm10.chrom.sizes ${name}_mm10_instances.bigWig
 done
 
-#Similar to Rscripts for main figure 1, but slightly revised for supplemental families
+#Rscripts for supplement are slightly revised from main figure 1
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
 
 Rscript /scratch/bhn9by/Adipogenesis/ATAC/post.composite.fimo.supp.R
