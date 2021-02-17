@@ -1,4 +1,5 @@
-#organize supplemental families
+#!/bin/bash
+
 cd /scratch/bhn9by/Adipogenesis/ATAC/fimo_composites
 
 mkdir supp_figure_beds
