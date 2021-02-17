@@ -48,7 +48,7 @@ plot.df = plot.df.atac
 plot.df$status = 'Activated'
 plot.df[plot.df$supercluster == 'gradual.down' | plot.df$supercluster == 'down.up',]$status = 'Repressed'
 
-bed.file = '/scratch/bhn9by/ATAC/fimo_composites/PSWM_family_10_fimo.bed'
+bed.file = '/scratch/bhn9by/ATAC/fimo_composites/PSWM_family_7_fimo.bed'
 factor.name = 'SP.KLF'
 x = read.table(bed.file, stringsAsFactors=FALSE)
 x = x[x[,6] != -1,]
