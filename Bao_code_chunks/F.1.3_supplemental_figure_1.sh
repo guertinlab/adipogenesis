@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /scratch/bhn9by/Adipogenesis/ATAC/fimo_composites
+cd /scratch/bhn9by/ATAC/fimo_composites
 
 mkdir supp_figure_beds
 
@@ -41,5 +41,5 @@ done
 #Rscripts for supplement are slightly revised from main figure 1
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
 
-Rscript /scratch/bhn9by/Adipogenesis/ATAC/post.composite.fimo.supp.R
-Rscript /scratch/bhn9by/Adipogenesis/ATAC/plot.motif.enrichment.supp.R
+Rscript /scratch/bhn9by/ATAC/post.composite.fimo.supp.R
+Rscript /scratch/bhn9by/ATAC/plot.motif.enrichment.supp.R
