@@ -51,28 +51,21 @@ cp fastq_pair /home/bhn9by/bin
 cd..
 ```
 
-## Generate slurm file for each replicate and run in parallel
+## Make slurm file for each replicate and run in parallel
 To run slurm jobs for each replicate in parallel, we concatenate three slurm header files and two lines corresponding to the name of the replicate. Processing and aligning each replicate will take several hours so this slurm_header method will be faster. The content of each header is provided in the next subsection.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.1_alignment_generate_slurm.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.1_alignment_make_slurm.sh)
 
 ```{r eval=FALSE}
-#header_1   --> sbatch -n and -t
-#temp.txt   --> sbatch -o (name of replicate)
-#header_2   --> sbatch -p, -A, and modules to load
-#temp2.txt  --> define variable $i as name of replicate
-#header_3   --> actual script
+#align .fastq to mm10 genome
 
 for i in *_atac_PE1.fastq.gz
 do
-    name=$(echo $i | awk -F"/" '{print $NF}' | \
-		awk -F"_atac_PE1.fastq.gz" '{print $1}')
+    name=$(echo $i | awk -F"/" '{print $NF}' | awk -F"_atac_PE1.fastq.gz" '{print $1}')
     echo $name
     echo '#SBATCH -o' $name'.align.out' > temp.txt
     echo 'i='$i > temp2.txt
-    cat align_slurm_header_1.txt temp.txt \
-		align_slurm_header_2.txt temp2.txt \
-		align_slurm_header_3.txt > $name.align.slurm
+    cat align_slurm_header_1.txt temp.txt align_slurm_header_2.txt temp2.txt align_slurm_header_3.txt > $name.align.slurm
     sbatch $name.align.slurm
     rm temp.txt
     rm temp2.txt
@@ -163,10 +156,10 @@ done
 # Performing seqOutBias
 [seqOutBias](https://guertinlab.github.io/seqOutBias/) corrects for enzymatic sequence bias by scaling the aligned read counts by the ratio of genome-wide observed read counts to the expected sequence based counts for each k-mer. The sequence based k-mer counts take into account mappability at a given read length using Genome Tools’ Tallymer program. We will also use seqOutBias to generate bigwig from the bam files.
 
-## Generating slurm file for each replicate
+## Make slurm file for each replicate
 The content of each header is provided in the next subsection.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.2_bam_to_bigwig_generate_slurm.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.2_bam_to_bigwig_make_slurm.sh)
 ```{r eval=FALSE}
 for bam in *rmdup.bam
 do
@@ -218,7 +211,7 @@ seqOutBias \
 ## Running seqOutBias
 Run one slurm file to completion to generate requisite tallymer mappability file.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.2_bam_to_bigwig_generate_slurm.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.2_bam_to_bigwig_make_slurm.sh)
 ```{r eval=FALSE}
 sbatch 3T3_20min_rep1.convert.to.bigwig.slurm
 ```
@@ -359,7 +352,7 @@ x = plotPCA(rld, intgroup="sample.conditions", returnData=TRUE)
 plotPCAlattice(x, file = 'PCA_atac.pdf')
 ```
 
-```{r PCA, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='Expected output for PCA plot.', out.width = "80%"}
+```{r PCA, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='Expected output for PCA plot.', out.width = "100%"}
 knitr::include_graphics("PCA_atac.pdf")
 ```
 
@@ -546,7 +539,7 @@ abline(h = 2, lty = 2)
 dev.off()
 ```
 
-```{r dendrogram, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='Hierarchical clustering groups ATAC clusters based on similarity in dynamics. Dendrogram shows a threshold of 2 which divides the 17 clusters into 5 superclusters.', out.width = "80%"}
+```{r dendrogram, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='Hierarchical clustering groups ATAC clusters based on similarity in dynamics. Dendrogram shows a threshold of 2 which divides the 17 clusters into 5 superclusters.', out.width = "100%"}
 knitr::include_graphics("dendrogram.pdf")
 ```
 
@@ -595,7 +588,7 @@ print(
 dev.off()
 ```
 
-```{r clustersbysc, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='ATAC clusters are organized according to their superclusters.', out.width = "80%"}
+```{r clustersbysc, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='ATAC clusters are organized according to their superclusters.', out.width = "100%"}
 knitr::include_graphics("atac_clusters_org_by_sc.pdf")
 ```
 
@@ -677,7 +670,7 @@ xyplot(value ~  sample.conditions | supercluster, group = genes,
 dev.off()
 ```
 
-```{r superclusters, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='Clusters are weighed and averaged to plot supercluster traces.', out.width = "80%"}
+```{r superclusters, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='Clusters are weighed and averaged to plot supercluster traces.', out.width = "100%"}
 knitr::include_graphics("atac_superclusters.pdf")
 ```
 
@@ -823,13 +816,11 @@ cd ..
 
 # MEME motif enrichment
 
-## Generate slurm file for each replicate and run in parallel
+## Make slurm file for each replicate and run in parallel
 The content of each header is provided in the next subsection.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/3.2_meme_motif_enrichment_generate_slurm.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/3.2_meme_motif_enrichment_make_slurm.sh)
 ```{r eval=FALSE}
-#!/bin/bash
-
 #run MEME on each cluster to find enriched motifs
 wget https://hgdownload-test.gi.ucsc.edu/goldenPath/mm10/bigZips/mm10.chrom.sizes
 mkdir meme_motif_enrichment
@@ -1215,9 +1206,11 @@ for meme in *meme.txt
 do
     name=$(echo $meme | awk -F".txt_" '{print $NF}' | awk -F"_meme.txt" '{print $1}')
     #echo $name
-    tomtom -no-ssc -o $name.tomtom_output -verbosity 1  -incomplete-scores -min-overlap 1 -dist ed -evalue -thresh 0.0005 $meme ../all_query_factors_meme.txt
+    tomtom -no-ssc -o $name.tomtom_output -verbosity 1  -incomplete-scores -min-overlap 1 \
+		-dist ed -evalue -thresh 0.0005 $meme ../all_query_factors_meme.txt
     cd $name.tomtom_output
-    cut -f1,2,5 tomtom.tsv | tail -n +2 | sed '$d' | sed '$d' | sed '$d' | sed '$d' >> ../3_col_combined_motif_db_pre.txt
+    cut -f1,2,5 tomtom.tsv | tail -n +2 | sed '$d' | sed '$d' | sed '$d' | sed '$d' \
+		>> ../3_col_combined_motif_db_pre.txt
     cd ..
 done
 
@@ -1397,7 +1390,7 @@ cd ..
 module purge
 ```
 
-```{r logo, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='Sequence logo for the composite AP1 motif.', out.width = "80%"}
+```{r logo, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='Sequence logo for the composite AP1 motif.', out.width = "100%"}
 knitr::include_graphics("PSWM_family_1.png")
 ```
 
@@ -1423,167 +1416,26 @@ this Rscript [insert function]
 #!/bin/bash
 
 cd /scratch/bhn9by/ATAC/
+#!/bin/bash
+
+cd /scratch/bhn9by/ATAC/
+#for main figure
 wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/generate_composite_motif.SP.R
 wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/generate_composite_motif.KLF.R
 wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/prep.SP.KLF.fimo.R
 wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/SP_KLF_split.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/extract.motifs.from.combined.family.R
+
+#for supplemental figure
+wget https://github.com/guertinlab/adipogenesis/blob/master/Bao_code_chunks/misc_scripts/post.composite.fimo.supp.R
+wget https://github.com/guertinlab/adipogenesis/blob/master/Bao_code_chunks/misc_scripts/plot.motif.enrichment.supp.R
 ```
 
-
-## Generate slurm file for each replicate and run in parallel
-The content of each header is provided in the next subsection.
-
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.1_fimo_composite_generate_slurm.sh)
-```{r eval=FALSE}
-#!/bin/bash
-
-#run fimo against PSWM and take top 2 million hits
-rm -r fimo_composites
-mkdir fimo_composites
-
-for i in PSWM*txt
-do
-    name=$(echo $i | awk -F".txt" '{print $1}')
-    echo $name
-    echo '#SBATCH -o' $name'.fimo.out' > temp.txt
-    echo 'i='../composite_motifs/$name/${name}_meme.txt > temp2.txt
-    cat fimo_slurm_header_1.txt temp.txt \
-		fimo_slurm_header_2.txt temp2.txt \
-		fimo_slurm_header_3.txt > $name.fimo.slurm
-    sbatch $name.fimo.slurm                                                                                                                                                           
-    rm temp.txt
-    rm temp2.txt
-done
-```
-
-### fimo_slurm_header_1.txt
-
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/fimo_slurm_header_1.txt)
-```{r eval=FALSE}
-#!/bin/bash
-#SBATCH -n 1
-#SBATCH -t 96:00:00
-```
-
-### fimo_slurm_header_2.txt
-
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/fimo_slurm_header_2.txt)
-```{r eval=FALSE}
-#SBATCH -p standard
-#SBATCH -A guertinlab
-
-module load gcc/7.1.0  meme/4.10.2
-```
-
-### fimo_slurm_header_3.txt
-
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/fimo_slurm_header_3.txt)
-```{r eval=FALSE}
-cd /scratch/bhn9by/ATAC/fimo_composites
-
-name=$(echo $i | awk -F"/" '{print $NF}'| awk -F"_meme.txt" '{print $1}')
-
-fimo --thresh 0.001 --text $i /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa \
-	> ${name}_composite_fimo.txt
-
-#this takes top 2M
-score=$(tail -n +2 ${name}_composite_fimo.txt | sort -nrk6,6 | awk 'FNR == 2000000 {print $6}')
-echo $score
-tail -n +2 ${name}_composite_fimo.txt | awk -v sco="$score" '{ if ($6 >= sco) { print } }' | \
-	awk '{OFS="\t";} {print $2,$3,$4,$7,$6,$5,$8}' > ${name}_2M.txt
-
-    
-#this was to get the order of conformity to consensus.
-tomtom -no-ssc -oc ${name}_ranks.tomtom_output -verbosity 1 -incomplete-scores -min-overlap 1 \
-	-dist ed -evalue -thresh 0.05 ../all_query_factors_meme.txt ${name}_composite_fimo.txt
-
-echo 'DONE'
-```
-
-## Preparing bed and bigWig files
-
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.2_fimo_to_bed_bigWig.sh)
-```{r eval=FALSE}
-#!/bin/bash
-
-module load gcc/9.2.0 bedtools/2.29.2
-
-cd /scratch/bhn9by/ATAC/fimo_composites
-
-for i in *_2M.txt
-do
-    name=$(echo $i | awk -F"/" '{print $NF}' | awk -F"_2M.txt" '{print $1}')
-    echo $name
-    intersectBed -loj -a ../dynamic_peaks.bed -b $i > ${name}_fimo.bed
-    intersectBed -loj -a ../nondynamic_peaks.bed -b $i > ${name}_fimo_nondyn.bed
-    intersectBed -loj -a ../all_peaks.bed -b $i > ${name}_fimo_all.bed
-    cat $i | cut -f1-3,5 | sort -k1,1 -k2,2n > ${name}_2M.bed 
-done
-
-mv PSWM_family_1_fimo_all.bed AP1_fimo_all.bed
-mv PSWM_family_3_fimo_all.bed GR_fimo_all.bed
-mv PSWM_family_5_fimo_all.bed CEBP_fimo_all.bed
-mv PSWM_family_18_fimo_all.bed TWIST_fimo_all.bed
-rm PSWM*all.bed
-
-#transfer bed files for AP1, GR, CEBP, and TWIST into main figures directory
-#check that family number matches up to corresponding motif
-mkdir main_figure_beds
-cp PSWM_family_1_fimo.bed main_figure_beds/AP1_fimo.bed
-cp PSWM_family_3_fimo.bed main_figure_beds/GR_fimo.bed
-cp PSWM_family_5_fimo.bed main_figure_beds/CEBP_fimo.bed
-cp PSWM_family_18_fimo.bed main_figure_beds/TWIST_fimo.bed
-
-cp PSWM_family_1_2M.bed main_figure_beds/AP1_2M.bed
-cp PSWM_family_3_2M.bed main_figure_beds/GR_2M.bed
-cp PSWM_family_5_2M.bed main_figure_beds/CEBP_2M.bed
-cp PSWM_family_18_2M.bed main_figure_beds/TWIST_2M.bed
-
-
-#prepare bigWigs for motif enrichment plot
-cd /scratch/bhn9by/ATAC/fimo_composites/main_figure_beds
-
-cat SP_unsorted.bed | sort -k1,1 -k2,2n > SP_2M.bed
-cat KLF_unsorted.bed | sort -k1,1 -k2,2n > KLF_2M.bed
-
-module load ucsc-tools/3.7.4 gcc/9.2.0 bedtools/2.29.2
-
-intersectBed -loj -a ../../all_peaks.bed -b SP_2M.bed > ../SP_fimo_all.bed
-intersectBed -loj -a ../../all_peaks.bed -b KLF_2M.bed > ../KLF_fimo_all.bed
-
-intersectBed -loj -a ../../dynamic_peaks.bed -b SP_2M.bed > SP_fimo.bed
-intersectBed -loj -a ../../dynamic_peaks.bed -b KLF_2M.bed > KLF_fimo.bed
-
-for bed in *2M.bed
-do
-    name=$(echo $bed | awk -F"/" '{print $NF}' | awk -F"_2M.bed" '{print $1}')
-    echo $name
-    #summing scores of motifs w/in peak
-    cat $bed | mergeBed -i stdin -c 4 -o sum > ${name}_merged_2M.bed
-    bedGraphToBigWig ${name}_merged_2M.bed ../../mm10.chrom.sizes ${name}_mm10_instances.bigWig
-    rm ${name}_merged_2M.bed
-done
-
-#extract up / down composite motifs from combined SP.KLF
-cd /scratch/bhn9by/Adipogenesis/ATAC/SP_KLF_split
-
-module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
-
-Rscript ../extract.motifs.from.combined.family.R
-
-module load gcc/7.1.0 meme/4.10.2
-
-ceqlogo -i SP.KLF_activated.txt -m SP.KLF_activated -o SP.KLF.activated.eps
-ceqlogo -i SP.KLF_activated.txt -m SP.KLF_activated -o SP.KLF.activated.rc.eps -r
-
-ceqlogo -i SP.KLF_repressed.txt -m SP.KLF_repressed -o SP.KLF.repressed.eps
-ceqlogo -i SP.KLF_repressed.txt -m SP.KLF_repressed -o SP.KLF.repressed.rc.eps -r
-```
 
 ## Split and generate individual composite motifs for SP and KLF
 The following script is nearly identical to the previous composite steps but require minor name and directory changes.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.3_SP_KLF_split_part1_generate_composites.slurm)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.1_SP_KLF_split_generate_composites.slurm)
 ```{r eval=FALSE}
 cd /scratch/bhn9by/ATAC/
 
@@ -1603,7 +1455,7 @@ cd SP
 
 module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 
-motifs=`grep -E 'SP|Sp' ../../PSWM_family_8.txt`
+motifs=`grep -E 'SP|Sp' ../../PSWM_family_7.txt`
 
 for motif in $motifs
 do
@@ -1665,7 +1517,7 @@ cd KLF
 
 module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 
-motifs=`grep -E 'KLF|Klf' ../../PSWM_family_8.txt`
+motifs=`grep -E 'KLF|Klf' ../../PSWM_family_7.txt`
 
 for motif in $motifs
 do
@@ -1720,7 +1572,7 @@ cd ..
 
 ```
 
-```{r SPsplit, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", out.width = "80%"}
+```{r SPsplit, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", out.width = "88%"}
 knitr::include_graphics("SP_composite.png")
 ```
 
@@ -1728,9 +1580,156 @@ knitr::include_graphics("SP_composite.png")
 knitr::include_graphics("KLF_composite.png")
 ```
 
+## Make slurm file for each replicate and run in parallel
+The content of each header is provided in the next subsection.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.2_fimo_composite_make_slurm.sh)
+```{r eval=FALSE}
+#run FIMO against PSWM and take top 2 million hits
+rm -r fimo_composites
+mkdir fimo_composites
+
+for i in PSWM*txt
+do
+    name=$(echo $i | awk -F".txt" '{print $1}')
+    echo $name
+    echo '#SBATCH -o' $name'.fimo.out' > temp.txt
+    echo 'i='../composite_motifs/$name/${name}_meme.txt > temp2.txt
+    cat fimo_slurm_header_1.txt temp.txt \
+		fimo_slurm_header_2.txt temp2.txt \
+		fimo_slurm_header_3.txt > $name.fimo.slurm
+    sbatch $name.fimo.slurm                                                                                                                                                           
+    rm temp.txt
+    rm temp2.txt
+done
+```
+
+### fimo_slurm_header_1.txt
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/fimo_slurm_header_1.txt)
+```{r eval=FALSE}
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 96:00:00
+```
+
+### fimo_slurm_header_2.txt
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/fimo_slurm_header_2.txt)
+```{r eval=FALSE}
+#SBATCH -p standard
+#SBATCH -A guertinlab
+
+module load gcc/7.1.0  meme/4.10.2
+```
+
+### fimo_slurm_header_3.txt
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/fimo_slurm_header_3.txt)
+```{r eval=FALSE}
+cd /scratch/bhn9by/ATAC/fimo_composites
+
+name=$(echo $i | awk -F"/" '{print $NF}'| awk -F"_meme.txt" '{print $1}')
+
+#run FIMO
+fimo --thresh 0.001 --text $i /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa \
+	> ${name}_composite_fimo.txt
+
+#this takes top 2M
+score=$(tail -n +2 ${name}_composite_fimo.txt | sort -nrk6,6 | awk 'FNR == 2000000 {print $6}')
+echo $score
+tail -n +2 ${name}_composite_fimo.txt | awk -v sco="$score" '{ if ($6 >= sco) { print } }' | \
+	awk '{OFS="\t";} {print $2,$3,$4,$7,$6,$5,$8}' > ${name}_2M.txt
+
+    
+#this was to get the order of conformity to consensus.
+tomtom -no-ssc -oc ${name}_ranks.tomtom_output -verbosity 1 -incomplete-scores -min-overlap 1 \
+	-dist ed -evalue -thresh 0.05 ../all_query_factors_meme.txt ${name}_composite_fimo.txt
+
+echo 'DONE'
+```
+
+## Simplified version
+For clarity we provided a simplified, sequential version of the FIMO script
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.2_fimo_composite_simplified.sh)
+```{r eval=FALSE}
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 96:00:00
+#SBATCH -o PSWM.family.fimo.out
+#SBATCH -p standard
+#SBATCH -A guertinlab
+
+module load gcc/7.1.0  meme/4.10.2
+
+#run FIMO against PSWM and take top 2 million hits
+rm -r fimo_composites
+mkdir fimo_composites
+
+for i in PSWM*txt
+do
+    name=$(echo $i | awk -F".txt" '{print $1}')
+    echo $name
+    
+    #run FIMO
+    cd /scratch/bhn9by/ATAC/fimo_composites
+    fimo --thresh 0.001 --text ../composite_motifs/$name/{name}_meme.txt \
+		/project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa \
+		> ${name}_composite_fimo.txt
+
+    #this takes top 2M
+    score=$(tail -n +2 ${name}_composite_fimo.txt | sort -nrk6,6 | awk 'FNR == 2000000 {print $6}')
+    echo $score
+    tail -n +2 ${name}_composite_fimo.txt | awk -v sco="$score" '{ if ($6 >= sco) { print } }' | \
+		awk '{OFS="\t";} {print $2,$3,$4,$7,$6,$5,$8}' > ${name}_2M.txt
+
+    #this was to get the order of conformity to consensus.
+    tomtom -no-ssc -oc ${name}_ranks.tomtom_output -verbosity 1 -incomplete-scores -min-overlap 1 \
+		-dist ed -evalue -thresh 0.05 ../all_query_factors_meme.txt ${name}_composite_fimo.txt
+done
+```
+
+## Preparing for Main Figure 1
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.3_prep_main_figure_1.sh)
+```{r eval=FALSE}
+#!/bin/bash
+module load gcc/9.2.0 bedtools/2.29.2
+
+cd /scratch/bhn9by/ATAC/fimo_composites
+
+for i in *_2M.txt
+do
+    name=$(echo $i | awk -F"/" '{print $NF}' | awk -F"_2M.txt" '{print $1}')
+    echo $name
+    intersectBed -loj -a ../dynamic_peaks.bed -b $i > ${name}_fimo.bed
+    intersectBed -loj -a ../nondynamic_peaks.bed -b $i > ${name}_fimo_nondyn.bed
+    intersectBed -loj -a ../all_peaks.bed -b $i > ${name}_fimo_all.bed
+    cat $i | cut -f1-3,5 | sort -k1,1 -k2,2n > ${name}_2M.bed 
+done
+
+#transfer bed files for AP1, GR, CEBP, and TWIST into main figures directory
+#check that family number matches up to corresponding motif
+
+rm -r main_figure_beds
+mkdir main_figure_beds
+
+cp PSWM_family_1_fimo.bed main_figure_beds/AP1_fimo.bed
+cp PSWM_family_3_fimo.bed main_figure_beds/GR_fimo.bed
+cp PSWM_family_5_fimo.bed main_figure_beds/CEBP_fimo.bed
+cp PSWM_family_18_fimo.bed main_figure_beds/TWIST_fimo.bed
+
+cp PSWM_family_1_2M.bed main_figure_beds/AP1_2M.bed
+cp PSWM_family_3_2M.bed main_figure_beds/GR_2M.bed
+cp PSWM_family_5_2M.bed main_figure_beds/CEBP_2M.bed
+cp PSWM_family_18_2M.bed main_figure_beds/TWIST_2M.bed
+```
+
+
 ## Processing FIMO for SP and KLF
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.3_SP_KLF_split_part2_processing_fimo.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.4_SP_KLF_split_processing.sh)
 ```{r eval=FALSE}
 cd /scratch/bhn9by/ATAC/SP_KLF_split
 
@@ -1747,7 +1746,7 @@ echo Starting KLF FIMO
 fimo --thresh 0.01 --text KLF/KLF_composite_meme.txt sp_fimo.txt > output_klf.txt
 
 module load gcc/7.1.0 bedtools/2.26.0
-cp /scratch/bhn9by/ATAC/fimo_composites/PSWM_family_8_2M.bed $PWD/sp_klf_2M.bed
+cp /scratch/bhn9by/ATAC/fimo_composites/PSWM_family_7_2M.bed $PWD/sp_klf_2M.bed
 bedtools getfasta -fi /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa \
 	-bed sp_klf_2M.bed > sp_klf_2M.fasta
 
@@ -1762,6 +1761,12 @@ Rscript ../SP_KLF_split.R
 
 echo DONE
 ```
+
+```{r ldaanalysis, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
+knitr::include_graphics("LDA_analysis.pdf")
+```
+
+\pagebreak
 
 # Figure 1
 The following Rscripts generate plots showing that distinct transcription factors drive opening and closing of chromatin in early adipogenesis.
@@ -1902,7 +1907,7 @@ print(
 dev.off()
 ```
 
-```{r allfamiliesdynamicaccessibility, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
+```{r allfamiliesdynamicaccessibility, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
 knitr::include_graphics("all_families_dynamic_accessibility.pdf")
 ```
 
@@ -2015,7 +2020,7 @@ print(
 dev.off()
 ```
 
-```{r allisolatedfamiliesdynamicaccessibility, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
+```{r allisolatedfamiliesdynamicaccessibility, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
 knitr::include_graphics("all_isolated_families_dynamic_accessibility.pdf")
 ```
 
@@ -2051,7 +2056,7 @@ print(
 dev.off()
 ```
 
-```{r isolatedpeaksbar, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
+```{r isolatedpeaksbar, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
 knitr::include_graphics("isolated.peaks.bar.pdf")
 ```
 
@@ -2090,7 +2095,7 @@ pheatmap(total.fam.df,cluster_rows=FALSE, show_rownames=TRUE,cluster_cols=FALSE,
 dev.off()
 ```
 
-```{r totalfamheatmap, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
+```{r totalfamheatmap, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "60%"}
 knitr::include_graphics("total.fam.heatmap.pdf")
 ```
 
@@ -2210,7 +2215,7 @@ print(
 dev.off()
 ```
 
-```{r fimoscoresisolatedpeaksbw, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
+```{r fimoscoresisolatedpeaksbw, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
 knitr::include_graphics("fimo.scores.isolated.peaks.bw.pdf")
 ```
 
@@ -2262,7 +2267,7 @@ print(
 dev.off()
 ```
 
-```{r fimoscoresallpeaksbw, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
+```{r fimoscoresallpeaksbw, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
 knitr::include_graphics("fimo.scores.all.peaks.bw.pdf")
 ```
 
@@ -2345,7 +2350,7 @@ for(fam in unique(plot.df$family)) {
 }
 ```
 
-```{r GRisolatedsplitonfimoscores, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
+```{r GRisolatedsplitonfimoscores, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
 knitr::include_graphics("GR_isolated_split_on_FIMO_scores.pdf")
 ```
 
@@ -2424,7 +2429,7 @@ for(fam in unique(plot.df$family)) {
 }
 ```
 
-```{r allsplitonfimoscores, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
+```{r allsplitonfimoscores, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
 knitr::include_graphics("GR_all_split_on_FIMO_scores.pdf")
 ```
 
@@ -2537,10 +2542,62 @@ for(i in unique(df.seq$factor)) {
 }
 ```
 
+## Generating bigWig and extracting up/down composite motifs from SP/KLF
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/F.1.2_bed_to_bigWig.sh)
+```{r eval=FALSE}
+#prepare bigWigs for motif enrichment plot
+cd /scratch/bhn9by/ATAC/fimo_composites/main_figure_beds
+
+cat SP_unsorted.bed | sort -k1,1 -k2,2n > SP_2M.bed
+cat KLF_unsorted.bed | sort -k1,1 -k2,2n > KLF_2M.bed
+
+module load ucsc-tools/3.7.4 gcc/9.2.0 bedtools/2.29.2
+
+intersectBed -loj -a ../../all_peaks.bed -b SP_2M.bed > ../SP_fimo_all.bed
+intersectBed -loj -a ../../all_peaks.bed -b KLF_2M.bed > ../KLF_fimo_all.bed
+
+intersectBed -loj -a ../../dynamic_peaks.bed -b SP_2M.bed > SP_fimo.bed
+intersectBed -loj -a ../../dynamic_peaks.bed -b KLF_2M.bed > KLF_fimo.bed
+
+for bed in *2M.bed
+do
+    name=$(echo $bed | awk -F"/" '{print $NF}' | awk -F"_2M.bed" '{print $1}')
+    echo $name
+    #summing scores of motifs w/in overlapping genomic interval
+    cat $bed | mergeBed -i stdin -c 4 -o sum > ${name}_merged_2M.bed
+    bedGraphToBigWig ${name}_merged_2M.bed ../../mm10.chrom.sizes ${name}_mm10_instances.bigWig
+    rm ${name}_merged_2M.bed
+done
+
+#CAUTION: If you want to rerun the preceding post.composite.fimo.R,
+#rm SP_fimo.bed KLF_fimo.bed
+#else, they will error
+
+#extract up / down composite motifs from combined SP.KLF
+cd /scratch/bhn9by/ATAC/SP_KLF_split
+
+module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
+
+Rscript ../extract.motifs.from.combined.family.R
+
+module load gcc/7.1.0 meme/4.10.2
+
+ceqlogo -i SP.KLF_activated.txt -m SP.KLF_activated -o SP.KLF.activated.eps
+ceqlogo -i SP.KLF_activated.txt -m SP.KLF_activated -o SP.KLF.activated.rc.eps -r
+
+ceqlogo -i SP.KLF_repressed.txt -m SP.KLF_repressed -o SP.KLF.repressed.eps
+ceqlogo -i SP.KLF_repressed.txt -m SP.KLF_repressed -o SP.KLF.repressed.rc.eps -r
+```
+
+```{r spklfdynamicaccessibility, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
+knitr::include_graphics("SP_KLF_dynamic_accessibility.pdf")
+```
+
 
 ## Plot motif enrichment around summits
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/F.1.2_plot.motif.enrichment.R)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/F.1.3_plot.motif.enrichment.R)
 ```{r eval=FALSE}
 library(lattice)
 library(bigWig)
@@ -2659,14 +2716,71 @@ plot.fimo.lattice(all.fimo, num.m = -500, num.p = 500,
 
 ```
 
-```{r motifenrichmentaroundsummits, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "80%"}
+```{r motifenrichmentaroundsummits, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
 knitr::include_graphics("motif_enrichment_around_summits.pdf")
 ```
 
+\pagebreak
 
+#Supplemental Figure 1
+Generate plots for supplemental families (plots not shown due to repetitiveness)
 
-# Supplemental Figure 1
-##
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/F.1.4_supplemental_figure_1.sh)
 ```{r eval=FALSE}
+cd /scratch/bhn9by/ATAC/fimo_composites
+
+#transfer bed files for supplemental factors
+#check that family number matches up to corresponding motif
+
+rm -r supp_figure_beds
+mkdir supp_figure_beds
+
+cp PSWM_family_12_fimo.bed supp_figure_beds/NFY_fimo.bed
+cp PSWM_family_13_fimo.bed supp_figure_beds/NRF_fimo.bed
+cp PSWM_family_15_fimo.bed supp_figure_beds/STAT_fimo.bed
+cp PSWM_family_16_fimo.bed supp_figure_beds/TFAP2_fimo.bed
+cp PSWM_family_17_fimo.bed supp_figure_beds/TEAD_fimo.bed
+cp PSWM_family_2_fimo.bed supp_figure_beds/bHLH_fimo.bed
+cp PSWM_family_6_fimo.bed supp_figure_beds/CTCFL_fimo.bed
+cp PSWM_family_8_fimo.bed supp_figure_beds/ELF_fimo.bed
+
+cp PSWM_family_12_2M.bed supp_figure_beds/NFY_2M.bed
+cp PSWM_family_13_2M.bed supp_figure_beds/NRF_2M.bed
+cp PSWM_family_15_2M.bed supp_figure_beds/STAT_2M.bed
+cp PSWM_family_16_2M.bed supp_figure_beds/TFAP2_2M.bed
+cp PSWM_family_17_2M.bed supp_figure_beds/TEAD_2M.bed
+cp PSWM_family_2_2M.bed supp_figure_beds/bHLH_2M.bed
+cp PSWM_family_6_2M.bed supp_figure_beds/CTCFL_2M.bed
+cp PSWM_family_8_2M.bed supp_figure_beds/ELF_2M.bed
+
+#prepare bigWigs for motif enrichment plot
+cd /scratch/bhn9by/ATAC/fimo_composites/supp_figure_beds
+
+module load ucsc-tools/3.7.4 gcc/9.2.0 bedtools/2.29.2
+
+for bed in *2M.bed
+do
+    name=$(echo $bed | awk -F"/" '{print $NF}' | awk -F"_2M.bed" '{print $1}')
+    echo $name
+    #summing scores of motifs w/in overlapping genomic intervals
+    cat $bed | mergeBed -i stdin -c 4 -o sum > ${name}_merged_2M.bed
+    bedGraphToBigWig ${name}_merged_2M.bed ../../mm10.chrom.sizes ${name}_mm10_instances.bigWig
+done
+
+#Rscripts for supplement are slightly revised from main figure 1
+module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
+
+Rscript /scratch/bhn9by/ATAC/post.composite.fimo.supp.R
+Rscript /scratch/bhn9by/ATAC/plot.motif.enrichment.supp.R
 ```
+
+\pagebreak
+
+#PRO-Seq
+
+##PLACEHOLDER
+
+
+
+
 
