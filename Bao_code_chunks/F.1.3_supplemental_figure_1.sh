@@ -2,6 +2,7 @@
 
 cd /scratch/bhn9by/ATAC/fimo_composites
 
+rm -r supp_figure_beds
 mkdir supp_figure_beds
 
 #transfer bed files for supplemental factors
