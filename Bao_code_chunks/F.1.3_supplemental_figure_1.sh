@@ -2,11 +2,12 @@
 
 cd /scratch/bhn9by/ATAC/fimo_composites
 
+#transfer bed files for supplemental factors
+#check that family number matches up to corresponding motif
+
 rm -r supp_figure_beds
 mkdir supp_figure_beds
 
-#transfer bed files for supplemental factors
-#check that family number matches up to corresponding motif
 cp PSWM_family_12_fimo.bed supp_figure_beds/NFY_fimo.bed
 cp PSWM_family_13_fimo.bed supp_figure_beds/NRF_fimo.bed
 cp PSWM_family_15_fimo.bed supp_figure_beds/STAT_fimo.bed
