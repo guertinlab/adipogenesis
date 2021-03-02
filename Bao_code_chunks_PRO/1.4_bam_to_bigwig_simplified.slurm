@@ -2,6 +2,7 @@
 
 module load genometools/1.5.10 wigtobigwig/2.8 gcc/7.1.0 seqoutbias/1.2.0
 
+#perform seqOutBias and convert .bam to .bigwig
 for bam in *_pro_plus.bam
 do
     name=$(echo $bam | awk -F"_pro_plus.bam" '{print $1}')
