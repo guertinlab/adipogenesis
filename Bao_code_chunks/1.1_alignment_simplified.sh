@@ -1,5 +1,8 @@
 #!/bin/bash
 
+module load bioconda/py3.6 gcc/7.1.0 bowtie2/2.2.9 samtools/1.10
+source activate myenv
+
 #align .fastq to mm10 genome
 for i in *_atac_PE1.fastq.gz
 do
