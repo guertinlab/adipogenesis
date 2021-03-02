@@ -3,6 +3,8 @@ mkdir /scratch/bhn9by/PRO
 cd /scratch/bhn9by/PRO
 
 #Upload sra.metadata.csv and SRR_Acc_List.txt to PRO directory
+#remove DOS \r\n\ artifact from sra metadata (applicable if csv generated on Windows)
+sed -i 's/\r$//' sra.metadata.csv
 
 #Set up conda env to get access to sratoolkit
 module load bioconda
@@ -35,7 +37,6 @@ do
     gzip $acc.fastq
 done
 
-
 #After all jobs are done, rename files to actual sample names
 for fq in SRR*.fastq.gz
 do
@@ -47,11 +48,7 @@ do
     mv $fq $treat
 done
 
-#remove artifact from renaming
-for fq *.fastq.gz?
-do
-    echo $fq
-done
+
 
 
 
