@@ -1,1 +1,22 @@
+#!/bin/bash
 
+#perform seqOutBias and convert .bam to .bigwig
+
+#make a unique slurm file for each replicate and run them in parallel:
+#header_1   --> sbatch settings
+#temp.txt   --> name of .out file
+#header_2   --> more sbatch settings and modules to load
+#temp2.txt  --> name of relevant file
+#header_3   --> actual commands
+
+for bam in *_pro_plus.bam
+do
+name=$(echo $bam | awk -F"_pro_plus.bam" '{print $1}')
+echo $name
+    echo '#SBATCH -o' $name'.bigwig.out' > temp.txt
+    echo 'name='$name > temp2.txt
+    cat bigwig_slurm_header_1.txt temp.txt bigwig_slurm_header_2.txt temp2.txt bigwig_slurm_header_3.txt > $name.bigwig.slurm
+    sbatch $name.bigwig.slurm
+    rm temp.txt
+    rm temp2.txt
+done
