@@ -1,6 +1,6 @@
 #!/bin/bash
 
-module load bioconda/py3.6 gcc/7.1.0 bowtie2/2.2.9 samtools/1.10 genometools/1.5.10 wigtobigwig/2.8
+module load bioconda/py3.6 gcc/7.1.0 bowtie2/2.2.9 samtools/1.10
 source activate myenv
 
 #align .fastq to mm10 genome
