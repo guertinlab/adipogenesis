@@ -28,7 +28,7 @@ do
     rm temp3.txt
 done
 
-#Alternatively, you can run fasterq-dump and gzip in series. 10-30 minutes per fastq, depend on size.
+#Alternatively, you can run fasterq-dump and gzip in series.
 module load sratoolkit
 cat SRR_Acc_List.txt | while read acc
 do
