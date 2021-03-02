@@ -1,5 +1,5 @@
-#SraRunTable.txt from https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA550096&o=acc_s%3Aa - 'download Metadata'
-#SRR_Acc_List.txt from same site - 'download Accession List'
+#Manually download SraRunTable.txt from https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA550096&o=acc_s%3Aa - 'download Metadata'
+#Manually download SRR_Acc_List.txt from same site - 'download Accession List'
 
 #Fix formatting of SraRunTable
 setwd('C:/School/UVA/Research/Adipogenesis/code_PRO')
@@ -17,3 +17,5 @@ df$names = c(paste0('3T3_t0_rep',1:3,'_pro.fastq.gz'),
              )
 
 write.csv(df,'sra.metadata.csv',row.names=F,quote=F)
+
+#Upload sra.metadata.csv and SRR_Acc_List.txt to Rivanna
