@@ -1,7 +1,6 @@
 #!/bin/bash
 
-module load bioconda/py3.6 gcc/7.1.0 bowtie2/2.2.9 samtools/1.10 genometools/1.5.10 wigtobigwig/2.8
-source activate myenv
+module load genometools/1.5.10 wigtobigwig/2.8 gcc/7.1.0 seqoutbias/1.2.0
 
 for bam in *_pro_plus.bam
 do
