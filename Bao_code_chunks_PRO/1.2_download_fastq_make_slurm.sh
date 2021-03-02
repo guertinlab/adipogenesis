@@ -26,3 +26,14 @@ rm temp2.txt
 rm temp3.txt
 
 done
+
+#After all jobs are done, rename files to actual sample names
+for fq in SRR*.fastq.gz
+do
+    name=$(echo $fq | awk -F".fastq.gz" '{print $1}')
+    echo $name
+    line=$(grep $name sra.metadata.csv)
+    treat=$(echo $line | awk -F',' '{print $31}')
+    echo $treat
+    mv $fq $treat
+done
