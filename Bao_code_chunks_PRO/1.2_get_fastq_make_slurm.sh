@@ -46,3 +46,15 @@ do
     echo $treat
     mv $fq $treat
 done
+
+#remove artifact from renaming
+for fq *.fastq.gz?
+do
+    echo $fq
+done
+
+
+
+
+
+
