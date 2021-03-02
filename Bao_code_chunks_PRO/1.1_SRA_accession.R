@@ -17,5 +17,3 @@ df$names = c(paste0('3T3_t0_rep',1:3,'_pro.fastq.gz'),
              )
 
 write.csv(df,'sra.metadata.csv',row.names=F,quote=F)
-
-#Upload sra.metadata.csv and SRR_Acc_List.txt to Rivanna
