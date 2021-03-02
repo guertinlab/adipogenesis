@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #On Rivanna
 mkdir /scratch/bhn9by/PRO
 cd /scratch/bhn9by/PRO
