@@ -24,7 +24,6 @@ do
     rm temp.txt
     rm temp2.txt
     rm temp3.txt
-
 done
 
 #Alternatively, you can run fasterq-dump and gzip in series. Approximately 7-10 minutes per accession.
