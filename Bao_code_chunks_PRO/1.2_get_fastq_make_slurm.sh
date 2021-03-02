@@ -22,7 +22,7 @@ do
     echo 'fasterq-dump' $acc > temp2.txt
     echo 'gzip' $acc'.fastq' > temp3.txt
     cat sra_slurm_header_1.txt temp.txt sra_slurm_header_2.txt temp2.txt temp3.txt > $acc.slurm
-    sbatch $acc.slurm
+    #sbatch $acc.slurm
     rm temp.txt
     rm temp2.txt
     rm temp3.txt
