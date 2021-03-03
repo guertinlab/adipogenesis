@@ -8,7 +8,7 @@ cd /scratch/bhn9by/PRO
 #remove DOS \r\n\ artifact from sra metadata (applicable if csv generated on Windows)
 sed -i 's/\r$//' sra.metadata.csv
 
-#ucsc commands difficult to install directly; workaround using conda env
+#ucsc packages difficult to install on Rivanna; workaround using conda env
 module load bioconda
 conda create -n myenv2 -c bioconda ucsc-bedgraphtobigwig ucsc-bigwigmerge
 
