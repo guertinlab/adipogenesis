@@ -15,7 +15,7 @@ conda create -n myenv2 -c bioconda ucsc-bedgraphtobigwig ucsc-bigwigmerge
 #get mm10 tallymer files for seqOutBias
 #cp ../ATAC/genome* $PWD
 
-#download .fastq from SRA
+#download .fastq
 #make a unique slurm file for each replicate and run them in parallel
 cat SRR_Acc_List.txt | while read acc
 do
