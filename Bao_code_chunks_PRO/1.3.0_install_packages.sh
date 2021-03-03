@@ -15,9 +15,9 @@ cp ./bin/* /home/bhn9by/bin
 
 #fqdedup
 #local (running rust on Rivanna is complicated)
-git clone 
-cd fqdedup-1.0.0
+git clone https://github.com/guertinlab/fqdedup.git
+cd fqdedup
 cargo build --release 
 
 #sftp upload binary onto Rivanna $PATH
-put fqdedup /home/bhn9by/bin
+put /target/release/fqdedup /home/bhn9by/bin
