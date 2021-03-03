@@ -15,7 +15,7 @@ do
     name=$(echo $bam | awk -F"_pro_plus.bam" '{print $1}')
     echo $name
     
-    #tallymer mappability file should already be available from ATAC so seqOutBias should be fast
+    #tallymer mappability file should already be available from ATAC pipeline so seqOutBias should be fast
     seqOutBias /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa ${name}_pro_plus.bam --no-scale --skip-bed \
               --bw=${name}_plus_body_0-mer.bigWig --tail-edge --read-size=30
     seqOutBias /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa ${name}_pro_minus.bam --no-scale --skip-bed \
