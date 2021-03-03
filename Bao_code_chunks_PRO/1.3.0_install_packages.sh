@@ -15,6 +15,8 @@ tar -xjf fastx_toolkit_0.0.13_binaries_Linux_2.6_amd64.tar.bz2
 cp ./bin/* /home/bhn9by/bin
 
 #fqdedup
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+#restart console so cargo is added to $PATH automatically
 git clone https://github.com/guertinlab/fqdedup.git
 cd fqdedup
 cargo build --release 
