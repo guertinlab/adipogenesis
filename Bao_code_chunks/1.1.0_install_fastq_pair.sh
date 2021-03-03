@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Install fastq_pair command for alignment
-#Technically for this ATAC pipeline you don't need it but we included it for consistency
+#For this ATAC pipeline you don't need it but we included it for consistency
 
 mkdir /scratch/bhn9by/ATAC
 cd /scratch/bhn9by/ATAC
