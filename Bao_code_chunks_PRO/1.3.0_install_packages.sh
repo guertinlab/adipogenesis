@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #on Rivanna
-#Retrieve packages and put on $PATH
+#Install packages and put on $PATH
 
 #cutadapt
 python3 -m pip install --user --upgrade cutadapt
