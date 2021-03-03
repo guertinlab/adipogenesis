@@ -16,11 +16,11 @@ echo $name
     echo '#SBATCH -o' $name'.bigwig.out' > temp.txt
     echo 'name='$name > temp2.txt
     cat bigwig_slurm_header_1.txt temp.txt bigwig_slurm_header_2.txt temp2.txt bigwig_slurm_header_3.txt > $name.bigwig.slurm
-    sbatch $name.bigwig.slurm
     rm temp.txt
     rm temp2.txt
 done
 
+#caution: you can't use the tallymer mappability file from ATAC because it has a different read size!
 #run one slurm file to completion to generate requisite tallymer mappability file
 sbatch 3T3_20min_rep1.bigwig.slurm
 
