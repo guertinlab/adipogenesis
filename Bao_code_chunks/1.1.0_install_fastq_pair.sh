@@ -4,9 +4,6 @@
 #Install fastq_pair and put on $PATH
 #fastq_pair is not required for adipogenesis project but we use it redundantly for our ATAC pipeline
 
-mkdir /scratch/bhn9by/ATAC
-cd /scratch/bhn9by/ATAC
-
 wget https://github.com/linsalrob/fastq-pair/archive/master.zip
 unzip master.zip
 cd fastq-pair-master
