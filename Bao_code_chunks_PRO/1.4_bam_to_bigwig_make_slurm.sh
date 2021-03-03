@@ -20,3 +20,12 @@ echo $name
     rm temp.txt
     rm temp2.txt
 done
+
+#run one slurm file to completion to generate requisite tallymer mappability file
+sbatch 3T3_20min_rep1.bigwig.slurm
+
+#after this is done, start all others (and repeat the first one)
+for slurm in *bigwig*slurm
+do
+    sbatch $slurm
+done
