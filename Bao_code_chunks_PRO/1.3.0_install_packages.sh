@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#on Rivanna
 #Retrieve packages and put on $PATH
 
 #cutadapt
@@ -14,10 +15,8 @@ tar -xjf fastx_toolkit_0.0.13_binaries_Linux_2.6_amd64.tar.bz2
 cp ./bin/* /home/bhn9by/bin
 
 #fqdedup
-#local (running rust on Rivanna is complicated)
 git clone https://github.com/guertinlab/fqdedup.git
 cd fqdedup
 cargo build --release 
+cp /target/release/fqdedup /home/bhn9by/bin
 
-#sftp upload binary onto Rivanna $PATH
-put /target/release/fqdedup /home/bhn9by/bin
