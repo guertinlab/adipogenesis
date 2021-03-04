@@ -5,7 +5,7 @@ mkdir /scratch/bhn9by/PRO
 cd /scratch/bhn9by/PRO
 
 #Upload sra.metadata.csv and SRR_Acc_List.txt to PRO directory
-#remove DOS \r\n\ artifact from sra metadata (applicable if csv generated on Windows)
+#remove DOS \r\n\ artifact from .csv (if applicable)
 sed -i 's/\r$//' sra.metadata.csv
 
 #ucsc packages difficult to install on Rivanna; workaround using conda env
