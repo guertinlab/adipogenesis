@@ -6,7 +6,7 @@
 #SBATCH -A guertinlab
 
 module load bioconda gcc/7.1.0  openmpi/3.1.4 R/4.0.0
-source activate myenv2
+conda activate myenv2
 
 cd /scratch/bhn9by/PRO
 
