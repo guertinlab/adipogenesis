@@ -1,6 +1,10 @@
 #!/bin/bash
 
+#upload sra.metadata.csv and SRR_Acc_List.txt to Rivanna
 cd /scratch/bhn9by/PRO
+
+#remove DOS \r\n\ artifact from .csv (if applicable)
+sed -i 's/\r$//' sra.metadata.csv
 
 #download .fastq
 #make a unique slurm file for each replicate and run them in parallel
