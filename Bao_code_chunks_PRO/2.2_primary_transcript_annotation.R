@@ -255,6 +255,7 @@ bw.plus=bw.plus, bw.minus=bw.minus, bp.bin=5,
 frac.min=frac.min, frac.max=frac.max,
 add.to.end=add.to.end, tau.dist=tau.dist)
 dev.off()
+
 # plot tts curve
 pdf("Gene_curvenr3c1.pdf", onefile=FALSE)
 gene.end.plot(bed=bed.for.tts.eval, gene="Nr3c1",
