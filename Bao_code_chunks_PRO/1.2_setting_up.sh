@@ -19,6 +19,7 @@ cd fastx_bin
 wget http://hannonlab.cshl.edu/fastx_toolkit/fastx_toolkit_0.0.13_binaries_Linux_2.6_amd64.tar.bz2
 tar -xjf fastx_toolkit_0.0.13_binaries_Linux_2.6_amd64.tar.bz2
 cp ./bin/* /home/bhn9by/bin
+cd..
 
 #fqdedup
 #install rust
