@@ -9,7 +9,6 @@ module load bioconda
 conda create -n myenv2 -c bioconda ucsc-bedgraphtobigwig ucsc-bigwigmerge
 
 #get mm10 tallymer files for seqOutBias
-#This step is inappropriate for different read sizes
 cp ../ATAC/genome* $PWD
 
 #install packages for alignment and put on $PATH
