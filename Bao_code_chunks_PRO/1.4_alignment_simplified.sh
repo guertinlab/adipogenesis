@@ -15,8 +15,8 @@ do
         fastx_trimmer -Q33 -f 9 -l 38 | \
         fastx_reverse_complement -Q33 -z -o ${name}.processed.fastq.gz
 
-#cutadapt -a TGGAATTCTCGGGTGCCAAGG -m 5 -O 1 ${name}_PE1.fastq.gz | \
-#fqdedup -i - -o ${name}_PE1.cutadapt.fastq
+#cutadapt -a TGGAATTCTCGGGTGCCAAGG -m 5 -O 1 $i | \
+#fqdedup -i - -o -
 
     echo 'align to mouse genome'
     bowtie2 -p 3 -x /project/genomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2Index/genome -U ${name}.processed.fastq.gz | \
