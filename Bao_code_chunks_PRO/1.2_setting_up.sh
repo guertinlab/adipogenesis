@@ -8,9 +8,6 @@ cd /scratch/bhn9by/PRO
 module load bioconda
 conda create -n myenv2 -c bioconda ucsc-bedgraphtobigwig ucsc-bigwigmerge
 
-#get mm10 tallymer files for seqOutBias
-cp ../ATAC/genome* $PWD
-
 #install packages for alignment and put on $PATH
 #cutadapt
 python3 -m pip install --user --upgrade cutadapt
