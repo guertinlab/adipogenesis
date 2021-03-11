@@ -7,7 +7,7 @@ module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
 echo Starting prep R script
 
 #generate sp_fimo.txt, sp_fimo_nondyn.txt, and sp_klf_2M.txt
-#caution: it is suggested to run this Rscript manually to confirm value of slope and intercept for dataset; will need to be changed depending on input
+#caution: it is suggested to run this Rscript manually to verify slope and intercept of dataset; will need to be changed depending on input
 Rscript ../prep.SP.KLF.fimo.R
 
 module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
