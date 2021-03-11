@@ -1,7 +1,8 @@
 #Manually download SraRunTable.txt from https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA550096&o=acc_s%3Aa - 'download Metadata'
 #Manually download SRR_Acc_List.txt from same site - 'download Accession List'
 
-#Fix formatting of SraRunTable in R
+#locally
+#fix formatting of SraRunTable in R
 setwd('C:/School/UVA/Research/Adipogenesis/code_PRO')
 
 df = read.csv('SraRunTable.txt',header=T)
