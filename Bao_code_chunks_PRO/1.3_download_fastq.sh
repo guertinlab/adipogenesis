@@ -29,6 +29,7 @@ do
     fasterq-dump $acc
     gzip $acc.fastq
 done
+module purge
 
 #After all jobs are done, rename files to actual sample names
 for fq in SRR*.fastq.gz
