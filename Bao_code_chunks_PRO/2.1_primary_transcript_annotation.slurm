@@ -44,3 +44,9 @@ bedGraphToBigWig pro_minus_merged_sorted.bedGraph ${chromsizes} pro_minus_merged
 
 Rscript primary_transcript_annotation.R
 
+rm -r 6day
+mkdir 6day
+mv *6d* 6day
+
+
+
