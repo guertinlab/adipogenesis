@@ -1,9 +1,4 @@
 #!/bin/bash
-#SBATCH -n 1
-#SBATCH -t 96:00:00
-#SBATCH -o prep_annotations.out
-#SBATCH -p largemem
-#SBATCH -A guertinlab
 
 module load bioconda gcc/7.1.0  openmpi/3.1.4 R/4.0.0
 conda activate myenv2
@@ -42,8 +37,10 @@ bigWigMerge ${minusfiles} pro_minus_merged.bedGraph
 LC_COLLATE=C sort -k1,1 -k2,2n pro_minus_merged.bedGraph > pro_minus_merged_sorted.bedGraph
 bedGraphToBigWig pro_minus_merged_sorted.bedGraph ${chromsizes} pro_minus_merged.bigWig
 
+#this pTA Rscript takes 1.5hr to compile--run using slurm for convenience
 Rscript primary_transcript_annotation.R
 
+#discard 6day timepoint from analysis
 rm -r 6day
 mkdir 6day
 mv *6d* 6day
