@@ -41,7 +41,7 @@ bedGraphToBigWig pro_minus_merged_sorted.bedGraph ${chromsizes} pro_minus_merged
 # this pTA Rscript takes 1.5hr to compile--run using slurm for convenience
 Rscript primary_transcript_annotation.R
 
-# discard 6day timepoint from analysis
+# discard 6day timepoint from rest of analysis
 rm -r 6day
 mkdir 6day
 mv *6d* 6day
