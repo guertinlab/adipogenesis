@@ -7,6 +7,8 @@ setwd('C:/School/UVA/Research/Adipogenesis/code_PRO')
 
 df = read.csv('SraRunTable.txt',header=T)
 
+df <- df[order(df$Run),]
+
 df$names = c(paste0('3T3_t0_rep',1:3,'_pro.fastq.gz'),
              paste0('3T3_20min_rep',1:3,'_pro.fastq.gz'),
              paste0('3T3_2hr_rep',1:3,'_pro.fastq.gz'),
