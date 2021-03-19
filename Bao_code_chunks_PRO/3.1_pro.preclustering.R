@@ -64,6 +64,7 @@ plotPCAlattice(x, file = 'PCA_pro.pdf')
 dds.lrt = DESeq(dds, test="LRT", reduced = ~ 1)
 
 res.lrt = results(dds.lrt)
+save(res.lrt, file = 'res.lrt.Rdata')
 
 padj.cutoff = 1e-40
 
