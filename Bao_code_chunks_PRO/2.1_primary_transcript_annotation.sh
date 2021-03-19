@@ -5,7 +5,7 @@ conda activate myenv2
 
 cd /scratch/bhn9by/PRO
 
-#should not run wget in slurm--download tends to fail
+# should not run wget in slurm--download tends to fail
 wget https://hgdownload-test.gi.ucsc.edu/goldenPath/mm10/bigZips/mm10.chrom.sizes
 wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.annotation.gtf.gz
 gunzip gencode.vM25.annotation.gtf.gz
@@ -38,10 +38,10 @@ bigWigMerge ${minusfiles} pro_minus_merged.bedGraph
 LC_COLLATE=C sort -k1,1 -k2,2n pro_minus_merged.bedGraph > pro_minus_merged_sorted.bedGraph
 bedGraphToBigWig pro_minus_merged_sorted.bedGraph ${chromsizes} pro_minus_merged.bigWig
 
-#this pTA Rscript takes 1.5hr to compile--run using slurm for convenience
+# this pTA Rscript takes 1.5hr to compile--run using slurm for convenience
 Rscript primary_transcript_annotation.R
 
-#discard 6day timepoint from analysis
+# discard 6day timepoint from analysis
 rm -r 6day
 mkdir 6day
 mv *6d* 6day
