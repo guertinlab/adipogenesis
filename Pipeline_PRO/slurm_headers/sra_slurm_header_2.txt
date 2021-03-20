@@ -1,0 +1,4 @@
+#SBATCH -p standard
+#SBATCH -A guertinlab
+cd /scratch/bhn9by/PRO/
+module load sratoolkit
