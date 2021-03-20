@@ -136,6 +136,7 @@ df = merge(df,comparisons.df,by = 'row.names',all = TRUE)
 rownames(df) = df$Row.names
 df = df[,-1]
 
+#add baseMean and overall time course info
 print('Add baseMean and overall time course info')
 
 load('res.lrt.Rdata')
