@@ -4,31 +4,45 @@
 mkdir /scratch/bhn9by/PRO
 cd /scratch/bhn9by/PRO
 
-#install ucsc packages via conda env (conda activate myenv2)
-module load bioconda
-conda create -n myenv2 -c bioconda ucsc-bedgraphtobigwig ucsc-bigwigmerge
+#upload sra.metadata.csv and SRR_Acc_List.txt to Rivanna
+#remove DOS \r\n\ artifact from .csv (if applicable)
+sed -i 's/\r$//' sra.metadata.csv
 
-#install packages for alignment and put on $PATH
-#cutadapt
-python3 -m pip install --user --upgrade cutadapt
-cp /home/bhn9by/.local/bin/cutadapt /home/bhn9by/bin
+#download .fastq
+#make a unique slurm file for each replicate and run them in parallel
+cat SRR_Acc_List.txt | while read acc
+do
+    echo $acc
+    echo '#SBATCH -o' $acc'.out' > temp.txt
+    echo 'fasterq-dump' $acc > temp2.txt
+    echo 'gzip' $acc'.fastq' > temp3.txt
+    cat sra_slurm_header_1.txt temp.txt sra_slurm_header_2.txt temp2.txt temp3.txt > $acc.slurm
+    sbatch $acc.slurm
+    rm temp.txt
+    rm temp2.txt
+    rm temp3.txt
+done
 
-#fastx-toolkit
-mkdir fastx_bin
-cd fastx_bin
-wget http://hannonlab.cshl.edu/fastx_toolkit/fastx_toolkit_0.0.13_binaries_Linux_2.6_amd64.tar.bz2
-tar -xjf fastx_toolkit_0.0.13_binaries_Linux_2.6_amd64.tar.bz2
-cp ./bin/* /home/bhn9by/bin
-cd..
+#Alternatively, you can run fasterq-dump and gzip in series.
+module load sratoolkit
+cat SRR_Acc_List.txt | while read acc
+do
+    echo $acc
+    fasterq-dump $acc
+    gzip $acc.fastq
+done
+module purge
 
-#fqdedup
-#install rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-#restart console so cargo is added to $PATH automatically
-git clone https://github.com/guertinlab/fqdedup.git
-cd fqdedup
-cargo build --release 
-cp /target/release/fqdedup /home/bhn9by/bin
+#After all jobs are done, rename files to actual sample names
+for fq in SRR*.fastq.gz
+do
+    name=$(echo $fq | awk -F".fastq.gz" '{print $1}')
+    echo $name
+    line=$(grep $name sra.metadata.csv)
+    treat=$(echo $line | awk -F',' '{print $31}')
+    echo $treat
+    mv $fq $treat
+done
 
 
 
