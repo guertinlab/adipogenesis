@@ -16,6 +16,7 @@ do
         fastx_reverse_complement -Q33 -z -o ${name}.processed.fastq.gz
 
 #updated version of cutadapt commnad: 'cutadapt -a TGGAATTCTCGGGTGCCAAGG -m 5 -O 1 $i | \'
+
 #fqdedup -i - -o -
 
     echo 'align to mouse genome'
