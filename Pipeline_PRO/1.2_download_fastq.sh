@@ -11,6 +11,7 @@ sed -i 's/\r$//' sra.metadata.csv
 #download .fastq
 #make a unique slurm file for each replicate and run them in parallel
 #caution: download connection is sometimes severed during slurm job
+#run 'head -1000 *.out' to check all files were downloaded without interruption
 cat SRR_Acc_List.txt | while read acc
 do
     echo $acc
