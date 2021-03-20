@@ -1,7 +1,0 @@
-cd /scratch/bhn9by/ATAC
-
-name=$(echo $bam | awk -F"_atac_rmdup.bam" '{print $1}')
-echo $name
-
-seqOutBias /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa \
-	   $bam --skip-bed --no-scale --bw=${name}.bigWig --only-paired --shift-counts --read-size=38
