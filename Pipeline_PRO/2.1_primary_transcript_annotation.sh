@@ -5,7 +5,7 @@ conda activate myenv2
 
 cd /scratch/bhn9by/PRO
 
-# should not run wget in slurm--download tends to fail
+# should not run wget in slurm--download connections is often severed
 wget https://hgdownload-test.gi.ucsc.edu/goldenPath/mm10/bigZips/mm10.chrom.sizes
 wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.annotation.gtf.gz
 gunzip gencode.vM25.annotation.gtf.gz
