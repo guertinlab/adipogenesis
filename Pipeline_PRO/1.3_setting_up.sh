@@ -3,6 +3,7 @@
 cd /scratch/bhn9by/PRO
 
 #install ucsc packages via conda env (conda activate myenv2)
+#use 'conda activate myenv2' to access packages
 module load bioconda
 conda create -n myenv2 -c bioconda ucsc-bedgraphtobigwig ucsc-bigwigmerge
 
