@@ -19,7 +19,7 @@ categorize.deseq.df <- function(df, fdr = 0.05, log2fold = 0.0, treat
     return(df.effects.lattice)
 }
 
-setwd("/Users/guertinlab/Adipogenesis/ATAC_analysis_redo")
+setwd("/scratch/bhn9by/ATAC")
 
 peaks = unique(read.table('all_peaks.bed',sep='\t'))
 
