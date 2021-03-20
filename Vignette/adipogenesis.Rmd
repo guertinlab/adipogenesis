@@ -29,11 +29,12 @@ Remember to modify the directory path for all relevant scripts to match your /sc
 ```
 
 # Retrieving ATAC-seq fastq
+Section to be updated once .fastq files are uploaded to GEO
 
 ```{r eval=FALSE}
 ```
 
-# Processing ATAC-seq reads and aligning with Bowtie2
+# Processing ATAC reads and aligning with Bowtie2
 
 ## Installing fastq_pair
 [fastq_pair](https://github.com/linsalrob/fastq-pair) rewrite paired-end fastq files to make sure all reads have a mate, which is required for Bowtie2 to align properly. Remember to move the fastq_pair binary into the $PATH. All files within the /scratch/user directory has a 90 days expiration limit (since last modified) so it is recommended to install packages in a permanent directory like /home/user.
@@ -54,7 +55,7 @@ cd..
 ## Make slurm file for each replicate and run in parallel
 To run slurm jobs for each replicate in parallel, we concatenate three slurm header files and two lines corresponding to the name of the replicate. Processing and aligning each replicate will take several hours so this slurm_header method will be faster. The content of each header is provided in the next subsection.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.1_alignment_make_slurm.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/1.1_alignment_make_slurm.sh)
 
 ```{r eval=FALSE}
 #align .fastq to mm10 genome
@@ -65,7 +66,9 @@ do
     echo $name
     echo '#SBATCH -o' $name'.align.out' > temp.txt
     echo 'i='$i > temp2.txt
-    cat align_slurm_header_1.txt temp.txt align_slurm_header_2.txt temp2.txt align_slurm_header_3.txt > $name.align.slurm
+    cat align_slurm_header_1.txt temp.txt \
+		align_slurm_header_2.txt temp2.txt \
+		align_slurm_header_3.txt > $name.align.slurm
     sbatch $name.align.slurm
     rm temp.txt
     rm temp2.txt
@@ -73,7 +76,7 @@ done
 ```
 
 ### align_slurm_header_1.txt
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/align_slurm_header_1.txt)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/slurm_headers/align_slurm_header_1.txt)
 
 ```{r eval=FALSE}
 #!/bin/bash
@@ -82,7 +85,7 @@ done
 ```
 
 ### align_slurm_header_2.txt
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/align_slurm_header_2.txt)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/slurm_headers/align_slurm_header_2.txt)
 
 ```{r eval=FALSE}
 #SBATCH -p standard
@@ -93,7 +96,7 @@ source activate myenv
 ```
 
 ### align_slurm_header_3.txt
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/align_slurm_header_3.txt)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/slurm_headers/align_slurm_header_3.txt)
 
 ```{r eval=FALSE}
 name=$(echo $i | awk -F"/" '{print $NF}' | \
@@ -122,7 +125,7 @@ gzip ${name}*fastq
 ## Simplified version
 For clarity we provided a simplified, sequential version of the processing and alignment script.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.1_alignment_simplified.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/1.1_alignment_simplified.sh)
 ```{r eval=FALSE}
 #align .fastq to 10mm genome
 for i in *_atac_PE1.fastq.gz
@@ -153,13 +156,13 @@ done
   
 \pagebreak
 
-# Performing seqOutBias
+# Performing seqOutBias on ATAC
 [seqOutBias](https://guertinlab.github.io/seqOutBias/) corrects for enzymatic sequence bias by scaling the aligned read counts by the ratio of genome-wide observed read counts to the expected sequence based counts for each k-mer. The sequence based k-mer counts take into account mappability at a given read length using Genome Tools’ Tallymer program. We will also use seqOutBias to generate bigwig from the bam files.
 
 ## Make slurm file for each replicate
 The content of each header is provided in the next subsection.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.2_bam_to_bigwig_make_slurm.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/1.2_bam_to_bigwig_make_slurm.sh)
 ```{r eval=FALSE}
 for bam in *rmdup.bam
 do
@@ -174,7 +177,7 @@ done
 ```
 
 ### bigwig_slurm_header_1.txt
-[github raw](https://github.com/guertinlab/adipogenesis/blob/master/Bao_code_chunks/slurm_headers/bigwig_slurm_header_1.txt)
+[github raw](https://github.com/guertinlab/adipogenesis/blob/master/Pipeline_ATAC/slurm_headers/bigwig_slurm_header_1.txt)
 
 ```{r eval=FALSE}
 #!/bin/bash
@@ -183,7 +186,7 @@ done
 ```
 
 ### bigwig_slurm_header_2.txt
-[github raw](https://github.com/guertinlab/adipogenesis/blob/master/Bao_code_chunks/slurm_headers/bigwig_slurm_header_2.txt)
+[github raw](https://github.com/guertinlab/adipogenesis/blob/master/Pipeline_ATAC/slurm_headers/bigwig_slurm_header_2.txt)
 
 ```{r eval=FALSE}
 #SBATCH -p standard
@@ -194,7 +197,7 @@ module load genometools/1.5.10 wigtobigwig/2.8 gcc/7.1.0 seqoutbias/1.2.0
 ```
 
 ### bigwig_slurm_header_3.txt
-[github raw](https://github.com/guertinlab/adipogenesis/blob/master/Bao_code_chunks/slurm_headers/bigwig_slurm_header_3.txt)
+[github raw](https://github.com/guertinlab/adipogenesis/blob/master/Pipeline_ATAC/slurm_headers/bigwig_slurm_header_3.txt)
 
 ```{r eval=FALSE}
 cd /scratch/bhn9by/ATAC
@@ -211,7 +214,7 @@ seqOutBias \
 ## Running seqOutBias
 Run one slurm file to completion to generate requisite tallymer mappability file.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.2_bam_to_bigwig_make_slurm.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/1.2_bam_to_bigwig_make_slurm.sh)
 ```{r eval=FALSE}
 sbatch 3T3_20min_rep1.convert.to.bigwig.slurm
 ```
@@ -226,7 +229,7 @@ done
 ## Simplified version
 For clarity we provided a simplified, sequential version of the seqOutBias script.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.2_bam_to_bigwig_simplified.slurm)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/1.2_bam_to_bigwig_simplified.slurm)
 ```{r eval=FALSE}
 #perform seqOutBias and convert .bam to .bigwig
 cd /scratch/bhn9by/ATAC
@@ -248,7 +251,7 @@ done
 # Calling ATAC peaks
 MACS2 is a program for detecting regions of genomic enrichment. The input is .bam files and the output is .bed files. We will also remove blacklisted regions of the mm10 genome using Bedtools.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/1.3_peak_calling.slurm)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/1.3_peak_calling.slurm)
 ```{r eval=FALSE}
 #!/bin/bash
 #SBATCH -n 1
@@ -285,7 +288,7 @@ echo 'Done'
 # ATAC Preclustering
 The following Rscript processes the ATAC peaks data through the DESeq2 workflow.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/2.1_atac_preclustering.R)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/2.1_atac_preclustering.R)
 ```{r eval=FALSE}
 library(bigWig)
 library(DESeq2)
@@ -332,7 +335,7 @@ sample.conditions = factor(sample.conditions, levels=c("t0","20min","40min",
 													"60min","2hr","3hr","4hr"))
 
 deseq.counts.table = DESeqDataSetFromMatrix(df.preadipo, 
-				as.data.frame(sample.conditions), ~ sample.conditions)
+						as.data.frame(sample.conditions), ~ sample.conditions)
 
 dds = DESeq(deseq.counts.table)
 
@@ -364,6 +367,7 @@ Apply the differential functions of DESeq2 to extract dynamic peaks.
 dds.lrt = DESeq(dds, test="LRT", reduced = ~ 1)
 
 res.lrt = results(dds.lrt)
+save(res.lrt, file = 'res.lrt.Rdata')
 
 padj.cutoff = 0.00000001 #1e-8
 
@@ -376,12 +380,26 @@ rownames(meta) = colnames(cluster_rlog)
 save(cluster_rlog, meta, sample.conditions, file = 'cluster_rlog_pval_1e8.Rdata')
 ```
 
+## Nondynamic peaks
+Generate nondynamic peaks set for FIMO.
+
+```{r eval=FALSE}
+not.different = rownames(res.lrt[res.lrt$padj > 0.5 & !is.na(res.lrt$padj) & !is.na(res.lrt$log2FoldChange) & abs(res.lrt$log2FoldChange) < 0.25,])
+#not.different = rownames(res.lrt[res.lrt$padj > 0.1 & !is.na(res.lrt$padj) & !is.na(res.lrt$baseMean) & res.lrt$baseMean > 10,])
+chr = sapply(strsplit(not.different, ':'), '[', 1)
+x = sapply(strsplit(not.different, ':'), '[', 2)
+start = sapply(strsplit(x, '-'), '[', 1)
+end = sapply(strsplit(x, '-'), '[', 2)
+
+curated.not.different = data.frame(chr,start,end)
+write.table(curated.not.different,file='nondynamic_peaks.bed',sep='\t',col.names=F,row.names=F,quote=F)
+```
 \pagebreak
 
 # ATAC Clustering
 Cluster dynamic peaks using degPatterns. Rscript should be run as slurm job due to large memory requirement.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/2.2_atac.clustering.R)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/2.2_atac.clustering.R)
 ```{r eval=FALSE}
 library(DESeq2)
 library(DEGreport)
@@ -400,7 +418,7 @@ save(clusters.all.test.1e8, file = 'clusters.all.minc100.1e8.Rdata')
 
 Use the following .slurm script to run the Rscript.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/2.2_atac.clustering.slurm)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/2.2_atac.clustering.slurm)
 ```{r eval=FALSE}
 #!/bin/bash
 #SBATCH -n 1
@@ -421,7 +439,7 @@ Rscript atac.clustering.R
 # ATAC Postclustering
 The following Rscript visualizes the ATAC clustering with plots of clusters, dendrogram, superclusters, etc. 
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/2.3_atac.post.clustering.R)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/2.3_atac.post.clustering.R)
 ```{r eval=FALSE}
 library(lattice)
 library(data.table)
@@ -739,23 +757,279 @@ for (i in unique(plot.df.atac$supercluster)) {
 
 \pagebreak
 
+# Generating comprehensive ATAC dataframe
+Rerun analysis to generate final ATAC dataframe containing all relevant features.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/2.4_create.final.atac.all.df.R)
+```{r eval=FALSE}
+library(DESeq2)
+
+categorize.deseq.df <- function(df, fdr = 0.05, log2fold = 0.0, treat
+                                = 'Auxin') {
+    
+    df.effects.lattice = df
+    df.effects.lattice$response = 'All Other Peaks'
+    
+    if(nrow(df.effects.lattice[df.effects.lattice$padj < fdr &
+			!is.na(df.effects.lattice$padj) & 
+			df.effects.lattice$log2FoldChange > log2fold,]) > 0) {
+        df.effects.lattice[df.effects.lattice$padj < fdr &
+		!is.na(df.effects.lattice$padj) & 
+		df.effects.lattice$log2FoldChange > log2fold,]$response = 'Increased'
+    }
+    if(nrow(df.effects.lattice[df.effects.lattice$padj < fdr &
+			!is.na(df.effects.lattice$padj) &
+			df.effects.lattice$log2FoldChange < log2fold,]) > 0) {
+        df.effects.lattice[df.effects.lattice$padj < fdr &
+		!is.na(df.effects.lattice$padj) &
+		df.effects.lattice$log2FoldChange < log2fold,]$response = 'Decreased'
+    }
+    if(nrow(df.effects.lattice[df.effects.lattice$padj > 0.5 &
+			!is.na(df.effects.lattice$padj) &
+			abs(df.effects.lattice$log2FoldChange) < 0.25,]) > 0) {
+        df.effects.lattice[df.effects.lattice$padj > 0.5 &
+		!is.na(df.effects.lattice$padj) &
+		abs(df.effects.lattice$log2FoldChange) < 0.25,]$response = 'Unchanged'
+    }
+    
+    return(df.effects.lattice)
+}
+
+setwd("/scratch/bhn9by/ATAC")
+
+peaks = unique(read.table('all_peaks.bed',sep='\t'))
+
+peaks$location = paste0(peaks$V1,':',peaks$V2,'-',peaks$V3)
+
+df = data.frame(row.names = peaks$location,chr=peaks[,1],start=peaks[,2],end=peaks[,3])
+```
+
+## Add counts
+
+```{r eval=FALSE}
+load('normalized.counts.atac.Rdata')
+
+zero.min = c()
+twenty.min = c()
+forty.min = c()
+sixty.min = c()
+onetwenty.min = c()
+oneeighty.min = c()
+twoforty.min = c()
+genes = c()
+
+print('Getting ATAC means')
+for (i in 1:nrow(normalized.counts.atac)) {
+    zero.min = append(zero.min, mean(normalized.counts.atac[i,19:21]))
+    twenty.min = append(twenty.min, mean(normalized.counts.atac[i,1:3]))
+    forty.min = append(forty.min, mean(normalized.counts.atac[i,10:12]))
+    sixty.min = append(sixty.min, mean(normalized.counts.atac[i,16:18]))
+    onetwenty.min = append(onetwenty.min,mean(normalized.counts.atac[i,4:6]))
+    oneeighty.min = append(oneeighty.min, mean(normalized.counts.atac[i,7:9]))
+    twoforty.min = append(twoforty.min, mean(normalized.counts.atac[i,13:15]))
+    genes = append(genes,rownames(normalized.counts.atac)[i])
+}
+
+atac.means = data.frame(row.names = genes, min.0 = zero.min, min.20 = twenty.min,
+                   min.40 = forty.min, min.60 = sixty.min, min.120 = onetwenty.min,
+                   min.180 = oneeighty.min, min.240 = twoforty.min)
+
+save(atac.means,file='atac.means.Rdata')
+
+df = merge(df,atac.means,by='row.names',all=TRUE)
+rownames(df) = df[,1]
+df = df[,-1]
+```
+
+## Add cluster information
+
+```{r eval=FALSE}
+print('Adding Cluster Info')
+print(head(df))
+
+#up.flat - 9,23,17,11
+#grad.up - 5,8,10,1
+#up.down - 6,2,12
+#grad.down - 7,3,4,13,14
+#down.up - 24
+
+supercluster.df = data.frame(cluster=c(9,23,17,11,5,8,10,1,6,2,12,7,3,4,13,14,24),
+                             supercluster=c(rep('up.flat',4),
+											rep('grad.up',4),
+											rep('up.down',3),
+											rep('grad.down',5),
+											rep('down.up',1)))
+
+cluster.df = data.frame()
+for (file in Sys.glob(file.path(paste0('cluster_bed_cluster*.bed')))) {
+    cluster = as.numeric(strsplit(strsplit(file,'cluster_bed_cluster')[[1]][2],'.bed')[[1]][1])
+    print(cluster)
+    sc = supercluster.df[supercluster.df$cluster == cluster,]$supercluster
+    x = read.table(file)
+    x$location = paste0(x$V1,':',x$V2,'-',x$V3)
+    cluster.df = rbind(cluster.df,data.frame(peak=x$location,cluster=cluster,supercluster=sc))
+}
+
+df = merge(df,cluster.df,by.x='row.names',by.y=1,all.x=TRUE)
+rownames(df) = df[,1]
+df = df[,-1]
+```
+
+## Add transcription factor family scores
+
+```{r eval=FALSE}
+print('Adding TF Family Scores')
+print(head(df))
+
+scores.df = data.frame()
+for (file in Sys.glob('fimo_composites/*_fimo_all.bed')) {
+    factor = strsplit(strsplit(file,'/')[[1]][2],'_fimo_all.bed')[[1]][1]
+    print(factor)
+    x = read.table(file,sep='\t')
+    x = x[x$V5 != -1,]
+    if(factor %in% c('SP','KLF')) {
+        y = aggregate(as.numeric(V7)~V1+V2+V3, data=x, FUN=sum)
+    } else {
+        y = aggregate(as.numeric(V8)~V1+V2+V3, data=x, FUN=sum)
+    }
+    colnames(y) = c('chr', 'start', 'end', factor)
+    rownames(y) = paste0(y[,1], ':', y[,2], '-', y[,3])
+    
+    scores.df = rbind(scores.df,data.frame(peak = rownames(y),score=y[,4],factor = factor))
+}
+
+fimo.scores.all.atac = data.frame(peak = unique(scores.df$peak))
+
+for(factor in unique(scores.df$factor)) {
+    temp = scores.df[scores.df$factor == factor,]
+    temp = temp[,c(1,2)]
+    fimo.scores.all.atac = merge(fimo.scores.all.atac,temp,by='peak',all.x=TRUE)
+    colnames(fimo.scores.all.atac)[ncol(fimo.scores.all.atac)] = factor
+}
+
+rownames(fimo.scores.all.atac) = fimo.scores.all.atac$peak
+fimo.scores.all.atac = fimo.scores.all.atac[,-1]
+save(fimo.scores.all.atac,file='fimo.scores.all.atac.Rdata')
+
+df = merge(df,fimo.scores.all.atac,by = 'row.names',all = TRUE)
+rownames(df) = df$Row.names
+df = df[,-1]
+```
+
+## Add pairwise comparisons
+
+```{r eval=FALSE}
+print('Adding Pairwise Comparisons')
+print(head(df))
+
+load('df.preadipo.Rdata')
+
+time.pts.key = data.frame(time.pts=c(rep(20,3),rep(120,3),rep(180,3),rep(40,3),
+									rep(240,3),rep(60,3),rep(0,3)),
+                          cols = c(1:21))
+
+time.pts = c(0,20,40,60,120,180,240)
+
+comparisons.df = data.frame()
+for (i in 1:(length(time.pts)-1)) {
+    for (j in (i+1):length(time.pts)) {
+
+        print(paste0(time.pts[j],'.v.',time.pts[i]))
+        
+        a = time.pts.key[time.pts.key$time.pts == time.pts[i],]$cols
+        b = time.pts.key[time.pts.key$time.pts == time.pts[j],]$cols
+        merged.counts.small = df.preadipo[,c(a,b)]
+
+                                        # number of replicates per condition
+        unt = 3
+        trt = 3
+
+        sample.conditions = factor(c(rep("untreated",unt), rep("treated",trt)), 
+									levels=c("untreated","treated"))
+        mm.deseq.counts.table = DESeqDataSetFromMatrix(merged.counts.small, 
+									DataFrame(sample.conditions), ~ sample.conditions)
+
+        mm.atac = mm.deseq.counts.table
+        atac.size.factors = estimateSizeFactorsForMatrix(merged.counts.small)
+        
+        sizeFactors(mm.atac) = atac.size.factors
+        mm.atac = estimateDispersions(mm.atac)
+        mm.atac = nbinomWaldTest(mm.atac)
+        res.mm.atac = results(mm.atac)
+        
+        lattice = categorize.deseq.df(res.mm.atac, fdr = 0.001, log2fold = 0.0, treat = '')
+        lattice = as.data.frame(lattice[,c(2,6,7)])
+        colnames(lattice) = paste0(colnames(lattice),'.',time.pts[j],'.v.',time.pts[i])
+        
+        comparisons.df = merge(comparisons.df,lattice,by='row.names',all=TRUE)
+        rownames(comparisons.df) = comparisons.df$Row.names
+        comparisons.df = comparisons.df[,-1]
+    }
+}
+
+save(comparisons.df,file='comparisons.df.Rdata')
+
+df = merge(df,comparisons.df,by = 'row.names',all = TRUE)
+rownames(df) = df$Row.names
+df = df[,-1]
+```
+
+## Add baseMean and overall time course info
+
+```{r eval=FALSE}
+print('Add baseMean and overall time course info')
+
+load('res.lrt.Rdata')
+res.lrt = as.data.frame(res.lrt[,c(1,2,6)])
+res.lrt$response = 'Nondynamic'
+res.lrt[res.lrt$padj < 0.00000001 & !is.na(res.lrt$padj),]$response = 'Dynamic'
+colnames(res.lrt) = paste0(colnames(res.lrt),'.time.course')
+
+df = merge(df,res.lrt,by = 'row.names',all = TRUE)
+rownames(df) = paste0(df$chr,':',df$start,'-',df$end)
+df = df[,-1]
+```
+
+## Add distribution
+
+```{r eval=FALSE}
+print('Add distribution')
+
+df$distribution = 'Intergenic'
+
+x = read.table('all_ATAC_peaks_intragenic.bed')
+x$location = paste0(x$V1,':',x$V2,'-',x$V3)
+df[rownames(df) %in% x$location,]$distribution = 'Intragenic'
+
+x = read.table('all_ATAC_peaks_promoters.bed')
+x$location = paste0(x$V1,':',x$V2,'-',x$V3)
+df[rownames(df) %in% x$location,]$distribution = 'Promoter'
+```
+
+```{r eval=FALSE}
+final.atac.all.df=df
+save(final.atac.all.df,file='final.atac.all.df.Rdata')
+```
+
+\pagebreak
+
 # FIMO motif enrichment
 
 ## Download required script
->[fimo_motif_enrichment.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/fimo_motif_enrichment.R): 
+>[fimo_motif_enrichment.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/fimo_motif_enrichment.R): 
 this Rscript performs a Chi-squared test on each motif to determine significance and outputs a barplot for enrichment in clusters. 
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/3.1.0_download_files.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/3.1.0_download_files.sh)
 ```{r eval=FALSE}
 #!/bin/bash
 
 cd /scratch/bhn9by/ATAC
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/fimo_motif_enrichment.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/fimo_motif_enrichment.R
 ```
 
 ## Find motifs enriched in cluster
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/3.1_fimo_motif_enrichment.slurm)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/3.1_fimo_motif_enrichment.slurm)
 ```{r eval=FALSE}
 #!/bin/bash
 #SBATCH -n 1
@@ -819,7 +1093,7 @@ cd ..
 ## Make slurm file for each replicate and run in parallel
 The content of each header is provided in the next subsection.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/3.2_meme_motif_enrichment_make_slurm.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/3.2_meme_motif_enrichment_make_slurm.sh)
 ```{r eval=FALSE}
 #run MEME on each cluster to find enriched motifs
 wget https://hgdownload-test.gi.ucsc.edu/goldenPath/mm10/bigZips/mm10.chrom.sizes
@@ -842,7 +1116,7 @@ done
 
 ### meme_slurm_header_1.txt
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/meme_slurm_header_1.txt)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/slurm_headers/meme_slurm_header_1.txt)
 ```{r eval=FALSE}
 #!/bin/bash
 #SBATCH -n 60
@@ -852,7 +1126,7 @@ done
 
 ### meme_slurm_header_2.txt
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/meme_slurm_header_1.txt)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/slurm_headers/meme_slurm_header_1.txt)
 ```{r eval=FALSE}
 #SBATCH -p parallel
 #SBATCH -A guertinlab
@@ -862,7 +1136,7 @@ module load gcc/7.1.0 mvapich2/2.3.3 bedtools/2.26.0 meme/5.1.0
 
 ### meme_slurm_header_3.txt
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/meme_slurm_header_1.txt)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/slurm_headers/meme_slurm_header_1.txt)
 ```{r eval=FALSE}
 cd meme_motif_enrichment
 
@@ -885,7 +1159,7 @@ cd ..
 ## Simplified Version
 For clarity we provided a simplified, sequential version of the MEME script.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/3.2_meme_motif_enrichment_simplified.slurm)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/3.2_meme_motif_enrichment_simplified.slurm)
 ```{r eval=FALSE}
 #!/bin/bash
 #SBATCH -n 60
@@ -925,7 +1199,7 @@ done
 
 ## Prepare MEME databases
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/3.3_prep_meme_databases.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/3.3_prep_meme_databases.sh)
 ```{r eval=FALSE}
 #Generate homer_uniprobe_jaspar PSWM database
 
@@ -989,7 +1263,7 @@ cat homer_edited_meme.txt \
 
 ## Query MEME motifs in TOMTOM
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/3.4_post_meme_fimo_analysis_part1_meme_tomtom.slurm)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/3.4_post_meme_fimo_analysis_part1_meme_tomtom.slurm)
 ```{r eval=FALSE}
 module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
 
@@ -1051,7 +1325,7 @@ cd ..
 
 ## Organize MEME superclusters
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/3.4_post_meme_fimo_analysis_part2_meme_supercluster.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/3.4_post_meme_fimo_analysis_part2_meme_supercluster.sh)
 ```{r eval=FALSE}
 #organize de novo motifs by supercluster
 echo 'Sort MEME motifs by supercluster'
@@ -1114,7 +1388,7 @@ cd ..
 
 ## Find matches between MEME and FIMO
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/3.4_post_meme_fimo_analysis_part3_fimo_supercluster.slurm)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/3.4_post_meme_fimo_analysis_part3_fimo_supercluster.slurm)
 ```{r eval=FALSE}
 module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
 
@@ -1155,7 +1429,7 @@ cd ..
 
 ## Query factors
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/4.1_query_factors.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/4.1_query_factors.sh)
 ```{r eval=FALSE}
 #!/bin/bash
 
@@ -1222,7 +1496,7 @@ cd ..
 
 ## Visualize PSWM
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/4.2_visualize_pswms.R)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/4.2_visualize_pswms.R)
 ```{r eval=FALSE}
 library(igraph)
 library(dichromat)
@@ -1268,28 +1542,28 @@ knitr::include_graphics("families.pdf")
 # Generating composite motifs
 
 ## Download required scripts
->[tomtom_output_to_composite.py](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/tomtom_output_to_composite.py):
+>[tomtom_output_to_composite.py](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/tomtom_output_to_composite.py):
 this Python script convert the .xml output of tomtom into a PSWM .txt and an offset/reverse complement index .txt, required for generating composite motif.
 
->[generate_composite_motif.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/generate_composite_motif.R):
+>[generate_composite_motif.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/generate_composite_motif.R):
 this Rscript aligns and averages the PSWM of each motif to generate a composite motif.
 
->[meme_header.txt](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/meme_header.txt):
+>[meme_header.txt](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/meme_header.txt):
 this .txt contains the standard MEME suite PSWM header.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/4.3.0_download_files.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/4.3.0_download_files.sh)
 ```{r eval=FALSE}
 #!/bin/bash
 
 cd /scratch/bhn9by/ATAC
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/tomtom_output_to_composite.py
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/generate_composite_motif.R
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/meme_header.txt
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/tomtom_output_to_composite.py
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/generate_composite_motif.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/meme_header.txt
 ```
 
 ## Query TOMTOM to calculate index and values for PSWM
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/4.3_generate_composites_part1_tomtom.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/4.3_generate_composites_part1_tomtom.sh)
 ```{r eval=FALSE}
 #!/bin/bash
 
@@ -1356,7 +1630,7 @@ module purge
 
 ## Generate composite motif and sequence logo
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/4.3_generate_composites_part2_ceqlogo.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/4.3_generate_composites_part2_ceqlogo.sh)
 ```{r eval=FALSE}
 #!/bin/bash
 
@@ -1399,19 +1673,22 @@ knitr::include_graphics("PSWM_family_1.png")
 # Running FIMO on composite and splitting SP/KLF
 
 ## Download required scripts
->[generate_composite_motif.SP.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/generate_composite_motif.SP.R):
+>[generate_composite_motif.SP.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/generate_composite_motif.SP.R):
 this Rscript is similar to the previous generate_composite_motif.R but is specific for SP.
 
->[generate_composite_motif.KLF.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/generate_composite_motif.KLF.R):
+>[generate_composite_motif.KLF.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/generate_composite_motif.KLF.R):
 this Rscript is similar to the previous generate_composite_motif.R but is specific for KLF.
 
->[prep.SP.KLF.fimo.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/prep.SP.KLF.fimo.R):
-this Rscript [insert function]
+>[prep.SP.KLF.fimo.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/prep.SP.KLF.fimo.R):
+this Rscript collapses each peak in the SP.KLF bed files into one continuous string to be compatible with FIMO.
 
->[SP_KLF_split.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/SP_KLF_split.R):
-this Rscript [insert function]
+>[SP_KLF_split.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/SP_KLF_split.R):
+this Rscript split SP and KLF into distinct motifs and generate corresponding bed files.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.1.0_download_files.sh)
+>[extract.motifs.from.combined.family.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/extract.motifs.from.combined.family.R):
+this Rscript extracts up/down composite motifs from the combined SP.KLF .
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/5.1.0_download_files.sh)
 ```{r eval=FALSE}
 #!/bin/bash
 
@@ -1420,22 +1697,17 @@ cd /scratch/bhn9by/ATAC/
 
 cd /scratch/bhn9by/ATAC/
 #for main figure
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/generate_composite_motif.SP.R
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/generate_composite_motif.KLF.R
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/prep.SP.KLF.fimo.R
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/SP_KLF_split.R
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/misc_scripts/extract.motifs.from.combined.family.R
-
-#for supplemental figure
-wget https://github.com/guertinlab/adipogenesis/blob/master/Bao_code_chunks/misc_scripts/post.composite.fimo.supp.R
-wget https://github.com/guertinlab/adipogenesis/blob/master/Bao_code_chunks/misc_scripts/plot.motif.enrichment.supp.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/generate_composite_motif.SP.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/generate_composite_motif.KLF.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/prep.SP.KLF.fimo.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/SP_KLF_split.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/extract.motifs.from.combined.family.R
 ```
-
 
 ## Split and generate individual composite motifs for SP and KLF
 The following script is nearly identical to the previous composite steps but require minor name and directory changes.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.1_SP_KLF_split_generate_composites.slurm)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/5.1_SP_KLF_split_generate_composites.slurm)
 ```{r eval=FALSE}
 cd /scratch/bhn9by/ATAC/
 
@@ -1583,7 +1855,7 @@ knitr::include_graphics("KLF_composite.png")
 ## Make slurm file for each replicate and run in parallel
 The content of each header is provided in the next subsection.
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.2_fimo_composite_make_slurm.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/5.2_fimo_composite_make_slurm.sh)
 ```{r eval=FALSE}
 #run FIMO against PSWM and take top 2 million hits
 rm -r fimo_composites
@@ -1606,7 +1878,7 @@ done
 
 ### fimo_slurm_header_1.txt
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/fimo_slurm_header_1.txt)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/slurm_headers/fimo_slurm_header_1.txt)
 ```{r eval=FALSE}
 #!/bin/bash
 #SBATCH -n 1
@@ -1615,7 +1887,7 @@ done
 
 ### fimo_slurm_header_2.txt
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/fimo_slurm_header_2.txt)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/slurm_headers/fimo_slurm_header_2.txt)
 ```{r eval=FALSE}
 #SBATCH -p standard
 #SBATCH -A guertinlab
@@ -1625,7 +1897,7 @@ module load gcc/7.1.0  meme/4.10.2
 
 ### fimo_slurm_header_3.txt
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/slurm_headers/fimo_slurm_header_3.txt)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/slurm_headers/fimo_slurm_header_3.txt)
 ```{r eval=FALSE}
 cd /scratch/bhn9by/ATAC/fimo_composites
 
@@ -1652,7 +1924,7 @@ echo 'DONE'
 ## Simplified version
 For clarity we provided a simplified, sequential version of the FIMO script
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.2_fimo_composite_simplified.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/5.2_fimo_composite_simplified.sh)
 ```{r eval=FALSE}
 #!/bin/bash
 #SBATCH -n 1
@@ -1692,7 +1964,7 @@ done
 
 ## Preparing for Main Figure 1
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.3_prep_main_figure_1.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/5.3_prep_main_figure_1.sh)
 ```{r eval=FALSE}
 #!/bin/bash
 module load gcc/9.2.0 bedtools/2.29.2
@@ -1729,7 +2001,7 @@ cp PSWM_family_18_2M.bed main_figure_beds/TWIST_2M.bed
 
 ## Processing FIMO for SP and KLF
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.4_SP_KLF_split_processing.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/5.4_SP_KLF_split_processing.sh)
 ```{r eval=FALSE}
 cd /scratch/bhn9by/ATAC/SP_KLF_split
 
@@ -1767,7 +2039,7 @@ knitr::include_graphics("LDA_analysis.pdf")
 ```
 
 ##Extracting up/down composite motifs from combined SP/KLF
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/5.5_extract_up_down_SP_KLF.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/5.5_extract_up_down_SP_KLF.sh)
 ```{r eval=FALSE}
 #extract up/down composite motifs from combined SP.KLF
 cd /scratch/bhn9by/ATAC/SP_KLF_split
@@ -1792,12 +2064,11 @@ knitr::include_graphics("SP_KLF_dynamic_accessibility.pdf")
 \pagebreak
 
 # Figure 1
-The following Rscripts generate plots showing that distinct transcription factors drive opening and closing of chromatin in early adipogenesis.
-
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/F.1.1_post.composite.fimo.R)
 
 ## Generate 'fimo.scores.atac.Rdata' object
+The following Rscript generates plots showing that distinct transcription factors drive opening and closing of chromatin in early adipogenesis.
 
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/F.1.1_post.composite.fimo.R)
 ```{r eval=FALSE}
 library(ggplot2)
 library(lattice)
@@ -2567,7 +2838,7 @@ for(i in unique(df.seq$factor)) {
 
 ## Generating bigWig for motif enrichment plot
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/F.1.2_bed_to_bigWig.sh)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/F.1.2_bed_to_bigWig.sh)
 ```{r eval=FALSE}
 #prepare bigWigs for motif enrichment plot
 cd /scratch/bhn9by/ATAC/fimo_composites/main_figure_beds
@@ -2602,7 +2873,7 @@ done
 
 ## Plot motif enrichment around summits
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/F.1.3_plot.motif.enrichment.R)
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/F.1.3_plot.motif.enrichment.R)
 ```{r eval=FALSE}
 library(lattice)
 library(bigWig)
@@ -2728,9 +2999,27 @@ knitr::include_graphics("motif_enrichment_around_summits.pdf")
 \pagebreak
 
 #Supplemental Figure 1
-Generate plots for supplemental families (plots not shown due to repetitiveness)
 
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks/F.1.4_supplemental_figure_1.sh)
+## Download required scripts
+>[post.composite.fimo.supp.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/post.composite.fimo.supp.R):
+this Rscript generates an assortment of plots of miscellaneous factors for supplemental figure 1.
+
+>[plot.motif.enrichment.supp.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/plot.motif.enrichment.supp.R):
+this Rscript generates a motif enrichment plot of miscellaneous factors for supplemental figure 1.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/F.1.0_download_files.sh)
+```{r eval=FALSE}
+#!/bin/bash
+
+cd /scratch/bhn9by/ATAC
+wget https://github.com/guertinlab/adipogenesis/blob/master/Pipeline_ATAC/misc_scripts/post.composite.fimo.supp.R
+wget https://github.com/guertinlab/adipogenesis/blob/master/Pipeline_ATAC/misc_scripts/plot.motif.enrichment.supp.R
+```
+
+## Generate plots for supplemental families 
+Plots are not shown due to repetitiveness.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/F.1.4_supplemental_figure_1.sh)
 ```{r eval=FALSE}
 cd /scratch/bhn9by/ATAC/fimo_composites
 
@@ -2781,11 +3070,918 @@ Rscript /scratch/bhn9by/ATAC/plot.motif.enrichment.supp.R
 
 \pagebreak
 
-#PRO-Seq
+# Retrieving PRO-seq fastq
 
-##PLACEHOLDER
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/1.1_SRA_accession.R)
+## Locally: download GEO tables and append sample names
 
+```{r eval=FALSE}
+#Manually download SraRunTable.txt from https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA550096&o=acc_s%3Aa - 'download Metadata'
+#Manually download SRR_Acc_List.txt from same site - 'download Accession List'
 
+#locally
+#fix formatting of SraRunTable in R
+setwd('C:/School/UVA/Research/Adipogenesis/code_PRO')
+
+df = read.csv('SraRunTable.txt',header=T)
+
+df <- df[order(df$Run),]
+
+df$names = c(paste0('3T3_t0_rep',1:3,'_pro.fastq.gz'),
+             paste0('3T3_20min_rep',1:3,'_pro.fastq.gz'),
+             paste0('3T3_2hr_rep',1:3,'_pro.fastq.gz'),
+             paste0('3T3_3hr_rep',1:3,'_pro.fastq.gz'),
+             paste0('3T3_40min_rep',1:3,'_pro.fastq.gz'),
+             paste0('3T3_4hr_rep',1:3,'_pro.fastq.gz'),
+             paste0('3T3_60min_rep',1:3,'_pro.fastq.gz'),
+             paste0('3T3_6d_rep',1:3,'_pro.fastq.gz')
+             )
+
+write.csv(df,'sra.metadata.csv',row.names=F,quote=F)
+```
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/1.2_download_fastq.sh)
+## Download .fastq files on Rivanna
+
+```{r eval=FALSE}
+#On Rivanna
+mkdir /scratch/bhn9by/PRO
+cd /scratch/bhn9by/PRO
+
+#upload sra.metadata.csv and SRR_Acc_List.txt to Rivanna
+#remove DOS \r\n\ artifact from .csv
+sed -i 's/\r$//' sra.metadata.csv
+
+#download .fastq
+#make a unique slurm file for each replicate and run them in parallel
+#caution: download connection is sometimes severed during slurm job
+#run 'head -1000 *.out' to check all files were downloaded without interruption
+cat SRR_Acc_List.txt | while read acc
+do
+    echo $acc
+    echo '#SBATCH -o' $acc'.out' > temp.txt
+    echo 'fasterq-dump' $acc > temp2.txt
+    echo 'gzip' $acc'.fastq' > temp3.txt
+    cat sra_slurm_header_1.txt temp.txt sra_slurm_header_2.txt temp2.txt temp3.txt > $acc.slurm
+    sbatch $acc.slurm
+    rm temp.txt
+    rm temp2.txt
+    rm temp3.txt
+done
+
+#Alternatively, you can run fasterq-dump and gzip in series.
+module load sratoolkit
+cat SRR_Acc_List.txt | while read acc
+do
+    echo $acc
+    fasterq-dump $acc
+    gzip $acc.fastq
+done
+module purge
+
+#After all jobs are done, rename files to actual sample names
+for fq in SRR*.fastq.gz
+do
+    name=$(echo $fq | awk -F".fastq.gz" '{print $1}')
+    echo $name
+    line=$(grep $name sra.metadata.csv)
+    treat=$(echo $line | awk -F',' '{print $31}')
+    echo $treat
+    mv $fq $treat
+done
+```
+
+\pagebreak
+
+# Installing required packages
+[bedgraphtobigwig](https://bioconda.github.io/recipes/ucsc-bedgraphtobigwig/README.html) converts bedGraph files to bigWig.
+[bigwigmerge](https://bioconda.github.io/recipes/ucsc-bigwigmerge/README.html) merges multiple bigWig files into a single bedGraph.
+[cutadapt](https://cutadapt.readthedocs.io/en/stable/) removes adapter sequences from sequencing reads.
+[fastx_trimmer, fastx_reverse_complement](http://hannonlab.cshl.edu/fastx_toolkit/commandline.html) process sequencing reads to the desired positions and read size.
+[fqdedup](https://github.com/guertinlab/fqdedup) removes PCR duplicates from fastq files.
+
+```{r eval=FALSE}
+cd /scratch/bhn9by/PRO
+
+#install ucsc packages via conda env 
+#use 'conda activate myenv2' to access packages
+module load bioconda
+conda create -n myenv2 -c bioconda ucsc-bedgraphtobigwig ucsc-bigwigmerge
+
+#install packages for alignment and put on $PATH
+#cutadapt
+python3 -m pip install --user --upgrade cutadapt
+cp /home/bhn9by/.local/bin/cutadapt /home/bhn9by/bin
+
+#fastx-toolkit (need fastx_trimmer, fastx_reverse_complement)
+mkdir fastx_bin
+cd fastx_bin
+wget http://hannonlab.cshl.edu/fastx_toolkit/fastx_toolkit_0.0.13_binaries_Linux_2.6_amd64.tar.bz2
+tar -xjf fastx_toolkit_0.0.13_binaries_Linux_2.6_amd64.tar.bz2
+cp ./bin/* /home/bhn9by/bin
+cd..
+
+#fqdedup
+#install rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+#restart console so cargo is added to $PATH automatically
+git clone https://github.com/guertinlab/fqdedup.git
+cd fqdedup
+cargo build --release 
+cp /target/release/fqdedup /home/bhn9by/bin
+```
+
+\pagebreak
+
+# Processing PRO reads and aligning with Bowtie2
+
+## Make slurm file for each replicate and run in parallel
+The content of each header is provided in the next subsection.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/1.4_alignment_make_slurm.sh)
+
+```{r eval=FALSE}
+#align .fastq to mm10 genome
+
+for i in *pro.fastq.gz
+do
+    name=$(echo $i | awk -F"/" '{print $NF}' | awk -F"_pro.fastq.gz" '{print $1}')
+    echo $name
+    echo '#SBATCH -o' $name'.align.out' > temp.txt
+    echo 'i='$i > temp2.txt
+    cat align_slurm_header_1.txt temp.txt 
+		align_slurm_header_2.txt temp2.txt 
+		align_slurm_header_3.txt > $name.align.slurm
+    sbatch $name.align.slurm
+    rm temp.txt
+    rm temp2.txt
+done
+```
+
+### align_slurm_header_1.txt
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/slurm_headers/align_slurm_header_1.txt)
+
+```{r eval=FALSE}
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 96:00:00
+```
+
+### align_slurm_header_2.txt
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/slurm_headers/align_slurm_header_2.txt)
+
+```{r eval=FALSE}
+#SBATCH -p standard
+#SBATCH -A guertinlab
+
+module load bioconda/py3.6 gcc/7.1.0 bowtie2/2.2.9 samtools/1.10
+source activate myenv
+```
+
+### align_slurm_header_3.txt
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/slurm_headers/align_slurm_header_3.txt)
+
+```{r eval=FALSE}
+name=$(echo $i | awk -F"/" '{print $NF}' | awk -F"_pro.fastq" '{print $1}')
+echo $name
+
+echo 'trim adapters'
+cutadapt -m 26 -a TGGAATTCTCGGGTGCCAAGG $i | \
+    fqdedup -i - -o - | \
+    fastx_trimmer -Q33 -f 9 -l 38 | \
+    fastx_reverse_complement -Q33 -z -o ${name}.processed.fastq.gz
+
+echo 'align to mouse genome'
+bowtie2 -p 3 -x /project/genomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2Index/genome \
+		-U ${name}.processed.fastq.gz | \
+    samtools view -b - | \
+    samtools sort - -o ${name}.sorted.bam
+
+echo 'sort and separate plus/minus reads'
+samtools view -bh -F 20 ${name}.sorted.bam > ${name}_pro_plus.bam
+samtools view -bh -f 0x10 ${name}.sorted.bam > ${name}_pro_minus.bam
+
+echo 'done'
+```
+
+## Simplified version
+For clarity we provided a simplified, sequential version of the processing and alignment script.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/1.1_alignment_simplified.sh)
+```{r eval=FALSE}
+#align .fastq to mm10 genome
+for i in *_pro.fastq.gz
+do
+    name=$(echo $i | awk -F"/" '{print $NF}' | awk -F"_pro.fastq" '{print $1}')
+    echo $name
+
+    echo 'trim adapters'
+    cutadapt -m 26 -a TGGAATTCTCGGGTGCCAAGG $i | \
+        fqdedup -i - -o - | \
+        fastx_trimmer -Q33 -f 9 -l 38 | \
+        fastx_reverse_complement -Q33 -z -o ${name}.processed.fastq.gz
+
+#updated version of cutadapt command: 'cutadapt -a TGGAATTCTCGGGTGCCAAGG -m 5 -O 1 $i | \'
+
+#fqdedup -i - -o -
+
+    echo 'align to mouse genome'
+    bowtie2 -p 3 -x /project/genomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2Index/genome -U ${name}.processed.fastq.gz | \
+        samtools view -b - | \
+        samtools sort - -o ${name}.sorted.bam
+
+    echo 'sort and separate plus/minus reads'
+    samtools view -bh -F 20 ${name}.sorted.bam > ${name}_pro_plus.bam
+    samtools view -bh -f 0x10 ${name}.sorted.bam > ${name}_pro_minus.bam
+
+    echo 'done'
+done
+```
+
+\pagebreak
+
+# Performing seqOutBias on PRO
+
+## Make slurm file for each replicate
+The content of each header is provided in the next subsection.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/1.5_bam_to_bigwig_make_slurm.sh)
+```{r eval=FALSE}
+for bam in *_pro_plus.bam
+do
+name=$(echo $bam | awk -F"_pro_plus.bam" '{print $1}')
+echo $name
+    echo '#SBATCH -o' $name'.bigwig.out' > temp.txt
+    echo 'name='$name > temp2.txt
+    cat bigwig_slurm_header_1.txt temp.txt
+		bigwig_slurm_header_2.txt temp2.txt
+		bigwig_slurm_header_3.txt > $name.bigwig.slurm
+    rm temp.txt
+    rm temp2.txt
+done
+```
+
+### bigwig_slurm_header_1.txt
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/slurm_headers/bigwig_slurm_header_1.txt)
+
+```{r eval=FALSE}
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 96:00:00
+```
+
+### bigwig_slurm_header_2.txt
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/slurm_headers/bigwig_slurm_header_2.txt
+
+```{r eval=FALSE}
+#SBATCH -p standard
+#SBATCH -A guertinlab
+
+module load genometools/1.5.10 wigtobigwig/2.8 gcc/7.1.0 seqoutbias/1.2.0
+
+```
+
+### bigwig_slurm_header_3.txt
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/slurm_headers/bigwig_slurm_header_3.txt)
+
+```{r eval=FALSE}
+echo 'convert to bigwig'
+seqOutBias /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa \
+				${name}_pro_plus.bam --no-scale --skip-bed \
+              --bw=${name}_plus_body_0-mer.bigWig --tail-edge --read-size=30
+seqOutBias /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa \
+				${name}_pro_minus.bam --no-scale --skip-bed \
+              --bw=${name}_minus_body_0-mer.bigWig --tail-edge --read-size=30
+```
+
+## Running seqOutBias
+Run one slurm file to completion to generate requisite tallymer mappability file.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/1.5_bam_to_bigwig_make_slurm.sh)
+```{r eval=FALSE}
+sbatch 3T3_20min_rep1.bigwig.slurm
+```
+After this is done, start all others (and repeat the first one).
+```{r eval=FALSE}
+for slurm in *bigwig*slurm
+do
+    sbatch $slurm
+done
+```
+
+## Simplified version
+For clarity we provided a simplified, sequential version of the seqOutBias script.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/1.5_bam_to_bigwig_simplified.slurm)
+```{r eval=FALSE}
+#perform seqOutBias and convert .bam to .bigwig
+cd /scratch/bhn9by/PRO
+
+for bam in *_pro_plus.bam
+do
+    name=$(echo $bam | awk -F"_pro_plus.bam" '{print $1}')
+    echo $name
+    
+    #caution: you can't use the tallymer mappability file from ATAC because it has a different read size!
+    seqOutBias /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa \
+				${name}_pro_plus.bam --no-scale --skip-bed \
+              --bw=${name}_plus_body_0-mer.bigWig --tail-edge --read-size=30
+    seqOutBias /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa \
+				${name}_pro_minus.bam --no-scale --skip-bed \
+              --bw=${name}_minus_body_0-mer.bigWig --tail-edge --read-size=30
+done
+```
+
+\pagebreak
+
+# Primary Transcript Annotation
+
+## Download required scripts
+>[pTA.functions.R](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_ATAC/misc_scripts/tomtom_output_to_composite.py):
+this .R file provides functions for performing pTA
+
+>[overlaps_remove.csv](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/misc_scripts/overlaps_remove.csv),
+[overlaps_keepadjacent.csv](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/overlaps_keepadjacent.csv),
+[duplicate_remove.csv](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/duplicate_remove.csv),
+[duplicate_keepadjacent.csv](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/duplicate_keepadjacent.csv):
+these tables provide names of genes to be kept or removed from pTA
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/2.1.0_download_files.sh)
+```{r eval=FALSE}
+#!/bin/bash
+
+cd /scratch/bhn9by/primary_transcript_annotation
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/pTA.functions.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/overlaps_remove.csv
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/overlaps_keepadjacent.csv
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/duplicate_remove.csv
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/duplicate_keepadjacent.csv
+
+#remove DOS \r\n\ artifact from .csv
+sed -i 's/\r$//' *csv
+```
+
+## Retrieve reference chromosomes files and merge bigWig files
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/2.1_primary_transcript_annotation.sh)
+```{r eval=FALSE}
+module load bioconda gcc/7.1.0  openmpi/3.1.4 R/4.0.0
+conda activate myenv2
+
+cd /scratch/bhn9by/PRO
+
+# should not run wget in slurm--download connection is often severed
+wget https://hgdownload-test.gi.ucsc.edu/goldenPath/mm10/bigZips/mm10.chrom.sizes
+wget ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.annotation.gtf.gz
+gunzip gencode.vM25.annotation.gtf.gz
+
+# get the first exons for protein coding genes
+grep 'transcript_type "protein_coding"' gencode.vM25.annotation.gtf | \
+     awk '{if($3=="exon"){print $0}} ' | \
+     grep -w "exon_number 1" | \
+     cut -f1,4,5,7,9 | tr ";" "\t" | \
+     awk '{for(i=5;i<=NF;i++){if($i~/^gene_name/){a=$(i+1)}} print $1,$2,$3,a,"na",$4}' | \
+     tr " " "\t" | tr -d '"' > gencode.mm10.firstExon.bed
+
+# get all transcripts for protein coding genes
+grep 'transcript_type "protein_coding"' gencode.vM25.annotation.gtf | \
+     awk '{if($3=="transcript"){print $0}} ' | \
+     cut -f1,4,5,7,9 | tr ";" "\t" | \
+     awk '{for(i=5;i<=NF;i++){if($i~/^gene_name/){a=$(i+1)}} print $1,$2,$3,a,"na",$4}' | \
+     tr " " "\t" | tr -d '"' > gencode.mm10.transcript.bed
+
+# chrom sizes file
+chromsizes=mm10.chrom.sizes
+
+# merge plus
+plusfiles=$(ls *plus*bigWig)
+bigWigMerge ${plusfiles} pro_plus_merged.bedGraph
+LC_COLLATE=C sort -k1,1 -k2,2n pro_plus_merged.bedGraph > pro_plus_merged_sorted.bedGraph
+bedGraphToBigWig pro_plus_merged_sorted.bedGraph ${chromsizes} pro_plus_merged.bigWig
+
+# merge minus
+minusfiles=$(ls *minus*bigWig)
+bigWigMerge ${minusfiles} pro_minus_merged.bedGraph
+LC_COLLATE=C sort -k1,1 -k2,2n pro_minus_merged.bedGraph > pro_minus_merged_sorted.bedGraph
+bedGraphToBigWig pro_minus_merged_sorted.bedGraph ${chromsizes} pro_minus_merged.bigWig
+```
+
+## Annotating Primary Transcript
+pTA Rscript takes ~2 hour to compile. Run as a slurm job for your own convenience.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/2.2_primary_transcript_annotation.R)
+```{r eval=FALSE}
+library(devtools)
+library(NMF)
+library(dplyr)
+library(bigWig)
+library(pracma)
+library(RColorBrewer)
+#install_github("WarrenDavidAnderson/genomicsRpackage/primaryTranscriptAnnotation")
+library(primaryTranscriptAnnotation)
+
+setwd('/scratch/bhn9by/PRO/primary_transcript_annotation')
+
+source('pTA.functions.R')
+
+# import data for first exons, annotate, and remove duplicate transcripts
+fname = "../gencode.mm10.firstExon.bed"
+dat0 = read.table(fname,header=F,stringsAsFactors=F)
+names(dat0) = c('chr', 'start', 'end', 'gene', 'xy', 'strand')
+dat0 = unique(dat0)
+gencode.firstExon = dat0
+# import data for all transcripts, annotate, and remove duplicate transcripts
+fname = "../gencode.mm10.transcript.bed"
+dat0 = read.table(fname,header=F,stringsAsFactors=F)
+names(dat0) = c('chr', 'start', 'end', 'gene', 'xy', 'strand')
+dat0 = unique(dat0)
+gencode.transcript = dat0
+# chromosome sizes
+chrom.sizes = read.table("../mm10.chrom.sizes",stringsAsFactors=F,header=F)
+names(chrom.sizes) = c("chr","size")
+
+plus.file = "../pro_plus_merged.bigWig"
+minus.file = "../pro_minus_merged.bigWig"
+bw.plus = load.bigWig(plus.file)
+bw.minus = load.bigWig(minus.file)
+
+#get intervals for furthest TSS and TTS +/- interval
+largest.interval.bed = get.largest.interval(bed=gencode.transcript)
+# filtering which read count and read density might be consider as insignificant
+transcript.reads = read.count.transcript(bed=gencode.transcript, bw.plus=bw.plus, bw.minus=bw.minus)
+
+# evaluate count and density distributions
+pdf("Histogram_density_distibution.pdf", useDingbats = FALSE, width=6.4, height=5.4)
+par(mfrow=c(1,2))
+hist(log(transcript.reads$density), breaks=200,
+col="black",xlab="log10 read density",main="")
+hist(log(transcript.reads$counts), breaks=200,
+col="black",xlab="log10 read count",main="")
+dev.off()
+```
+
+```{r densitydistribution, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
+knitr::include_graphics("Histogram_density_distibution.pdf")
+```
+
+```{r eval=FALSE}
+# specify which genes to cut based on low expression, visualize cutoffs
+pdf("Histogram_density_distibution_treshold.pdf", useDingbats = FALSE, width=6.4, height=5.4)
+den.cut = -4
+cnt.cut = 2
+ind.cut.den = which(log(transcript.reads$density) < den.cut)
+ind.cut.cnt = which(log(transcript.reads$counts) < cnt.cut)
+ind.cut = union(ind.cut.den, ind.cut.cnt)
+par(mfrow=c(1,2))
+hist(log(transcript.reads$density), breaks=200,
+col="black",xlab="log"[10]~" read density",main="")
+abline(v=den.cut, col="red")
+hist(log(transcript.reads$counts), breaks=200,
+col="black",xlab="log"[10]~" read count",main="")
+abline(v=cnt.cut, col="red")
+dev.off()
+```
+
+```{r densitydistributionthreshold, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
+knitr::include_graphics("Histogram_density_distibution_treshold.pdf")
+```
+
+```{r eval=FALSE}
+# remove "unexpressed" genes
+unexp = names(transcript.reads$counts)[ind.cut]
+largest.interval.expr.bed = largest.interval.bed[
+    !(largest.interval.bed$gene %in% unexp),]
+# select the TSS for each gene and incorporate these TSSs
+# into the largest interval coordinates
+bp.range = c(20,120)
+cnt.thresh = 2
+bed.out = largest.interval.expr.bed
+bed.in = gencode.firstExon[gencode.firstExon$gene %in% bed.out$gene,]
+TSS.gene = get.TSS(bed.in=bed.in, bed.out=bed.out,
+                   bw.plus=bw.plus, bw.minus=bw.minus,
+                   bp.range=bp.range, cnt.thresh=cnt.thresh)
+TSS.gene = TSS.gene$bed
+
+# parameters and analysis
+window = 1000
+bp.bin = 10
+bed1 = TSS.gene
+bed2 = largest.interval.expr.bed
+bed2 = bed2[bed2$gene %in% bed1$gene,]
+tss.eval = eval.tss(bed1=bed1, bed2=bed2,
+                    bw.plus=bw.plus, bw.minus=bw.minus,
+window=window, bp.bin=bp.bin, fname="TSSres.pdf")
+
+#Inferred TSSs showed as distribution of paused RNA polymerase density
+pdf("TS.pdf", useDingbats = FALSE, width=6.4, height=5.4)
+bk = seq(-window/2,window/2, bp.bin)
+hist(tss.eval$tss.dists.inf$dist, main="overlay",
+     xlab="dist from TSS to read max (bp)",
+     breaks=bk, col='black')
+bk = seq(-window/2,window/2, bp.bin)
+hist( tss.eval$tss.dists.lng$dist,
+breaks=bk, col='red', add=T)
+dev.off()
+```
+
+```{r TS, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
+knitr::include_graphics("TS.pdf")
+```
+
+```{r eval=FALSE}
+# identify duplicates
+dups = get.dups(bed = TSS.gene)
+max(dups$cases)
+head(dups)
+write.table(dups,"duplicateCoords.bed",quote=F,sep="\t",col.names=F,row.names=F)
+
+#put *merged.bigWig files on cyverse and look at duplicate examples in browser
+#annotations that should be entirely removed go into 'duplicate_remove.csv'
+#annotations that should be kept should be ordered and put into 'duplicate_keepadjacent.csv'
+remove.genes.id <- read.csv(file="duplicate_remove.csv",
+header=TRUE, sep=",", stringsAsFactors=F)
+fix.genes.id <- read.csv("duplicate_keepadjacent.csv",
+header= TRUE, sep=",", stringsAsFactors=F)
+# remove genes based on manual analysis, genes cosidered as adjecent will be adressed below
+genes.remove1 = c(remove.genes.id$remove, fix.genes.id$upstream, fix.genes.id$downstream)
+TSS.gene.filtered1 = TSS.gene[!(TSS.gene$gene %in% genes.remove1),]
+# confirm that there are no any overlaps
+#this object should have no data
+dups1 =get.dups(bed = TSS.gene.filtered1)
+
+# overlap analysis
+overlap.data = gene.overlaps(bed = TSS.gene.filtered1)
+has.start.inside = overlap.data$has.start.inside
+is.a.start.inside = overlap.data$is.a.start.inside
+head(has.start.inside)
+dim(has.start.inside) #271
+head(is.a.start.inside)
+dim(is.a.start.inside) #323
+head(overlap.data$cases)
+dim(overlap.data$cases) #503
+
+# Checking those genes in overlap.gene lists
+overlap.genes = overlap.data$cases$gene %>% unique
+length(grep("^AC[0-9][0-9]",overlap.genes)) #7
+length(grep("^AL[0-9][0-9]",overlap.genes)) #3
+length(grep("^AP[0-9][0-9]",overlap.genes)) #0
+# set to remove usually poorly annotated genes in overlapping regions
+genes.remove2 = overlap.genes[grep("^AC[0-9][0-9]",overlap.genes)]
+genes.remove2 = c(genes.remove2, overlap.genes[grep("^AL[0-9][0-9]",overlap.genes)])
+genes.remove2 = c(genes.remove2, overlap.genes[grep("^AP[0-9][0-9]",overlap.genes)])
+# identify genes with multiple starts inside (i.e. 'big' genes)
+mult.inside.starts = inside.starts(vec = is.a.start.inside$xy)
+length(mult.inside.starts) #31
+# add genes with multiple starts inside to remove
+genes.remove2 = c(genes.remove2, mult.inside.starts %>% unique) #41
+# remove filtered genes and re-run overlap analysis
+in.dat = TSS.gene.filtered1[!(TSS.gene.filtered1$gene %in% genes.remove2),]
+overlap.data = gene.overlaps( bed = in.dat )
+has.start.inside = overlap.data$has.start.inside
+is.a.start.inside = overlap.data$is.a.start.inside
+case.dat = overlap.data$cases
+length(unique(case.dat$cases)) #171
+# data for manual analysis and curration
+fname = "nonid_overlaps.txt"
+write.table(case.dat,fname,col.names=T,row.names=F,sep="\t",quote=F)
+overlaps = case.dat %>% select(chr,start,end,gene,cases)
+write.table(overlaps,"nonid_overlaps.bed",quote=F,sep="\t",col.names=F,row.names=F)
+
+write.table(TSS.gene.filtered1,"TSS.gene.filtered1.bed",quote=F,sep="\t",col.names=F,row.names=F)
+
+remove.genes.ov = read.csv("overlaps_remove.csv", 
+header=TRUE, stringsAsFactors=F)
+fix.genes.ov =read.csv("overlaps_keepadjacent.csv", 
+header=TRUE, stringsAsFactors=F)
+genes.remove3 = c(genes.remove2, remove.genes.ov$remove,
+fix.genes.ov$upstream, fix.genes.ov$downstream)
+# read corrected start/end for 10 genes in bed file
+
+TSS.gene.filtered2 = TSS.gene.filtered1[
+!(TSS.gene.filtered1$gene %in% genes.remove3),]
+# verify the abscence of overlaps
+overlap.data = gene.overlaps( bed = TSS.gene.filtered2 )
+overlap.data$cases
+
+fix.genes.ov =read.csv("overlaps_keepadjacent.csv", 
+header=TRUE, stringsAsFactors=F)
+# get the coordinates for adjacent gene pairs
+fix.genes = rbind(fix.genes.id, fix.genes.ov)
+bp.bin = 5
+knot.div = 40
+shift.up = 100
+delta.tss = 50
+diff.tss = 1000
+dist.from.start = 50
+adjacent.coords = adjacent.gene.coords(fix.genes=fix.genes, bed.long=TSS.gene,
+exon1=gencode.firstExon,
+bw.plus=bw.plus, bw.minus=bw.minus,
+knot.div=knot.div, bp.bin=bp.bin,
+shift.up=shift.up, delta.tss=delta.tss,
+dist.from.start=dist.from.start,
+diff.tss=diff.tss, fname="adjacentSplines.pdf")
+
+# visualize coordinates for a specific pair
+adjacent.coords.plot(adjacent.coords=adjacent.coords,
+pair=fix.genes[1,],
+bw.plus=bw.plus,
+bw.minus=bw.minus)
+
+# aggregate downstream adjacent genes with main data
+TSS.gene.filtered3 = rbind(TSS.gene.filtered2, adjacent.coords)
+overlap.data = gene.overlaps( bed = TSS.gene.filtered3 )
+overlap.data$cases
+
+#get intervals for TTS evaluation
+add.to.end = 100000
+fraction.end = 0.2
+dist.from.start = 50
+bed.for.tts.eval = get.end.intervals(bed=TSS.gene.filtered3,
+add.to.end=add.to.end,
+fraction.end=fraction.end,
+dist.from.start=dist.from.start)
+# distribution of clip distances
+pdf("Histogram_TTS_clipdistance.pdf", useDingbats = FALSE, width=6.4, height=5.4)
+hist(bed.for.tts.eval$xy, xlab="clip distance (bp)",col="black",main="")
+dev.off()
+```
+
+```{r TSSclipdistance, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
+knitr::include_graphics("Histogram_TTS_clipdistance.pdf")
+```
+
+```{r eval=FALSE}
+# identify gene ends
+add.to.end = max(bed.for.tts.eval$xy)
+knot.div = 40
+pk.thresh = 0.05
+bp.bin = 50
+knot.thresh = 5
+cnt.thresh = 5
+tau.dist = 50000
+frac.max = 1
+frac.min = 0.3
+inferred.coords = get.TTS(bed=bed.for.tts.eval, tss=TSS.gene.filtered3,
+bw.plus=bw.plus, bw.minus=bw.minus,
+bp.bin=bp.bin, add.to.end=add.to.end,
+pk.thresh=pk.thresh, knot.thresh=knot.thresh,
+cnt.thresh=cnt.thresh, tau.dist=tau.dist,
+frac.max=frac.max, frac.min=frac.min, knot.div=knot.div)
+
+coords = inferred.coords$bed
+# check for the percentage of identified TTSs that match the search region boundry
+TTS.boundary.match(coords=coords, bed.for.tts.eval=bed.for.tts.eval) #0.1968006
+# look at whether TTSs identified at the search boundry had clipped boundries
+frac.bound.clip = TTS.boundary.clip(coords=coords, bed.for.tts.eval=bed.for.tts.eval)
+frac.bound.clip$frac.clip #0.919607
+frac.bound.clip$frac.noclip #0.08039303
+# plot didtribution of clip distances for genes with boundary TTSs
+pdf("bp_clipped_for_boundry.pdf", useDingbats = FALSE, width=6.4, height=5.4)
+hist(frac.bound.clip$clip.tts,main="",col="black",
+xlab="bp clipped for boundry genes")
+dev.off()
+```
+
+```{r bpclippedforboundry, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
+knitr::include_graphics("bp_clipped_for_boundry.pdf")
+```
+
+```{r eval=FALSE}
+# plot new coord id
+gene.end = bed.for.tts.eval
+# ploting NR3C1
+long.gene = largest.interval.bed
+pdf("Genenr3c1.pdf", onefile=FALSE)
+tts.plot(coords=coords, gene.end=gene.end, long.gene=long.gene,
+gene = "Nr3c1", xper=0.1, yper=0.2,
+bw.plus=bw.plus, bw.minus=bw.minus, bp.bin=5,
+frac.min=frac.min, frac.max=frac.max,
+add.to.end=add.to.end, tau.dist=tau.dist)
+dev.off()
+
+# plot tts curve
+pdf("Gene_curvenr3c1.pdf", onefile=FALSE)
+gene.end.plot(bed=bed.for.tts.eval, gene="Nr3c1",
+bw.plus=bw.plus, bw.minus=bw.minus,
+bp.bin=bp.bin, add.to.end=add.to.end, knot.div=knot.div,
+pk.thresh=pk.thresh, knot.thresh=knot.thresh,
+cnt.thresh=cnt.thresh, tau.dist=tau.dist,
+frac.max=frac.max, frac.min=frac.min)
+dev.off()
+```
+
+```{r genecurvenr3c1, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='PLACEHOLDER', out.width = "100%"}
+knitr::include_graphics("Gene_curvenr3c1.pdf")
+```
+
+```{r eval=FALSE}
+write.table(coords,'primary_transcript_annotation.bed',sep='\t',quote=F,col.names=F,row.names=F)
+```
+
+After completing pTA, discard 6day timepoint from rest of analysis
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/2.1_primary_transcript_annotation.sh)
+```{r eval=FALSE}
+rm -r 6day
+mkdir 6day
+mv *6d* 6day
+```
+
+# PRO Preclustering
+The following Rscript processes the pTA data through the DESeq2 workflow
+
+# PRO Clustering
+Cluster dynamic peaks using degPatterns. Rscript should be run as slurm job due to large
+memory requirement.
+
+# PRO Postclustering
+The following Rscript visualizes the pTA clustering with plots of clusters, dendrogram, etc.
+
+# Generating comprehensive PRO dataframe
+Rerun analysis to generate final PRO dataframe containing all relevant features
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/3.4_create.final.pro.all.df.R)
+```{r eval=FALSE}
+library(DESeq2)
+
+categorize.deseq.df <- function(df, fdr = 0.05, log2fold = 0.0, treat
+= 'Auxin') {
+
+    df.effects.lattice = df
+    df.effects.lattice$response = 'All Other Genes'
+    
+    if(nrow(df.effects.lattice[df.effects.lattice$padj < fdr &
+			!is.na(df.effects.lattice$padj) & 
+			df.effects.lattice$log2FoldChange > log2fold,]) > 0) {
+        df.effects.lattice[df.effects.lattice$padj < fdr &
+			!is.na(df.effects.lattice$padj) &
+			df.effects.lattice$log2FoldChange > log2fold,]$response = 'Activated'
+    }
+    if(nrow(df.effects.lattice[df.effects.lattice$padj < fdr &
+			!is.na(df.effects.lattice$padj) &
+			df.effects.lattice$log2FoldChange < log2fold,]) > 0) {
+        df.effects.lattice[df.effects.lattice$padj < fdr &
+		!is.na(df.effects.lattice$padj) &
+		df.effects.lattice$log2FoldChange < log2fold,]$response = 'Repressed'
+    }
+    if(nrow(df.effects.lattice[df.effects.lattice$padj > 0.5 &
+			!is.na(df.effects.lattice$padj) &
+			abs(df.effects.lattice$log2FoldChange) < 0.25,]) > 0) {
+        df.effects.lattice[df.effects.lattice$padj > 0.5 &
+		!is.na(df.effects.lattice$padj) &
+		abs(df.effects.lattice$log2FoldChange) < 0.25,]$response = 'Unchanged'
+    }
+    
+    return(df.effects.lattice)
+}
+
+setwd("/scratch/bhn9by/PRO/")
+
+pTA = read.table('primary_transcript_annotation/primary_transcript_annotation.bed')
+
+df = data.frame(matrix(nrow=nrow(pTA),ncol=0))
+
+rownames(df) = paste0(pTA[,1],':',pTA[,2],'-',pTA[,3],'_',pTA[,4])
+
+df$chr = pTA[,1]
+df$start = pTA[,2]
+df$end = pTA[,3]
+df$gene = pTA[,4]
+df$strand = pTA[,6]
+
+df$location = paste0(df$chr,':',df$start,'-',df$end)
+```
+
+## Add TSS
+```{r eval=FALSE}
+func <- function(gene) {
+    if(df[df$gene == gene,]$strand == '+') {
+        return(df[df$gene == gene,]$start)
+    } else {
+        return(df[df$gene == gene,]$end)
+    }
+}
+
+df$TSS = sapply(df$gene,func)
+```
+
+## Add size and counts
+```{r eval=FALSE}
+df$size = abs(df$start-df$end)
+
+load('normalized.counts.pro.Rdata')
+
+zero.min = c()
+twenty.min = c()
+forty.min = c()
+sixty.min = c()
+onetwenty.min = c()
+oneeighty.min = c()
+twoforty.min = c()
+genes = c()
+
+print('Getting PRO means')
+for (i in 1:nrow(normalized.counts.pro)) {
+    zero.min = append(zero.min, mean(normalized.counts.pro[i,19:21]))
+    twenty.min = append(twenty.min, mean(normalized.counts.pro[i,1:3]))
+    forty.min = append(forty.min, mean(normalized.counts.pro[i,10:12]))
+    sixty.min = append(sixty.min, mean(normalized.counts.pro[i,16:18]))
+    onetwenty.min = append(onetwenty.min,mean(normalized.counts.pro[i,4:6]))
+    oneeighty.min = append(oneeighty.min, mean(normalized.counts.pro[i,7:9]))
+    twoforty.min = append(twoforty.min, mean(normalized.counts.pro[i,13:15]))
+    genes = append(genes,rownames(normalized.counts.pro)[i])
+}
+
+pro.means = data.frame(row.names = genes, min.0 = zero.min, min.20 = twenty.min,
+                   min.40 = forty.min, min.60 = sixty.min, min.120 = onetwenty.min,
+                   min.180 = oneeighty.min, min.240 = twoforty.min)
+
+save(pro.means,file='pro.means.Rdata')
+
+df = merge(df,pro.means,by='row.names',all=TRUE)
+rownames(df) = df[,1]
+df = df[,-1]
+```
+
+## Add pairwise comparisons
+```{r eval=FALSE}
+load('df.3t3.Rdata')
+
+time.pts.key = data.frame(time.pts=c(rep(20,3),rep(120,3),rep(180,3),rep(40,3),
+									rep(240,3),rep(60,3),rep(0,3)),
+                          cols = c(1:21))
+
+time.pts = c(0,20,40,60,120,180,240)
+
+comparisons.df = data.frame(row.names=rownames(df))
+for (i in 1:(length(time.pts)-1)) {
+    for (j in (i+1):length(time.pts)) {
+
+        print(paste0(time.pts[j],'.v.',time.pts[i]))
+        
+        a = time.pts.key[time.pts.key$time.pts == time.pts[i],]$cols
+        b = time.pts.key[time.pts.key$time.pts == time.pts[j],]$cols
+        merged.counts.small = df.3t3[,c(a,b)]
+
+                                        # number of replicates per condition
+        unt = 3
+        trt = 3
+
+        sample.conditions = factor(c(rep("untreated",unt), rep("treated",trt)), 
+								levels=c("untreated","treated"))
+        mm.deseq.counts.table = DESeqDataSetFromMatrix(merged.counts.small,
+									DataFrame(sample.conditions), ~ sample.conditions)
+
+        mm.atac = mm.deseq.counts.table
+        atac.size.factors = estimateSizeFactorsForMatrix(merged.counts.small)
+        
+        sizeFactors(mm.atac) = atac.size.factors
+        mm.atac = estimateDispersions(mm.atac)
+        mm.atac = nbinomWaldTest(mm.atac)
+        res.mm.atac = results(mm.atac)
+        
+        lattice = categorize.deseq.df(res.mm.atac, fdr = 0.001, log2fold = 0.0, treat = '')
+        lattice = as.data.frame(lattice[,c(2,6,7)])
+        colnames(lattice) = paste0(colnames(lattice),'.',time.pts[j],'.v.',time.pts[i])
+        
+        comparisons.df = merge(comparisons.df,lattice,by='row.names',all=TRUE)
+        rownames(comparisons.df) = comparisons.df$Row.names
+        comparisons.df = comparisons.df[,-1]
+    }
+}
+
+save(comparisons.df,file='comparisons.df.Rdata')
+
+df = merge(df,comparisons.df,by = 'row.names',all = TRUE)
+rownames(df) = df$Row.names
+df = df[,-1]
+```
+
+## Add baseMean and overall time course info
+```{r eval=FALSE}
+print('Add baseMean and overall time course info')
+
+load('res.lrt.Rdata')
+res.lrt = as.data.frame(res.lrt[,c(1,2,6)])
+res.lrt$response = 'Nondynamic'
+res.lrt[res.lrt$padj < 1e-40 & !is.na(res.lrt$padj),]$response = 'Dynamic'
+colnames(res.lrt) = paste0(colnames(res.lrt),'.time.course')
+
+df = merge(df,res.lrt,by = 'row.names',all = TRUE)
+rownames(df) = df$Row.names
+df = df[,-1]
+```
+
+```{r eval=FALSE}
+final.pro.all.df=df
+save(final.pro.all.df,file='final.pro.all.df.Rdata')
+```
+
+# PLACEHOLDER
+
+```{r eval=FALSE}
+
+```
 
 
 
