@@ -5,7 +5,7 @@ mkdir /scratch/bhn9by/PRO
 cd /scratch/bhn9by/PRO
 
 #upload sra.metadata.csv and SRR_Acc_List.txt to Rivanna
-#remove DOS \r\n\ artifact from .csv (if applicable)
+#remove DOS \r\n\ artifact from .csv
 sed -i 's/\r$//' sra.metadata.csv
 
 #download .fastq
