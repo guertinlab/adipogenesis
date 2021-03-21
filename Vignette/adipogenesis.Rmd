@@ -3331,7 +3331,7 @@ done
 ```
 
 ### bigwig_slurm_header_2.txt
-[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/slurm_headers/bigwig_slurm_header_2.txt
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/slurm_headers/bigwig_slurm_header_2.txt)
 
 ```{r eval=FALSE}
 #SBATCH -p standard
@@ -3401,9 +3401,9 @@ done
 this .R file provides functions for performing pTA
 
 >[overlaps_remove.csv](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/misc_scripts/overlaps_remove.csv),
-[overlaps_keepadjacent.csv](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/overlaps_keepadjacent.csv),
-[duplicate_remove.csv](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/duplicate_remove.csv),
-[duplicate_keepadjacent.csv](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/duplicate_keepadjacent.csv):
+[overlaps_keepadjacent.csv](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/misc_scripts/overlaps_keepadjacent.csv),
+[duplicate_remove.csv](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/misc_scripts/duplicate_remove.csv),
+[duplicate_keepadjacent.csv](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/misc_scripts/duplicate_keepadjacent.csv):
 these tables provide names of genes to be kept or removed from pTA
 
 [github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/2.1.0_download_files.sh)
@@ -3411,11 +3411,11 @@ these tables provide names of genes to be kept or removed from pTA
 #!/bin/bash
 
 cd /scratch/bhn9by/primary_transcript_annotation
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/pTA.functions.R
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/overlaps_remove.csv
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/overlaps_keepadjacent.csv
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/duplicate_remove.csv
-wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Bao_code_chunks_PRO/misc_scripts/duplicate_keepadjacent.csv
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/misc_scripts/pTA.functions.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/misc_scripts/overlaps_remove.csv
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/misc_scripts/overlaps_keepadjacent.csv
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/misc_scripts/duplicate_remove.csv
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/misc_scripts/duplicate_keepadjacent.csv
 
 #remove DOS \r\n\ artifact from .csv
 sed -i 's/\r$//' *csv
@@ -3467,7 +3467,7 @@ bedGraphToBigWig pro_minus_merged_sorted.bedGraph ${chromsizes} pro_minus_merged
 ```
 
 ## Annotating Primary Transcript
-pTA Rscript takes ~2 hour to compile. Run as a slurm job for your own convenience.
+pTA Rscript takes ~2 hours to compile. Run as a slurm job for your own convenience.
 
 [github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/2.2_primary_transcript_annotation.R)
 ```{r eval=FALSE}
@@ -3787,15 +3787,294 @@ mkdir 6day
 mv *6d* 6day
 ```
 
+\pagebreak
+
 # PRO Preclustering
-The following Rscript processes the pTA data through the DESeq2 workflow
+The following Rscript processes the pTA data through the DESeq2 workflow.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/3.1_pro.preclustering.R)
+```{r eval=FALSE}
+library(bigWig)
+library(DESeq2)
+library(DEGreport)
+library(tibble)
+library(lattice)
+library(tidyr)
+source('https://raw.githubusercontent.com/mjg54/znf143_pro_seq_analysis/master/docs/ZNF143_functions.R')
+
+dir = '/scratch/bhn9by/PRO/'
+
+setwd(dir)
+
+gene.file = read.table(paste0(dir,'primary_transcript_annotation/primary_transcript_annotation.bed'), 
+						header=FALSE)
+```
+
+## Assign counts to genes
+A custom function is used to get raw counts from the .bed file and DESeq2 is used to generate a counts table for all genes.
+
+```{r eval=FALSE}
+get.raw.counts.interval.pro <- function(df, path.to.bigWig, file.prefix = 'H', file.suffix = '.bigWig') {
+    vec.names = c()
+    inten.df=data.frame(matrix(ncol = 0, nrow = nrow(df)))
+    
+    for (mod.bigWig in Sys.glob(file.path(path.to.bigWig, paste0(file.prefix, "*plus", file.suffix)))) {
+        print(mod.bigWig)
+        factor.name = strsplit(strsplit(mod.bigWig, "/")[[1]][
+				length(strsplit(mod.bigWig, "/")[[1]])], '_plus')[[1]][1]
+        print(factor.name)
+        vec.names = c(vec.names, factor.name)
+        loaded.bw.plus = load.bigWig(mod.bigWig)
+        loaded.bw.minus = load.bigWig(paste0(path.to.bigWig,'/',factor.name,'_minus',file.suffix))
+        mod.inten = bed6.region.bpQuery.bigWig(loaded.bw.plus, loaded.bw.minus, df)
+        inten.df = cbind(inten.df, mod.inten)
+    }
+    colnames(inten.df) = vec.names
+    r.names = paste(df[,1], ':', df[,2], '-', df[,3],'_', df[,4], sep='')
+    row.names(inten.df) = r.names
+    return(inten.df)
+}
+
+df.3t3 = get.raw.counts.interval.pro(gene.file, dir, file.prefix = '3T3',file.suffix = '_body_0-mer.bigWig')
+
+colnames(df.3t3) = sapply(strsplit(colnames(df.3t3), '3T3_'), '[', 2)
+
+save(df.3t3, file = 'df.3t3.Rdata')
+
+#for normalizing bigWigs for browser
+write.table(estimateSizeFactorsForMatrix(df.3t3),file = 'norm.bedGraph.sizeFactor.txt', 
+				quote =F, col.names=F)
+
+sample.conditions = factor(sapply(strsplit(as.character(colnames(df.3t3)), '_'), '[', 1))
+
+sample.conditions = factor(sample.conditions, levels=c("t0","20min","40min","60min","2hr","3hr","4hr"))
+
+deseq.counts.table = DESeqDataSetFromMatrix(df.3t3, as.data.frame(sample.conditions), ~ sample.conditions)
+
+dds = DESeq(deseq.counts.table)
+
+#counts table
+normalized.counts.pro = counts(dds, normalized=TRUE)
+save(normalized.counts.pro,file='normalized.counts.pro.Rdata')
+```
+
+## Plot PCA
+Principal component analysis (PCA) deconvolutes the complex data into two dimensions. Replicates of the same treatment should cluster together.
+
+```{r eval=FALSE}
+rld = rlog(dds, blind=TRUE)
+
+x = plotPCA(rld, intgroup="sample.conditions", returnData=TRUE)
+plotPCAlattice(x, file = 'PCA_pro.pdf')
+```
+
+```{r PCApro, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='Expected output for PCA plot.', out.width = "80%"}
+knitr::include_graphics("PCA_pro.pdf")
+```
+
+## Dynamic genes
+Apply the differential functions of DESeq2 to extract dynamic genes.
+
+```{r eval=FALSE}
+dds.lrt = DESeq(dds, test="LRT", reduced = ~ 1)
+
+res.lrt = results(dds.lrt)
+save(res.lrt, file = 'res.lrt.Rdata')
+
+padj.cutoff = 1e-40
+
+siglrt.re = res.lrt[res.lrt$padj < padj.cutoff & !is.na(res.lrt$padj),]
+
+rld_mat <- assay(rld)
+cluster_rlog = rld_mat[rownames(siglrt.re),]
+meta = as.data.frame(sample.conditions)
+rownames(meta) = colnames(cluster_rlog)
+save(cluster_rlog, meta, sample.conditions, file = 'cluster_rlog_pval_1e40.Rdata')
+
+#define dynamic genes here rather than after clustering b/c ~600 genes not sorted into clusters
+a = strsplit(rownames(cluster_rlog),'_')
+gene = unlist(a)[2*(1:nrow(cluster_rlog))]
+a = unlist(a)[2*(1:nrow(cluster_rlog))-1]
+a = strsplit(a,':')
+chr = unlist(a)[2*(1:nrow(cluster_rlog))-1]
+a = unlist(a)[2*(1:nrow(cluster_rlog))]
+a = strsplit(a,'-')
+start = unlist(a)[2*(1:nrow(cluster_rlog))-1]
+end = unlist(a)[2*(1:nrow(cluster_rlog))]
+
+bed = data.frame(chr=chr,start=start,end=end,gene=gene)
+
+write.table(bed, file = 'dynamic_genes.bed', quote = FALSE, sep = '\t', col.names=FALSE, row.names=FALSE)
+```
+
+\pagebreak
 
 # PRO Clustering
-Cluster dynamic peaks using degPatterns. Rscript should be run as slurm job due to large
-memory requirement.
+Cluster dynamic genes using degPatterns. Rscript should be run as slurm job due to large memory requirement.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/3.2_pro.clustering.R)
+```{r eval=FALSE}
+library(DESeq2)
+library(DEGreport)
+library(tibble)
+library(lattice)
+
+setwd('/scratch/bhn9by/PRO')
+
+load('cluster_rlog_pval_1e40.Rdata')
+     
+clusters.all.test.1e40 <- degPatterns(cluster_rlog, metadata = meta, minc = 100,
+									time = "sample.conditions", col=NULL, eachStep = TRUE)
+
+save(clusters.all.test.1e40, file = 'clusters.all.minc100.1e40.Rdata')
+```
+
+Use the following .slurm script to run the Rscript.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/3.2_pro.clustering.slurm)
+```{r eval=FALSE}
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 96:00:00
+#SBATCH -o pro.clustering.out
+#SBATCH -p largemem
+#SBATCH -A guertinlab
+
+module load gcc/7.1.0  openmpi/3.1.4 R/4.0.0
+
+cd /scratch/bhn9by/PRO
+
+Rscript pro.clustering.R
+```
+
+\pagebreak
 
 # PRO Postclustering
-The following Rscript visualizes the pTA clustering with plots of clusters, dendrogram, etc.
+The following Rscript visualizes the genes clustering with plots of clusters, dendrogram, traces, etc.
+
+[github raw](https://raw.githubusercontent.com/guertinlab/adipogenesis/master/Pipeline_PRO/3.3_pro.post.clustering.R)
+```{r eval=FALSE}
+library(lattice)
+library(data.table)
+
+setwd('/scratch/bhn9by/PRO')
+
+source('/scratch/bhn9by/ATAC/plot.traces.R')
+
+load('clusters.all.minc100.1e40.Rdata')
+```
+
+## Generate plot.df object
+
+```{r eval=FALSE}
+plot.df = clusters.all.test.1e40$normalized
+
+plot.df$sample.conditions = as.character(plot.df$sample.conditions)
+plot.df$sample.conditions[plot.df$sample.conditions == 't0'] = 0
+plot.df$sample.conditions[plot.df$sample.conditions == '20min'] = 20
+plot.df$sample.conditions[plot.df$sample.conditions == '40min'] = 40
+plot.df$sample.conditions[plot.df$sample.conditions == '60min'] = 60
+plot.df$sample.conditions[plot.df$sample.conditions == '2hr'] = 120
+plot.df$sample.conditions[plot.df$sample.conditions == '3hr'] = 180
+plot.df$sample.conditions[plot.df$sample.conditions == '4hr'] = 240
+plot.df$sample.conditions = as.numeric(plot.df$sample.conditions)
+plot.df = plot.df[order(plot.df$genes),]
+plot.df = plot.df[order(plot.df$sample.conditions),]
+
+plot.df$cluster = paste('cluster', as.character(plot.df$cluster), sep = '')
+
+plot.df$chr = sapply(strsplit(plot.df$genes, '[.]'), '[', 1)
+plot.df$start = sapply(strsplit(plot.df$genes, '[.]'), '[', 2)
+plot.df$end = sapply(strsplit(sapply(strsplit(plot.df$genes, '[.]'), '[', 3),'_'), '[', 1)
+plot.df$gene = sapply(strsplit(plot.df$genes, '_'), '[', 2)
+
+save(plot.df,file='plot.df.Rdata')
+```
+
+## Plot all clusters
+
+```{r eval=FALSE}
+for (i in unique(plot.df$cluster)) {
+    print(i)
+    write.table(plot.df[plot.df$cluster == i,
+                        c('chr','start','end', 'value', 'cluster')][
+							!duplicated(plot.df[plot.df$cluster == i,]$genes),],
+                file = paste0('cluster_bed_',
+                              gsub(" ", "", i, fixed = TRUE),'.bed'),
+                quote = FALSE, row.names = FALSE, col.names = FALSE, sep = '\t')
+}
+
+pdf('pro_clusters.pdf', width=11, height=15)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+xyplot(value ~  sample.conditions | cluster, group = genes, data = plot.df,
+									type = c('l'),#type = c('l','p'),
+       scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+       aspect=1.0,
+       between=list(y=0.5, x=0.5),
+       ylab = list(label = 'Normalized PRO signal', cex =1.0),
+       xlab = list(label = 'Time (minutes)', cex =1.0),
+       par.settings = list(superpose.symbol = list(pch = c(16),
+                                                   col=c('grey20'), cex =0.5),
+                           strip.background=list(col="grey80"),
+                           superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                 lty = c(1))),
+       panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.loess(x, y, ..., col = "blue", lwd =2.0,  span = 1/2, degree = 1, family = c("gaussian"))
+           
+})
+
+      )
+dev.off()
+```
+
+```{r proclusters, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='Plot for 15 pTA clusters.', out.width = "80%"}
+knitr::include_graphics("pro_clusters.pdf")
+```
+
+## Plot dendrogram
+
+```{r eval=FALSE}
+x = as.data.table(plot.df)
+plot.df.cluster = dcast(x, genes + cluster ~ sample.conditions, value.var="value")
+
+avg.clusters = as.data.frame(matrix(nrow = 0, ncol = 7))
+for (i in unique(plot.df.cluster$cluster)) {
+    z = data.frame(matrix(colMeans(plot.df.cluster[plot.df.cluster$cluster == i,3:9]), ncol = 7, nrow = 1))
+    rownames(z) = c(i)
+    colnames(z) = as.character(colnames(plot.df.cluster)[3:9])
+    avg.clusters = rbind(avg.clusters, z)
+}
+
+dd = dist(avg.clusters)
+hc = hclust(dd, method = "complete")
+
+pdf('dendrogram.pdf', width=8, height=5)
+plot(hc, xlab = "Clusters", main = ' ', hang = -1)
+abline(h = 2, lty = 2)
+dev.off()
+```
+
+```{r dendrogrampro, echo = FALSE, message=FALSE, fig.align='center', fig.pos = "H", fig.cap='Hierarchical clustering groups pTA clusters based on similarity in dynamics.', out.width = "100%"}
+knitr::include_graphics("dendrogram_pro.pdf")
+```
+
+## Save plotting object
+
+```{r eval=FALSE}
+#there are ~600 dynamic genes that are NOT in the plotting object b/c they are not sorted into clusters
+plot.df.pTA = plot.df[,c(1:6,27:30)]
+save(plot.df.pTA,file='plot.df.pTA.Rdata')
+
+plot.traces(unique(plot.df.pTA$gene),'All Dynamic Genes')
+```
+
+\pagebreak
 
 # Generating comprehensive PRO dataframe
 Rerun analysis to generate final PRO dataframe containing all relevant features
@@ -3976,6 +4255,8 @@ df = df[,-1]
 final.pro.all.df=df
 save(final.pro.all.df,file='final.pro.all.df.Rdata')
 ```
+
+\pagebreak
 
 # PLACEHOLDER
 
