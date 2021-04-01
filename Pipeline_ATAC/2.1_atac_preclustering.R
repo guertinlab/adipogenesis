@@ -75,3 +75,12 @@ end = sapply(strsplit(x, '-'), '[', 2)
 curated.not.different = data.frame(chr,start,end)
 write.table(curated.not.different,file='nondynamic_peaks.bed',sep='\t',col.names=F,row.names=F,quote=F)
 
+#generate all peaks set
+chr = sapply(strsplit(rownames(res.lrt), ':'), '[', 1)
+z = sapply(strsplit(rownames(res.lrt), ':'), '[', 2)
+start = sapply(strsplit(z, '-'), '[', 1)
+end = sapply(strsplit(z, '-'), '[', 2)
+
+bed = data.frame(chr,start,end,baseMean = res.lrt$baseMean)
+write.table(bed[,1:3], file = 'all_peaks.bed',sep='\t',col.names=F,row.names=F,quote=F)
+
