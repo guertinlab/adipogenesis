@@ -5,7 +5,7 @@ cd /scratch/bhn9by/PRO
 
 rm promoters.bed
 
-awk '{OFS="\t";} {print $1,$2,$2,$4,$5,$6}' primary_transcript_annotation/primary_transcript_annotation.bed > promoters.bed
+awk '{OFS="\t";} {print $1,$2,$2+1,$4,$5,$6}' primary_transcript_annotation/primary_transcript_annotation.bed > promoters.bed
 slopBed -i promoters.bed -g ../PRO/mm10.chrom.sizes -l 150 -r 51
 
 #dynamic ATAC peaks
