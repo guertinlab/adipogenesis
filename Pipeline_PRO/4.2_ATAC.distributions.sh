@@ -1,6 +1,6 @@
 module load gcc/7.1.0 bedtools/2.26.0
 
-#generate promoters.bed (150bp upstream & 50bp downstream TSS, strand specific)
+#get promoters from pTA (150bp upstream & 50bp downstream TSS, strand specific)
 cd /scratch/bhn9by/PRO
 rm promoters.bed
 
