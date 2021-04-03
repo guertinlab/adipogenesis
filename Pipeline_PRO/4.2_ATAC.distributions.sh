@@ -12,6 +12,7 @@ slopBed -i temp3.bed -g mm10.chrom.sizes -l 150 -r 50 -s > promoters.bed
 rm temp1.bed temp2.bed temp3.bed
 
 #all ATAC peaks
+cd /scratch/bhn9by/ATAC
 rm all_ATAC_peaks_promoters_temp.bed
 rm all_ATAC_peaks_intragenic_temp.bed
 
