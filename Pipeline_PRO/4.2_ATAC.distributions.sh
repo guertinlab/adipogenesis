@@ -1,12 +1,14 @@
 module load gcc/7.1.0 bedtools/2.26.0
 
-#generate promoters.bed
+#generate promoters.bed (150bp upstream & 50bp downstream TSS, strand specific)
 cd /scratch/bhn9by/PRO
 
-rm promoters.bed
+awk '{OFS="\t";} {$6 == "+";} {print $1,$2,$2+1,$4,$5,$6}' primary_transcript_annotation/primary_transcript_annotation.bed > temp1.bed
+awk '{OFS="\t";} {$6 == "-";} {print $1,$3,$3+1,$4,$5,$6}' primary_transcript_annotation/primary_transcript_annotation.bed > temp2.bed
+cat temp1.bed temp2.bed > temp3.bed
+slopBed -i temp3.bed -g mm10.chrom.sizes -l 150 -r 50 -s > promoters.bed
 
-awk '{OFS="\t";} {print $1,$2,$2+1,$4,$5,$6}' primary_transcript_annotation/primary_transcript_annotation.bed > promoters.bed
-slopBed -i promoters.bed -g ../PRO/mm10.chrom.sizes -l 150 -r 51
+rm temp1.bed temp2.bed temp3.bed
 
 #dynamic ATAC peaks
 cd /scratch/bhn9by/ATAC
