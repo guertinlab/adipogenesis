@@ -1,6 +1,6 @@
 #!/bin/bash
 
-module load bioconda gcc/7.1.0  openmpi/3.1.4 R/4.0.0
+module load bioconda ucsc-tools/3.7.4 gcc/7.1.0 openmpi/3.1.4 R/4.0.0
 conda activate myenv2
 
 cd /scratch/bhn9by/PRO
