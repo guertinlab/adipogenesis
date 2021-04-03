@@ -81,6 +81,6 @@ z = sapply(strsplit(rownames(res.lrt), ':'), '[', 2)
 start = sapply(strsplit(z, '-'), '[', 1)
 end = sapply(strsplit(z, '-'), '[', 2)
 
-bed = data.frame(chr,start,end,baseMean = res.lrt$baseMean)
+bed = data.frame(chr,start,end,res.lrt$baseMean)
 write.table(bed[,1:3], file = 'all_peaks.bed',sep='\t',col.names=F,row.names=F,quote=F)
 
