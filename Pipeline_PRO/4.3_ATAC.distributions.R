@@ -1,6 +1,3 @@
-library(ggplot2)
-library(wesanderson)
-
 setwd('/scratch/bhn9by/ATAC')
 
 #subset all ATACs peaks into promoters, intragenic, and intergenic peaks
