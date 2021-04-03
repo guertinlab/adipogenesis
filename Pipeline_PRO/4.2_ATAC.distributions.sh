@@ -20,5 +20,5 @@ intersectBed -wa -a all_peaks.bed -b ../PRO/promoters.bed -u > all_ATAC_peaks_pr
 
 intersectBed -wa -a all_peaks.bed -b ../PRO/primary_transcript_annotation/primary_transcript_annotation.bed -u > all_ATAC_peaks_intragenic_temp.bed
 
-#generate final promoter, intergenic, intragenic bed files
+#generate final promoters, intergenic, intragenic bed files
 Rscript ATAC.distributions.R
