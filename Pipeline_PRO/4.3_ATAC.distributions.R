@@ -1,6 +1,6 @@
 setwd('/scratch/bhn9by/ATAC')
 
-#sort all ATACs peaks into promoters, intragenic, and intergenic peaks
+#sort all ATACs peaks into promoters, intragenic, and intergenic
 
 x = read.table('all_ATAC_peaks_promoters_temp.bed')
 x$location = paste0(x$V1,':',x$V2,'-',x$V3)
