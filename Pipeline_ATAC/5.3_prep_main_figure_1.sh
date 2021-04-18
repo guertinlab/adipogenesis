@@ -31,26 +31,26 @@ cp PSWM_family_5_2M.bed main_figure_beds/CEBP_2M.bed
 cp PSWM_family_18_2M.bed main_figure_beds/TWIST_2M.bed
 
 #rename 2M files for generating final ATAC dataframe
-#skip SP/KLF (family 
-cp PSWM_family_1_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_2_fimo.bed > AP1_fimo_all.bed
+#skip SP/KLF (family 7)
+cp PSWM_family_1_fimo.bed > BHLH_fimo_all.bed
+cp PSWM_family_2_fimo.bed > TCF21_fimo_all.bed
 cp PSWM_family_3_fimo.bed > GR_fimo_all.bed
-cp PSWM_family_4_fimo.bed > AP1_fimo_all.bed
+cp PSWM_family_4_fimo.bed > BHLHA15_fimo_all.bed
 cp PSWM_family_5_fimo.bed > CEBP_fimo_all.bed
-cp PSWM_family_6_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_7_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_8_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_9_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_10_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_11_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_12_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_13_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_14_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_15_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_16_fimo.bed > AP1_fimo_all.bed
-cp PSWM_family_17_fimo.bed > AP1_fimo_all.bed
+cp PSWM_family_6_fimo.bed > CTFCL_fimo_all.bed
+#cp PSWM_family_7_fimo.bed > SPKLF_fimo_all.bed
+cp PSWM_family_8_fimo.bed > ETS_fimo_all.bed
+cp PSWM_family_9_fimo.bed > ZBTB33_fimo_all.bed
+cp PSWM_family_10_fimo.bed > MAZ_fimo_all.bed
+cp PSWM_family_11_fimo.bed > NFIC_fimo_all.bed
+cp PSWM_family_12_fimo.bed > NFY_fimo_all.bed
+cp PSWM_family_13_fimo.bed > NRF_fimo_all.bed
+cp PSWM_family_14_fimo.bed > NUR77_fimo_all.bed
+cp PSWM_family_15_fimo.bed > STAT_fimo_all.bed
+cp PSWM_family_16_fimo.bed > TFAP2A_fimo_all.bed
+cp PSWM_family_17_fimo.bed > TEAD_fimo_all.bed
 cp PSWM_family_18_fimo.bed > TWIST_fimo_all.bed
-cp PSWM_family_19_fimo.bed > AP1_fimo_all.bed
+cp PSWM_family_19_fimo.bed > ZNF263_fimo_all.bed
 
 
 
