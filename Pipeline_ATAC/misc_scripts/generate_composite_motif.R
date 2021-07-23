@@ -12,6 +12,7 @@ colnames(values) = c('count','afreq','cfreq','gfreq','tfreq','name')
 #read in index object
 index = read.table('composite.index.txt',sep='\t')
 colnames(index) = c('count','rc','offset')
+levels(index$rc) = c('y','n')
 index = rbind(index,c('query','n',0))
 index$offset = as.numeric(index$offset)
 
