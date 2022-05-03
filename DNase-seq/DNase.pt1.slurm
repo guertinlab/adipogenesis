@@ -5,4 +5,4 @@
 #SBATCH -A janeslab
 #SBATCH --array=1-4
 
-sh DNase.array.sh $SLURM_ARRAY_TASK_ID
+sh DNase.pt1.sh $SLURM_ARRAY_TASK_ID
