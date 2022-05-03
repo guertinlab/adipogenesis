@@ -5,4 +5,4 @@
 #SBATCH -A janeslab
 #SBATCH --array=1-8
 
-sh ChIP.array.sh $SLURM_ARRAY_TASK_ID
+sh ChIP.pt1.sh $SLURM_ARRAY_TASK_ID
