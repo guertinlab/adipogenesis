@@ -3,7 +3,7 @@ motif = Args[1]
 
 library(lattice)
 
-setwd('/scratch/bhn9by/ATAC/fimo_motif_enrichment')
+setwd('/scratch/abd3x/Adipogenesis/ATAC/fimo_motif_enrichment')
 
 supercluster.key = data.frame(row.names = c('cluster9','cluster23','cluster17','cluster11',
                        'cluster5','cluster8','cluster10','cluster1',
@@ -25,8 +25,8 @@ motif.name = strsplit(motif,'.txt')[[1]][1]
 print(motif.name)
 table = t(read.table(motif,sep='\t',header=T,row.names=1))
 
-result = 100*sweep(table, 2, colSums(table), "/")
-
+#result = 100*sweep(table, 2, colSums(table), "/")
+result = table
 result = result[,c('cluster9','cluster23','cluster17','cluster11',
                    'cluster5','cluster8','cluster10','cluster1',
                    'cluster6','cluster2','cluster12',
@@ -39,11 +39,10 @@ sig.clusters = c()
 for (cluster in colnames(result)) {
     small.table = result[,c(cluster,'nondynamic')]
     output = chisq.test(small.table)
-    #more lenient threshold of 0.1
-    if (output$p.value < 0.1) {
+    if (output$p.value < 0.001) {
         
         change = ''
-        if (small.table[1,2] < small.table[1,1]) {
+        if ((small.table[1,1] / small.table[2,1]) > (small.table[1,2]/small.table[2,2])) {
             change = 'enriched'
             } else {
                 change = 'depleted'
