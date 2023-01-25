@@ -13,4 +13,4 @@ srun meme -p 59 -oc ${name}.meme_output -nmotifs 10 -objfun classic -evt 0.01 -s
   -maxw 18 -revcomp -dna -markov_order 3 -maxsize 100000000  \
   ${name}.fasta
 
-cd ..
+echo DONE
