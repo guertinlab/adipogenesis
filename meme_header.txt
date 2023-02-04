@@ -1,6 +1,10 @@
-#!/bin/bash
-#SBATCH -n 60
-#SBATCH --mem-per-cpu=6000
-#SBATCH -t 72:00:00
-#SBATCH -p parallel
-#SBATCH -A janeslab
+MEME version 4
+
+ALPHABET= ACGT
+
+strands: + -
+
+A 0.25 C 0.25 G 0.25 T 0.25
+
+MOTIF	Composite
+letter-probability matrix:
