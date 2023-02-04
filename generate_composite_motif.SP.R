@@ -1,4 +1,4 @@
-setwd('/scratch/abd3x/ATAC/SP_KLF_split/KLF')
+setwd('/scratch/abd3x/ATAC/SP_KLF_split/SP')
 
 #read in values object
 values = read.table('composite.values.txt',sep='\t')
@@ -121,4 +121,4 @@ composite[,4] = med.t
 #some rows don't add up to 1 so normalize to row sum (?)
 composite = composite/rowSums(composite)
 
-write.table(composite, file = paste0('KLF_composite_PSWM.txt'), sep='\t' ,row.names = F, col.names = F, quote = F)
+write.table(composite, file = paste0('SP_composite_PSWM.txt'), sep='\t' ,row.names = F, col.names = F, quote = F)
