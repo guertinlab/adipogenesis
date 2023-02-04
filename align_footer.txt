@@ -11,3 +11,4 @@ rm ${name}_smp.sam
 echo 'zipping .fastq'
 gzip ${name}*fastq
 echo 'Done'
+
