@@ -1,0 +1,1923 @@
+% LyX 2.0.6 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+%% Usage:
+%%      gen_tex_pr
+%%      require("knitr")
+%%      knit2pdf("knitr-example.Rnw")
+%%      purl("knitr-example.Rnw", documentation = 2)
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage{colortbl, xcolor}
+\usepackage{geometry}
+\usepackage[authoryear]{natbib}
+
+\textwidth 6.75in
+\textheight 9.25in
+\topmargin -.875in
+\oddsidemargin -.125in
+\evensidemargin -.125in
+\usepackage{fancyhdr} % the and next line are for fancy headers/footers
+\fancyhf{}
+
+
+\pagestyle{fancy}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+\usepackage{url}
+\usepackage[unicode=true,pdfusetitle,
+bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+{hyperref}
+\hypersetup{
+pdfstartview={XYZ null null 1}}
+\usepackage{breakurl}
+\usepackage{lscape}
+\usepackage{subfig}
+\usepackage{cleveref}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{appendix}
+\crefname{appsec}{Appendix}{Appendices}
+\usepackage{listings}
+\usepackage{verbatim}
+
+\usepackage{color}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstset{ %
+backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+breakatwhitespace=true,         % sets if automatic breaks should only happen at whitespace
+breaklines=true,                 % sets automatic line breaking
+captionpos=b,                    % sets the caption-position to bottom
+commentstyle=\color{mygreen},    % comment style
+deletekeywords={...},            % if you want to delete keywords from the given language
+escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+frame=single,                    % adds a frame around the code
+keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+keywordstyle=\color{blue},       % keyword style
+language=R,                 % the language of the code
+morekeywords={*,...},            % if you want to add more keywords to the set
+numbers=none,                    % where to put the line-numbers; possible values are (none, left, right)
+numbersep=5pt,                   % how far the line-numbers are from the code
+numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+showstringspaces=false,          % underline spaces within strings only
+showtabs=false,                  % show tabs within strings adding particular underscores
+stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+stringstyle=\color{mymauve},     % string literal style
+tabsize=2,                       % sets default tabsize to 2 spaces
+%title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+\newcommand{\QuoteTitle}[1]{\centerline{\textit{\textbf{#1}}}}
+
+\begin{document}
+
+% generate files named with project-....png under figure dir.
+
+
+<<setup_analysis, include=FALSE, cache=FALSE>>=
+# set global chunk options
+#render_listings()
+@
+
+
+%% Now begin customising things. See the fancyhdr docs for more info.
+
+\chead{}
+\lhead[\sf \thepage]{\sf \leftmark}
+\rhead[\sf \leftmark]{\sf \thepage}
+\lfoot{}
+\rfoot{}
+
+
+\title{An Accessibility and Nascent Transcription Network for Predicting Drivers of 3T3-L1 Adipogenesis}
+
+\author{Arun B. Dutta, Bao H. Nguyen, and Michael J. Guertin}
+
+\maketitle
+\noindent A step-by-step procedure for analysis and integration of ATAC-seq and PRO-seq data
+from multiple time points over the first four hours of 3T3-L1 differentiation. 
+
+% insert the table of contents
+\tableofcontents{}
+
+%\listoftables
+%\addcontentsline{toc}{chapter}{List of tables}
+
+\listoffigures
+%\addcontentsline{toc}{chapter}{List of figures}
+
+\clearpage
+
+\section{Introduction}
+
+The following pipeline is designed to compile on the UVA Rivanna High-Performance Computing system. 
+While most tools and packages  are available through Rivanna, you will need to install some manually. 
+To transfer files into and out of Rivanna, use sftp \url{https://www.rc.virginia.edu/userinfo/rivanna/logintools/cl-data-transfer/}.
+Remember to modify the directory path for all relevant scripts to match your /scratch/user path.
+
+\section{ATAC-seq Analysis}
+
+\subsection{Download Raw ATAC-seq Sequencing Files From GEO}
+
+\noindent The ATAC-seq files can be found on the NCBI's Gene Expression Omnibus (GEO) at accession number GSE150492 (\url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE150492}). The code chunk below will download a table of SRA accession numbers from github and incorporate them into one .slurm file per sample. For each sample we concatenate a header document (downloaded from github and reproduced below) with some new lines into a .slurm file that can be submitted to Rivanna's job manager so that each file can be downloaded in parallel. If working locally, you can set up a loop to download each file individually, but that will take much longer. We use the fasterq-dump command from the sratoolkit to download our files. This command will automatically split each sample into paired end 1 and paired end 2 files with the suffix '\textunderscore 1.fastq' and '\textunderscore 2.fastq' respectively.
+
+\noindent header.txt:
+<<header, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 12:00:00
+#SBATCH -p standard
+#SBATCH -A janeslab
+@
+
+\noindent script for downloading .fastq files:
+<<download-atac, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+cd /scratch/abd3x/ATAC
+
+wget https://github.com/guertinlab/adipogenesis/raw/master/ATAC_SRA_table.txt
+wget https://github.com/guertinlab/adipogenesis/raw/master/header.txt
+
+echo 'Downloading .fastq'
+
+cat ATAC_SRA_table.txt | while read line
+do
+sra=$(echo $line | awk '{print $1}')
+time=$(echo $line | awk '{print $2}')
+rep=$(echo $line | awk '{print $3}')
+echo '#SBATCH -o download.'$time'm.rep'$rep'.out' > temp.txt
+echo 'module load sratoolkit/2.10.5' > temp2.txt
+echo 'fasterq-dump '$sra' -o ATAC_'$time'm_rep'$rep > temp3.txt
+echo 'echo DONE' > temp4.txt
+cat header.txt temp.txt temp2.txt temp3.txt temp4.txt > download.${time}m.rep$rep.slurm
+sbatch download.${time}m.rep$rep.slurm                                                                                                                                                      
+rm temp.txt
+rm temp2.txt
+rm temp3.txt
+rm temp4.txt
+done
+@
+
+\subsection{Align Raw Sequencing Files to the Genome}
+
+\noindent As above we will write a script to loop through our samples and incorporate each one into a .slurm script for aligning to the reference mouse genome. For each sample we align the two paired end files to the mm10 mouse genome assembly. We use the Bowtie2 alignment tool (\url{https://bowtie-bio.sourceforge.net/bowtie2/index.shtml}). Rivanna hosts a Bowtie2-formatted index that we can reference. If you're working locally you'll have to build your own index. After alignment with Bowtie2, we do some quality control and remove any duplicate reads so they do not throw off the analysis.
+
+\noindent align\textunderscore footer.txt:
+<<align-footer, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+module load gcc/9.2.0 bowtie2/2.2.9 samtools/1.12
+name=$(echo $fq | awk -F"_1.fastq" '{print $1}')
+echo $name
+echo 'aligning to mouse genome'
+bowtie2 --maxins 500 -x /project/genomes/Mus_musculus/UCSC/mm10/Sequence/Bowtie2Index/genome \
+-1 $fq -2 ${name}_2.fastq -S ${name}_smp.sam
+echo 'quality filter and remove duplicate amplicons'	
+samtools view -b -q 10 ${name}_smp.sam | samtools sort -n - | \
+samtools fixmate -m - - | samtools sort - | samtools markdup -r - ${name}_rmdup.bam
+rm ${name}_smp.sam
+echo 'zipping .fastq'
+gzip ${name}*fastq
+echo 'Done'
+@
+
+\noindent script for generating and submitting alignment .slurm files:
+<<align-atac, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+cd /scratch/abd3x/ATAC
+
+wget https://github.com/guertinlab/adipogenesis/raw/master/align_footer.txt
+
+for fq in *_1.fastq
+do
+name=$(echo $fq | awk -F"_1.fastq" '{print $1}')
+echo '#SBATCH -o align.'$name'.out' > temp.txt
+echo 'fq='$fq > temp2.txt
+cat header.txt temp.txt temp2.txt align_footer.txt > align.$name.slurm
+sbatch align.$name.slurm                                                                                                                                                     
+rm temp.txt
+rm temp2.txt
+done
+@
+
+\subsection{Convert .bam Files to .bigWig files}
+
+\noindent We will do two things with the .bam files generated by the previous step. First of all we will convert the .bam files to .bigWig files so we can sort the reads into our called peaks (the next section). Again we will use a script to generate one .slurm file per sample so we can parallelize the conversion process. We use the seqOutBias program to convert our .bam files to .bigWig files (\url{https://guertinlab.github.io/seqOutBias/}). This program requires a tallymer file for the genome under investigation. Generating this tallymer file takes a long time (multiple hours) but only needs to be done once per genome. We will generate all our .slurm file but only submit one, which will generate the tallymer file. Following completion of that job we will submit all the others and generate our .bigWig files. This step can be done in parallel with the next section, which is calling peaks.
+
+\noindent bigwig\textunderscore convert\textunderscore footer.txt:
+<<bw-convert-footer, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+module load gcc/7.1.0 seqoutbias/1.3.1
+name=$(echo $bam | awk -F"_rmdup.bam" '{print $1}')
+echo $name
+echo 'converting to .bigWig'
+seqOutBias /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa \
+$bam --skip-bed --no-scale --bw=$name.bigWig --only-paired --shift-counts --read-size=38
+echo 'Done'
+@
+
+\noindent script for generating and submitting bigwig conversion .slurm files:
+<<bw-convert-atac, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+cd /scratch/abd3x/ATAC
+
+wget https://github.com/guertinlab/adipogenesis/raw/master/bigwig_convert_footer.txt
+
+echo 'Converting .bam files to .bigWig files'
+
+for bam in *_rmdup.bam
+do
+name=$(echo $bam | awk -F"_rmdup.bam" '{print $1}')
+echo '#SBATCH -o bigwig.convert.'$name'.out' > temp.txt
+echo 'bam='$bam > temp2.txt
+cat header.txt temp.txt temp2.txt bigwig_convert_footer.txt > bigwig.convert.$name.slurm
+
+rm temp.txt
+rm temp2.txt
+done
+
+#pick one .slurm file to submit to generate tallymer for the mm10 mouse genome assembly
+file=$(ls bigwig.convert.*slurm | head -1)
+sbatch $file
+
+#when this job is done running (check the associated .out file for 'DONE'), then submit the rest
+for file in bigwig.convert.*slurm
+do
+sbatch $file
+done
+@
+
+\subsection{Peak calling}
+
+\noindent Below is a .slurm script that, upon submission, will use the MACS2 software to call peaks (\url{https://pypi.org/project/MACS2/}). We generate one big peaks file from all of our .bam files. We use bedtools to remove 'blacklisted' regions from our peak set. Blacklisted regions are genomic loci that are found in many sequencing datasets despite not reflecting the biology under observation. Finally we take a 200 bp window around the summits of those peaks so that all peaks are the same size. The summit of the peak represents putative transcription factor binding sites. 
+
+\noindent peak\textunderscore calling.slurm:
+<<peak-calling-slurm-atac, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 24:00:00
+#SBATCH -o peak.calling.out
+#SBATCH -p largemem
+#SBATCH -A janeslab
+
+module load macs2/2.2.7.1 gcc/9.2.0 bedtools/2.29.2
+
+#Call peaks
+echo 'Calling Peaks'
+macs2 callpeak -t *rmdup.bam -f BAMPE -n ATAC --outdir peak_calling --keep-dup 50 -q 0.05
+
+#Download blacklisted mm10 regions
+wget https://github.com/Boyle-Lab/Blacklist/raw/master/lists/mm10-blacklist.v2.bed.gz
+gunzip mm10-blacklist.v2.bed.gz
+mv mm10-blacklist.v2.bed mm10.blacklist.bed
+
+#Remove blacklisted regions
+cd peak_calling
+bedtools subtract -a ATAC_summits.bed -b ../mm10.blacklist.bed > ATAC_summits_bl_removed.bed
+awk '{OFS="\t";} {print $1,$2-99,$3+100,$4,$5}' ATAC_summits_bl_removed.bed > ../peak_windows.bed
+echo 'Done'
+@
+
+\noindent submit peak calling job
+<<peak-calling-submit-atac, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+sbatch peak_calling.slurm
+@
+
+\subsection{Sorting reads into peaks and PCA}
+
+\noindent Our next step is to sort our reads from individual samples into peaks in R to generate a counts table. We will also generate a DESeq-normalized counts table and perform a principal components analysis (PCA). A PCA is an easy way to test similarity of data sets (Figure \ref{pca}). This is equivalent to Supplemental Fig. 1A in the paper. Replicate samples cluster together. Principal component 1 explains the vast majority (91\%) of the variation among the samples. Note that the samples separate along principal component 1 based on their time of treatment. This result indicates that the data appropriately reflect the experimental conditions.
+
+<<read-sorting-atac, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='R' >>=
+library(bigWig)
+library(DESeq2)
+library(ggplot2)
+source('https://raw.githubusercontent.com/mjg54/znf143_pro_seq_analysis/master/docs/ZNF143_functions.R')
+
+get.raw.counts.interval <- function(df, path.to.bigWig, file.prefix = 'H') {
+  df = df[,1:5]
+  vec.names = c()
+  inten.df=data.frame(matrix(ncol = 0, nrow = nrow(df)))
+  for (mod.bigWig in Sys.glob(file.path(path.to.bigWig,
+                                        paste(file.prefix, "*.bigWig", sep ='')))) {
+    factor.name = strsplit(strsplit(mod.bigWig, "/")[[1]][length(strsplit(mod.bigWig, "/")[[1]])], '\\.')[[1]][1]
+    print(factor.name)
+    vec.names = c(vec.names, factor.name)
+    loaded.bw = load.bigWig(mod.bigWig)
+    mod.inten = bed.region.bpQuery.bigWig(loaded.bw, df[,1:3])
+    inten.df = cbind(inten.df, mod.inten)
+  }
+  colnames(inten.df) = vec.names
+  r.names = paste(df[,1], ':', df[,2], '-', df[,3], sep='')
+  row.names(inten.df) = r.names
+  return(inten.df)
+}
+
+directory = '/scratch/abd3x/ATAC'
+setwd(directory)
+peaks = read.table("/scratch/abd3x/ATAC/peak_windows.bed", header = F, sep = "\t")
+
+raw.read.counts = get.raw.counts.interval(peaks, directory, file.prefix = 'ATAC')
+save(raw.read.counts, file= 'raw.read.counts.Rdata')
+########
+sample.conditions = sapply(strsplit(as.character(colnames(raw.read.counts)), 'ATAC_'), '[', 2)
+sample.conditions = sapply(strsplit(sample.conditions, '_rep'), '[', 1)
+
+sample.conditions = factor(sample.conditions, levels=c("0m","20m","40m","60m","120m","180m","240m"))
+
+deseq.counts.table = DESeqDataSetFromMatrix(raw.read.counts, as.data.frame(sample.conditions), ~ sample.conditions)
+
+dds = DESeq(deseq.counts.table)
+
+#normalized counts table
+normalized.counts.atac = counts(dds, normalized=TRUE)
+save(normalized.counts.atac,file='normalized.counts.atac.Rdata')
+
+#PCA
+rld = rlog(dds, blind=TRUE)
+
+pca.dat = plotPCA(rld, intgroup="sample.conditions", returnData=TRUE)
+
+pca.dat$rep <- sapply(strsplit(pca.dat$name, '_rep'), '[', 2)
+
+percentVar = round(100 * attr(pca.dat, "percentVar"))
+
+colors <- c('#d64e12','#f9a52c','#efdf48','#8bd346','#60dbe8','#16a4d8','#9b5fe0')
+alphas <- c(0.33,0.67,1.0)
+
+pca.dat$group <- factor(pca.dat$group,levels=c("0m","20m","40m","60m","120m","180m","240m"))
+
+pdf(file='PCA_atac.pdf',width = 6,height = 5)
+print(
+  ggplot(pca.dat, aes(x=PC1, y=PC2,color=sample.conditions,alpha=rep)) + 
+    geom_point(size=4,stroke=0) +
+    #geom_violin(alpha=0.5) +
+    #geom_jitter(shape=16, col = 'light grey', position=position_jitter(0.2)) +
+    theme_minimal() +
+    labs(y = paste0('PC2 ',percentVar[2],'% variance'), 
+         x = paste0('PC1 ',percentVar[1],'% variance'), 
+         title=NULL,
+         color='Treatment',
+         alpha='Replicate') +
+    #color = 'Near',alpha='Magnitude Total \n ATAC Change') +
+    theme(
+      panel.grid.minor = element_blank(),
+      plot.title = element_text(size=12,face='bold',hjust = 0.5),
+      axis.ticks = element_blank(),
+      axis.text.y = element_text(size=11,color='black',face='bold'),
+      axis.text.x = element_text(size=11,color='black',face='bold'),
+      axis.title = element_text(size=12,color='black',face='bold'),
+      legend.text = element_text(size=8,color='black',face='bold'),
+      legend.title = element_text(size=9,color='black',face='bold')) +
+    #coord_cartesian(ylim = c(0, 1.05*max(plot.df$expression))) +
+    scale_alpha_manual(values=alphas) +
+    scale_color_manual(values=colors)
+)
+dev.off()
+
+@
+
+\begin{figure}[!htb]
+\begin{center}
+\includegraphics[scale=0.9]{~/Adipogenesis/Vignette/PCA_atac.pdf}
+\caption[Principal components analysis of ATAC-seq data]{PCA of ATAC-seq data shows expected clustering of replicates and separation of time points.}
+\label{pca}
+\end{center}
+\end{figure}
+
+\subsection{Defining and clustering dynamic peaks}
+
+\noindent In this chunk we use the likelihood ratio test to identify peaks that are dynamic over the whole time course. We also define a set of highly accessible but not dynamic peaks for future comparisons. We save the nondynamic and full peak sets as .bed files. We will save the dynamic peak sets after clustering. We also plot the number of dynamic and nondynamic peaks for the time course (Figure \ref{num.dyn.peaks}). This is equivalent to Supplemental Fig. 1D in the paper. The numbers are slightly different due to change in software versions and because this plot counts all dynamic peaks, not just those sorted into clusters.
+
+<<dynamic-atac, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='R' >>=
+library(lattice)
+library(DEGreport)
+library(DESeq2)
+library(ggplot2)
+
+load('raw.read.counts.Rdata')
+
+sample.conditions = sapply(strsplit(as.character(colnames(raw.read.counts)), 'ATAC_'), '[', 2)
+sample.conditions = sapply(strsplit(sample.conditions, '_rep'), '[', 1)
+
+sample.conditions = factor(sample.conditions, levels=c("0m","20m","40m","60m","120m","180m","240m"))
+
+deseq.counts.table = DESeqDataSetFromMatrix(raw.read.counts, as.data.frame(sample.conditions), ~ sample.conditions)
+
+dds = DESeq(deseq.counts.table)
+
+dds.lrt = DESeq(dds, test="LRT", reduced = ~ 1)
+res.lrt = results(dds.lrt)
+save(res.lrt, file = 'res.lrt.Rdata')
+
+padj.cutoff = 0.00000001 #1e-8
+
+siglrt.re = res.lrt[res.lrt$padj < padj.cutoff & !is.na(res.lrt$padj),]
+
+rld = rlog(dds, blind=TRUE)
+
+#for clustering (next step)
+rld_mat <- assay(rld)
+cluster_rlog = rld_mat[rownames(siglrt.re),]
+meta = as.data.frame(sample.conditions)
+rownames(meta) = colnames(cluster_rlog)
+save(cluster_rlog, meta, sample.conditions, file = 'cluster_rlog_pval_1e8.Rdata')
+
+#define set of highly accessible nondynamic peaks set for future comparisons
+not.different = rownames(res.lrt[res.lrt$padj > 0.5 & !is.na(res.lrt$padj) & 
+                                   !is.na(res.lrt$log2FoldChange) & abs(res.lrt$log2FoldChange) < 0.25,])
+
+chr = sapply(strsplit(not.different, ':'), '[', 1)
+x = sapply(strsplit(not.different, ':'), '[', 2)
+start = sapply(strsplit(x, '-'), '[', 1)
+end = sapply(strsplit(x, '-'), '[', 2)
+
+curated.not.different = data.frame(chr,start,end)
+write.table(curated.not.different,file='nondynamic_peaks.bed',sep='\t',col.names=F,row.names=F,quote=F)
+
+#generate all peaks set
+chr = sapply(strsplit(rownames(res.lrt), ':'), '[', 1)
+z = sapply(strsplit(rownames(res.lrt), ':'), '[', 2)
+start = sapply(strsplit(z, '-'), '[', 1)
+end = sapply(strsplit(z, '-'), '[', 2)
+
+bed = data.frame(chr,start,end,res.lrt$baseMean)
+write.table(bed[,1:3], file = 'all_peaks.bed',sep='\t',col.names=F,row.names=F,quote=F)
+
+#plot num. of dynamic peaks
+
+plot.df <- data.frame(type=c('Dynamic','Nondynamic'),
+                      num=c(nrow(cluster_rlog),
+                            (nrow(res.lrt)-nrow(cluster_rlog))),
+                      x=1)
+
+pdf(file='num.dynamic.v.nondynamic.peaks.pdf',height=4,width=4) 
+print(
+  ggplot(plot.df,aes(x = x,y = num,fill=type)) +
+    geom_bar(stat='Identity',color='black') +
+    labs(title = NULL, 
+         y = 'Number of Peaks', 
+         x = NULL,
+         fill = 'Type') +
+    theme_minimal() +
+    theme(panel.grid.minor = element_blank(),
+          axis.ticks = element_blank(),
+          axis.text.x = element_blank(),
+          axis.text.y = element_text(size=16,face='bold',color='black'),
+          axis.title.x = element_blank(),
+          axis.title.y = element_text(size=18,face='bold'),
+          legend.title = element_text(size=16,face='bold'),
+          legend.text = element_text(size=14,face='bold'),
+          plot.title = element_text(size=17,face='bold',hjust=0.5)) +
+    scale_fill_manual(values = c('#f16469','#f1bc7b'))
+)
+dev.off()
+
+@
+
+\begin{figure}[!htb]
+\begin{center}
+\includegraphics[scale=0.9]{~/Adipogenesis/Vignette/num.dynamic.v.nondynamic.peaks.pdf}
+\caption[Number of dynamic v. nondynamic ATAC-seq peaks]{A minority of ATAC-seq peaks are dynamic over the whole time course.}
+\label{num.dyn.peaks}
+\end{center}
+\end{figure}
+
+\noindent Now we cluster dynamic peaks based on shared accessibility dynamics using the DEGreport package. This is a very long, computationally intensive process so we will submit it as a job on the largemem partition. We will submit the 'atac.clustering.slurm' job script which will call the 'atac.clustering.R' script.
+
+atac.clustering.R:
+<<clustering-atac-R, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='R' >>=
+library(DESeq2)
+library(DEGreport)
+library(tibble)
+library(lattice)
+
+setwd("/scratch/abd3x/ATAC")
+
+load('cluster_rlog_pval_1e8.Rdata')
+
+clusters.all.test.1e8 <- degPatterns(cluster_rlog, metadata = meta, minc = 100, time = "sample.conditions",
+                                     col=NULL, eachStep = TRUE)
+
+save(clusters.all.test.1e8, file = 'clusters.all.minc100.1e8.Rdata')
+@
+
+atac.clustering.slurm:
+<<clustering-atac-slurm, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 96:00:00
+#SBATCH -p largemem
+#SBATCH -A janeslab
+#SBATCH -o atac.clustering.out
+
+module load gcc/9.2.0  openmpi/3.1.6 R/4.2.1
+
+Rscript atac.clustering.R
+
+echo 'DONE'
+@
+
+Submit slurm:
+<<submit-clustering-atac, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+
+sbatch atac.clustering.slurm
+
+@
+
+\subsection{Post-clustering processing}
+
+\noindent We save all peaks sorted into clusters into a .bed file. We also save each cluster as its own .bed file and plot a dendrogram to assess cluster similarity (Figure \ref{dendrogram}. We draw an (arbitrary) lines across the dendrogram to separate the clusters into five 'superclusters' that broadly depict our major classes of accessibility dynamics.
+
+<<postclustering-atac-1, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='R' >>=
+library(lattice)
+library(data.table)
+
+load('clusters.all.minc100.1e8.Rdata')
+
+plot.df = clusters.all.test.1e8$normalized
+
+plot.df$sample.conditions <- as.numeric(sapply(strsplit(as.character(plot.df$sample.conditions), 'm'), '[', 1))
+
+plot.df = plot.df[order(plot.df$genes),]
+plot.df = plot.df[order(plot.df$sample.conditions),]
+
+plot.df$chr = sapply(strsplit(plot.df$genes, '[.]'), '[', 1)
+plot.df$start = sapply(strsplit(plot.df$genes, '[.]'), '[', 2)
+plot.df$end = sapply(strsplit(plot.df$genes, '[.]'), '[', 3)
+
+write.table(unique(cbind(plot.df$chr, plot.df$start, plot.df$end)), file = 'dynamic_peaks.bed', 
+            quote = FALSE, sep = '\t', col.names=FALSE, row.names=FALSE)
+
+#save clusters as .bed files
+
+for (i in unique(plot.df$cluster)) {
+  print(i)
+  
+  temp <- unique(plot.df[plot.df$cluster == i,c('chr','start','end','cluster')])
+  
+  write.table(temp,file = paste0('cluster_',i,'.bed'),
+              quote = FALSE, row.names = FALSE, col.names = FALSE, sep = '\t')
+}
+
+plot.df$label <- paste0('cluster',plot.df$cluster)
+
+#draw dendrogram
+
+x = as.data.table(plot.df)
+plot.df.cluster = dcast(x, genes + label ~ sample.conditions, value.var="value")
+avg.clusters = as.data.frame(matrix(nrow = 0, ncol = 7))
+
+for (i in unique(plot.df.cluster$label)) {
+  z = data.frame(matrix(colMeans(plot.df.cluster[plot.df.cluster$label == i,3:9]), ncol = 7, nrow = 1))
+  rownames(z) = c(i)
+  colnames(z) = as.character(colnames(plot.df.cluster)[3:9])
+  avg.clusters = rbind(avg.clusters, z)
+}
+
+dd = dist(avg.clusters)
+hc = hclust(dd, method = "complete")
+
+pdf('dendrogram.pdf', width=8, height=5)
+plot(hc, xlab = "Clusters", main = ' ', hang = -1)
+abline(h = 2.1, lty = 2)
+dev.off()
+
+@
+
+\begin{figure}[!htb]
+\begin{center}
+\includegraphics[scale=0.9]{~/Adipogenesis/Vignette/dendrogram.pdf}
+\caption[Dynamic ATAC-seq peak clusters organized into dendrogram]{Clustering the clusters results in separation into five 'superclusters' that each exhibit a unique dynamic profile.}
+\label{dendrogram}
+\end{center}
+\end{figure}
+
+\noindent Next we will plot the traces for each individual cluster (Figure \ref{atac_traces}) as well as each supercluster.
+
+<<postclustering-atac-2, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='R' >>=
+#plot clusters organized by supercluster
+df = data.frame(index=1:18,cluster.num=
+                  unique(plot.df$cluster)[order(unique(as.character(plot.df$cluster)))])
+df = df[order(df$cluster.num),]
+df = df[reorder(df$cluster.num,c(23,9,18,16,12,4,8,1,11,13,2,5,24,14,10,6,3,7)),]
+
+pdf('atac_clusters_org_by_sc.pdf', width=11, height=15)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+  xyplot(value ~  sample.conditions | label, group = genes, data = plot.df, type = c('l'),#type = c('l','p'),
+         scales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+         aspect=1.0,
+         layout = c(5,5),
+         between=list(y=0.5, x=0.5),
+         index.cond=list(rev(df$index)),
+         skip = c(F,F,F,F,F,
+                  F,T,T,T,T,
+                  F,F,F,T,T,
+                  F,F,F,F,T,
+                  F,F,F,F,F),
+         ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+         xlab = list(label = 'Time (minutes)', cex =1.0),
+         par.settings = list(superpose.symbol = list(pch = c(16),
+                                                     col=c('grey20'), cex =0.5),
+                             strip.background=list(col="grey80"),
+                             superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                   lty = c(1))),
+         panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.spline(x, y, col = 'blue', lwd =2.0, ...)            
+         })
+  
+)
+dev.off()
+@
+
+\clearpage
+\begin{figure}[!htb]
+\begin{center}
+\includegraphics[scale=0.6]{~/Adipogenesis/Vignette/atac_clusters_org_by_sc.pdf}
+\caption[Dynamic ATAC-seq peak clusters organized by supdercluster]{Peak clusters that illustrate similar accessibility dynamics are sorted into larger 'superclusters'.}
+\label{atac_traces}
+\end{center}
+\end{figure}
+\clearpage
+
+\noindent Now we plot the peak traces for each supercluster as one .pdf (Figure XXX) and as individual files. We also save the peaks in each supercluster as a .bed file.
+
+<<postclustering-atac-3, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='R' >>=
+
+plot.df$supercluster <- 'grad.down'
+plot.df[plot.df$cluster ==24,'supercluster'] <- 'down.up'
+plot.df[plot.df$cluster %in% c(5,2,13),'supercluster'] <- 'up.down'
+plot.df[plot.df$cluster %in% c(11,1,8,4),'supercluster'] <- 'grad.up'
+plot.df[plot.df$cluster %in% c(12,16,18,9,23),'supercluster'] <- 'up.flat'
+
+#number of peaks in each supercluster
+table(plot.df$supercluster) / 7
+
+plot.df.atac = plot.df[,c(1,3,4,6,27:30)]
+plot.df.atac$genes = paste0(plot.df.atac$chr,':',plot.df.atac$start,'-',plot.df.atac$end)
+colnames(plot.df.atac)[1] <- 'peak'
+colnames(plot.df.atac)[3] <- 'time'
+save(plot.df.atac,file='plot.df.atac.Rdata')
+
+#plot superclusters
+pdf('atac_superclusters.pdf', width=8, height=4)
+
+trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+print(
+  xyplot(value ~  time | supercluster, group = peak, data = plot.df.atac, type = c('l'),#type = c('l','p'),
+         superclusterales=list(x=list(cex=1.0,relation = "free", rot = 45), y =list(cex=1.0, relation="free")),
+         aspect=1.0,
+         between=list(y=0.5, x=0.5),
+         layout = c(5,1),
+         ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+         xlab = list(label = 'Time (minutes)', cex =1.0),
+         par.settings = list(superpose.symbol = list(pch = c(16),
+                                                     col=c('grey20'), cex =0.5),
+                             strip.background=list(col="grey80"),
+                             superpose.line = list(col = c('#99999980'), lwd=c(1),
+                                                   lty = c(1))),
+         panel = function(x, y, ...) {
+           panel.xyplot(x, y, ...)
+           panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+           panel.spline(x, y, col = 'blue', lwd =2.0, ...) 
+           
+         })
+  
+)
+dev.off()
+
+#save individual superclusters as .bed files
+for (sc in unique(plot.df.atac$supercluster)) {
+  print(sc)
+  
+  temp <- unique(plot.df.atac[plot.df.atac$supercluster == sc,c('chr','start','end','supercluster')])
+  
+  write.table(temp,file = paste0(sc,'.supercluster.bed'),
+              quote = FALSE, row.names = FALSE, col.names = FALSE, sep = '\t')
+}
+
+#plot superclusters in individual plots
+for(sc in unique(plot.df.atac$supercluster)) {
+  print(sc)
+  y = plot.df.atac[plot.df.atac$supercluster == sc,]
+  
+  pdf(file=paste0(sc,'.supercluster.traces.pdf'),width=3,height=3)
+  
+  trellis.par.set(box.umbrella = list(lty = 1, col="black", lwd=1),
+                  box.rectangle = list( lwd=1.0, col="black", alpha = 1.0),
+                  plot.symbol = list(col="black", lwd=1.0, pch ='.'))
+  
+  print(
+    xyplot(value ~  time, group = peak, data = y, type = c('l'),
+           scales=list(x=list(cex=1.0,relation = "free", rot = 45), y = list(cex=1.0, relation="free")),
+           aspect=1.0,
+           between=list(y=0.5, x=0.5),
+           main = list(label = paste0(sc, ' traces'), cex = 1.5),
+           ylab = list(label = 'Normalized ATAC signal', cex =1.0),
+           xlab = list(label = 'Time (minutes)', cex =1.0),
+           par.settings = list(superpose.symbol = list(pch = c(16),col=c('grey20'), cex =0.5),
+                               strip.background=list(col="grey80"),
+                               superpose.line = list(col = c('#99999980'), lwd=c(1),lty = c(1))),
+           panel = function(x, y, ...) {
+             panel.xyplot(x, y, ...)
+             panel.bwplot(x, y, pch = '|', horizontal = FALSE, box.width = 15, do.out = FALSE)
+             panel.spline(x, y, col = 'blue', lwd = 3.5, ...)
+             #replace col = 'blue' with col = col for different sc colors
+           })
+  )
+  dev.off()
+}
+
+@
+
+\clearpage
+\begin{figure}[!htb]
+\begin{center}
+\includegraphics[scale=0.6]{~/Adipogenesis/Vignette/atac_superclusters.pdf}
+\caption[Dynamic ATAC-seq peak supercluster traces]{A minority of ATAC-seq peaks are dynamic over the whole time course.}
+\label{atac_traces}
+\end{center}
+\end{figure}
+\clearpage
+
+\subsection{Identifying enriched TF binding motifs}
+
+\noindent We use two orthogonal methods to identify TF binding motifs enriched in our dynamic peaks. One is to use assess the percentage of peaks from each cluster that contains any given motif and look for clusters that are significantly more enriched than the nondynamic using a chi squared test.
+
+fimo.motif.enrichment.R
+<<fimo-enrichment-R, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='R' >>=
+Args=commandArgs(TRUE)
+motif = Args[1]
+
+library(lattice)
+
+setwd('/scratch/abd3x/ATAC/fimo_motif_enrichment')
+
+supercluster.key = data.frame(row.names = c('cluster_12','cluster_16','cluster_18','cluster_9','cluster_23',
+                                            'cluster_11','cluster_1','cluster_8','cluster_4',
+                                            'cluster_5','cluster_2','cluster_13',
+                                            'cluster_7','cluster_3','cluster_6','cluster_10','cluster_14',
+                                            'cluster_24',
+                                            'nondynamic'),
+                              supercluster = c(rep('up.flat',5),
+                                               rep('grad.up',4),
+                                               rep('up.down',3),
+                                               rep('grad.down',5),
+                                               rep('down.up',1),
+                                               NA)
+)
+
+colors = c('#000000','#dddddd')
+
+motif.name = strsplit(motif,'.txt')[[1]][1]
+print(motif.name)
+table = t(read.table(motif,sep='\t',header=T,row.names=1))
+
+result = table
+result = result[,c('cluster_12','cluster_16','cluster_18','cluster_9','cluster_23',
+                   'cluster_11','cluster_1','cluster_8','cluster_4',
+                   'cluster_5','cluster_2','cluster_13',
+                   'cluster_7','cluster_3','cluster_6','cluster_10','cluster_14',
+                   'cluster_24',
+                   'nondynamic')]
+
+sig = FALSE
+sig.clusters = c()
+for (cluster in colnames(result)) {
+  small.table = result[,c(cluster,'nondynamic')]
+  output = chisq.test(small.table)
+  if (output$p.value < 0.001) {
+    change = ''
+    if ((small.table[1,1] / small.table[2,1]) > (small.table[1,2]/small.table[2,2])) {
+      change = 'enriched'
+    } else {
+      change = 'depleted'
+    }
+    
+    sc = as.character(supercluster.key[cluster,])      
+    
+    write(paste0(motif.name,'\t',cluster,'\t',change,'\t',sc),file="significant_motifs.txt",append=TRUE)
+    sig=TRUE
+  }
+  if (sig == TRUE) {            
+    pdf(file = paste0(motif.name,'.enrichment.barchart.pdf'),height=9)
+    par(las=2)
+    barplot(result, col = colors, cex.names= 1.2, legend.text = TRUE, args.legend = list(x=2.5,y=113), main = paste0(motif.name,' Enrichment'))
+    dev.off()
+  }
+}
+@
+
+
+fimo\textunderscore motif\textunderscore enrichment.slurm
+<<fimo-enrichment-sh, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 12:00:00
+#SBATCH -o fimo.enrichment.out
+#SBATCH -p standard
+#SBATCH -A janeslab
+
+module load gcc/9.2.0 bedtools/2.29.2 openmpi/3.1.6 R/4.2.1
+
+#change the directory to wherever you are keeping the ATAC cluster .bed files
+cd /scratch/abd3x/ATAC
+
+tab=$'\t'
+
+mkdir fimo_motif_enrichment
+cd fimo_motif_enrichment
+
+#loop through each motif
+for motif in /scratch/abd3x/ATAC/bed_files//*bed
+do
+    motif_name=$(echo $motif | awk -F"/" '{print $NF}' | awk -F".bed" '{print $1}')
+    echo $motif_name
+    touch ${motif_name}.txt
+    echo "name""$tab""with.motif""$tab""without.motif" >> ${motif_name}.txt
+    
+    #find how many nondynamic peaks contain the motif 
+    nondyn_with_motif=$(intersectBed -wa -a ../nondynamic_peaks.bed -b $motif | sort -u | wc -l)
+    nondyn_without_motif=$(intersectBed -v -a ../nondynamic_peaks.bed -b $motif | sort -u | wc -l)
+
+    echo "nondynamic$tab$nondyn_with_motif$tab$nondyn_without_motif" >> ${motif_name}.txt
+    
+    #loop though each cluster
+    for bed in ../cluster*bed
+    do
+      name=$(echo $bed | awk -F"/" '{print $NF}' | awk -F".bed" '{print $1}')
+    #find how many peaks in each cluster contain the motif
+      cluster_with_motif=$(intersectBed -wa -a $bed -b $motif | sort -u | wc -l)
+      cluster_without_motif=$(intersectBed -v -a $bed -b $motif | sort -u | wc -l)
+    
+      echo "$name$tab$cluster_with_motif$tab$cluster_without_motif" >> ${motif_name}.txt
+    
+    done
+    
+    Rscript ../fimo_motif_enrichment.R ${motif_name}.txt
+
+done
+
+echo 'DONE'
+
+@
+
+\noindent The other approach is to perform \textit{de novo} motif extraction on each cluster using MEME. 
+The original script ran MEME in parallel with a different markov\textunderscore order option but that no longer works on Rivanna for unclear reasons (probably due to MEME updates). 
+
+<<meme-script.sh, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+wget https://hgdownload-test.gi.ucsc.edu/goldenPath/mm10/bigZips/mm10.chrom.sizes
+
+cd /scratch/abd3x/ATAC
+mkdir meme_motif_enrichment
+
+wget https://github.com/guertinlab/adipogenesis/raw/master/meme_header.txt
+wget https://github.com/guertinlab/adipogenesis/raw/master/meme_footer.txt
+
+for bed in cluster_*.bed
+do
+  name=$(echo $bed | awk -F".bed" '{print $1}')
+  echo $name
+  echo '#SBATCH -o meme.'$name'.out' > temp.txt
+  echo 'bed='$bed > temp2.txt
+  cat meme_header.txt temp.txt temp2.txt meme_footer.txt > meme_${name}.slurm
+  sbatch meme_${name}.slurm                                                                                                                                                   
+  rm temp.txt
+  rm temp2.txt
+done
+
+@
+
+We match all enriched \textit{de novo} motifs to known TF binding motifs using TOMTOM. First we have to download the binding motif databases from JASPAR, Uniprobe, and Homer.
+
+download\textunderscore databases.sh
+<<download-databases.sh, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+#Generate homer_uniprobe_jaspar PSWM database
+
+module load gcc/7.1.0  openmpi/3.1.4 python/2.7.16
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/HOMER_MEME_conversion.py
+
+wget http://meme-suite.org/meme-software/Databases/motifs/motif_databases.12.19.tgz
+tar -xzf motif_databases.12.19.tgz
+#JASPAR
+mv motif_databases/JASPAR/JASPAR2018_CORE_vertebrates_non-redundant.meme $PWD
+#Uniprobe
+mv motif_databases/MOUSE/uniprobe_mouse.meme $PWD
+
+#Homer
+#CAUTION: the HOMER_MEME_conversion.py was written for Python2 so remember to specify python2.7 when running.
+wget https://raw.githubusercontent.com/mjg54/znf143_pro_seq_analysis/master/docs/HOMER_MEME_conversion.py
+wget http://homer.ucsd.edu/homer/custom.motifs
+python2.7 HOMER_MEME_conversion.py -i custom.motifs -o homer.motifs
+
+#edit databases to work with tomtom
+cp JASPAR2018_CORE_vertebrates_non-redundant.meme JASPAR_edited_meme.txt
+grep MOTIF JASPAR_edited_meme.txt > motifs.txt
+cat motifs.txt | while read motif
+do
+    name=$(echo $motif | awk -F" " '{print $NF}')
+    temp=$(echo 'MOTIF' $name'_jaspar')
+    sed -i "s;${motif};${temp};g" JASPAR_edited_meme.txt
+done
+rm motifs.txt
+
+#edit databases to work with tomtom
+cp uniprobe_mouse.meme uniprobe_edited_meme.txt
+grep MOTIF uniprobe_edited_meme.txt > motifs.txt
+cat motifs.txt | while read motif
+do
+    name=$(echo $motif | awk -F" " '{print $NF}')
+    temp=$(echo 'MOTIF' $name'_uniprobe')
+    sed -i "s;${motif};${temp};g" uniprobe_edited_meme.txt
+done
+#remove 'secondary' motifs
+sed -i -e '4210,8365d;' uniprobe_edited_meme.txt
+
+rm motifs.txt
+
+#edit databases to work with tomtom
+cp homer.motifs_meme.txt homer_edited_meme.txt
+grep MOTIF homer_edited_meme.txt > motifs.txt
+cat motifs.txt | while read motif
+do
+    name=$(echo $motif | awk -F" " '{print $NF}')
+    name=$(echo $name | awk -F"/" '{print $1}')
+    temp=$(echo 'MOTIF' $name'_homer')
+    sed -i "s;${motif};${temp};g" homer_edited_meme.txt
+done
+rm motifs.txt
+
+#Collect all database motifs into one file
+cat homer_edited_meme.txt uniprobe_edited_meme.txt JASPAR_edited_meme.txt > homer_uniprobe_jaspar_edited.txt
+@
+
+Now we iterate through the MEME results from each cluster and match the results against the database file.
+
+meme\textunderscore tomtom.slurm
+<<meme-tomtom.slurm, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+#!/bin/bash
+#SBATCH -n 1
+#SBATCH -t 12:00:00
+#SBATCH -p standard
+#SBATCH -A janeslab
+#SBATCH -o post.meme.fimo.out
+
+module load gcc/9.2.0  openmpi/3.1.6 meme/5.3.3
+
+#run tomtom on meme output
+mkdir tomtom
+cd tomtom
+
+echo 'Running TOMTOM'
+for i in ../meme_motif_enrichment/*output
+do
+    name=$(echo $i | awk -F"/" '{print $NF}' | awk -F".meme" '{print $1}')
+    echo $name
+    tomtom -no-ssc -o $name.tomtom_output -verbosity 1 -min-overlap 5 -dist ed -evalue -thresh 0.05 $i/meme.txt ../homer_uniprobe_jaspar_edited.txt
+    tomtom -no-ssc -o $name.tomtom_output -verbosity 1 -min-overlap 5 -dist ed -text -evalue -thresh 0.05 $i/meme.txt ../homer_uniprobe_jaspar_edited.txt > $name.tomtom_output/tomtom.txt
+done
+
+cd ..
+
+mkdir motifid_clusters
+cd motifid_clusters
+
+#extract motif names from tomtom output
+echo 'Extracting Motif Names'
+for file in ../tomtom/*cluster*tomtom_output/*.txt
+do
+    name=$(echo $file | awk -F"/" '{print $(NF-1)}' | awk -F".tomtom_output" '{print $1}')
+    echo $name
+    motifid=$name
+    #echo $file
+    linenum=$(awk 'END {print NR}' $file)
+    #echo $linenum
+    first=2
+    i=$first
+    if [[ $linenum != 5 ]]
+    then
+	mkdir $name
+	while [[  $i -le $linenum ]]
+	do
+	    head -$i $file | tail -1 > lastline
+	    mapid[$i]=$(awk 'END {print $2}' lastline | awk -F"(" '{print $1}')
+	    #echo mapid[$i]_${mapid[$i]}
+	    echo ${mapid[$i]} >> $name/motifidlist_$motifid.txt
+	    ((i = i + 1))
+	done
+	head -n $(( $(wc -l $name/motifidlist_$motifid.txt | awk '{print $1}') - 4 )) $name/motifidlist_$motifid.txt > $name/motifidlist_$motifid.final.txt
+	rm $name/motifidlist_$motifid.txt
+	mv $name/motifidlist_$motifid.final.txt $name/motifidlist_$motifid.txt
+    fi
+done
+
+rm lastline
+cd ..
+
+echo 'DONE'
+@
+
+\subsection{Sorting motifs into families}
+
+Now we sort the /textit{de novo} motifs by the supercluster they were extracted from (meaning all 'up.down' motifs get pu together in a directory).
+
+sort\textunderscore meme\textunderscore motifs.sh
+<<sort-meme-motifs.sh, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+#organize de novo motifs by supercluster
+echo 'Sort MEME motifs by supercluster'
+mkdir supercluster_meme_motifs
+cd supercluster_meme_motifs
+
+mkdir up.down
+mkdir up.flat
+mkdir grad.up
+mkdir down.up
+mkdir grad.down
+
+cp -r ../motifid_clusters/cluster_5 up.down
+cp -r ../motifid_clusters/cluster_2 up.down
+cp -r ../motifid_clusters/cluster_13 up.down
+
+cp -r ../motifid_clusters/cluster_12 up.flat
+cp -r ../motifid_clusters/cluster_16 up.flat
+cp -r ../motifid_clusters/cluster_18 up.flat
+cp -r ../motifid_clusters/cluster_9 up.flat
+cp -r ../motifid_clusters/cluster_23 up.flat
+
+cp -r ../motifid_clusters/cluster_11 grad.up
+cp -r ../motifid_clusters/cluster_8 grad.up
+cp -r ../motifid_clusters/cluster_4 grad.up
+cp -r ../motifid_clusters/cluster_1 grad.up
+
+#no motifs tomtom'd out from cluster24 meme result
+#cp -r ../motifid_clusters/cluster24 down.up
+rm -r down.up
+
+cp -r ../motifid_clusters/cluster_7 grad.down
+cp -r ../motifid_clusters/cluster_3 grad.down
+cp -r ../motifid_clusters/cluster_6 grad.down
+cp -r ../motifid_clusters/cluster_10 grad.down
+cp -r ../motifid_clusters/cluster_14 grad.down
+
+for dir in *.*
+do
+    echo $dir
+    cd $dir
+    for int_dir in cluster*
+    do
+	cd $int_dir
+	mv motifidlist* ..
+	cd ..
+    done
+    cat *txt > $dir.denovo.motifs.txt
+    mv $dir.denovo.motifs.txt ..
+    cd ..
+done
+
+cd ..
+@
+
+\noindent Next we sort the motifs enriched from the FIMO analysis by supercluster.
+
+sort\textunderscore fimo\textunderscore motifs\textunderscore supercluster.R
+<<sort-fimo-motifs.R, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='R' >>=
+#Organize all the fimo identified motifs by supercluster and save them in new directory
+setwd('/scratch/abd3x/ATAC')
+fimo = read.table('fimo_motif_enrichment/significant_motifs.txt',sep='\t',header=F)
+
+colnames(fimo) = c('motif','cluster','change','supercluster')
+enriched = fimo[fimo$change == 'enriched',]
+
+#had to edit the jaspar motif names some during FIMO, changing them back here
+enriched$motif = gsub('.var.2.','(var.2)',enriched$motif)
+enriched$motif = gsub('\\.\\.','::',enriched$motif)
+
+superclusters = unique(enriched$supercluster)
+
+for (sc in superclusters) {
+    print(sc)
+    write((as.vector(unique(enriched[enriched$supercluster == sc,]$motif))),
+          file=paste0('supercluster_fimo_motifs/',sc,'.fimo.motifs.txt'))
+}
+@
+
+sort\textunderscore fimo\textunderscore motifs.sh
+<<sort-fimo-motifs.sh, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+module load gcc/9.2.0  openmpi/3.1.6 R/4.2.1
+
+#organize fimo motifs by supercluster
+echo 'Sort FIMO motifs by supercluster'
+mkdir supercluster_fimo_motifs
+
+Rscript sort_fimo_motifs_supercluster.R
+@
+
+Now we identify the overlap between the \texit{de novo} motifs and the FIMO motifs.
+
+fimo\textunderscore denovo\textunderscore match.sh
+<<fimo-denovo-match, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+echo 'Match MEME and FIMO motifs by supercluster'
+mkdir fimo_denovo_match
+cd fimo_denovo_match
+
+for file in ../supercluster_meme_motifs/*.txt
+do
+    name=$(echo $file | awk -F"/" '{print $NF}' | awk -F".denovo" '{print $1}')
+    echo $name
+    awk 'FNR==NR{a[$1];next}($1 in a){print}' $file ../supercluster_fimo_motifs/$name.fimo.motifs.txt > ${name}_meme_fimo_match.txt
+    wordcount=$(wc -l ${name}_meme_fimo_match.txt | awk 'END {print $1}')
+    if [[ $wordcount == 0 ]]
+    then
+	rm ${name}_meme_fimo_match.txt
+    fi
+done
+
+cat * > all_matched_motifs.txt
+cp all_matched_motifs.txt ..
+
+echo 'DONE'
+@
+
+Next we sort all the enriched motifs into a reasonable number of TF families by using TOMTOM to compare every motif against every other motif. 
+
+fimo\textunderscore denovo\textunderscore sort.R
+<<fimo-denovo-sort-R, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='R' >>=
+library(igraph)
+library(dichromat)
+
+setwd('/scratch/abd3x/ATAC')
+
+threecol=read.table("3_col_combined_motif_db.txt",header=F,stringsAsFactors = F,sep='\t')
+colnames(threecol)=c('from','to','e_value')
+threecol$weight=abs(log(threecol$e_value))
+
+#create the graph variable
+g=graph.data.frame(threecol,directed=F)
+g=simplify(g)
+
+cluster=clusters(g)
+
+for(i in 1:length(groups(cluster))) {
+write.table(groups(cluster)[i],file=paste0('PSWM_family_',i,'.txt'),col.names = F, row.names = F, quote = F, sep = '\t')
+}
+
+l=layout.fruchterman.reingold(g)
+l=layout.norm(l,-1,1,-1,1)
+
+colfunc<-colorRampPalette(c("red","yellow","springgreen","royalblue","purple"))
+#pick a distinct color from the palette for each disease and save the list of colors as a vector
+mycol = colfunc(length(groups(cluster)))
+
+pdf(file='families.pdf',width=10,height=10)
+plot(g,layout=l,rescale=F,vertex.label.cex=.5,xlim=range(l[,1]),  ylim=range(l[,2]),
+edge.width=E(g)$weight/20,vertex.size=degree(g,mode='out')/5,
+edge.curved=T,vertex.label=NA,vertex.color=mycol[cluster$membership],
+margin=0,asp=0)
+dev.off()
+@
+
+fimo\textunderscore denovo\textunderscore sort.sh
+<<fimo-denovo-match, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+#pulls each de novo motif from all the clusters and saves each as its own file
+
+#extract individual meme files from combined database
+#CAUTION: you only need to run this once, even if you're working through the code again
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/MEME_individual_from_db.py
+
+mkdir individual_memes
+cd individual_memes
+
+#CAUTION: the MEME_individual_from_db.py was written for Python2 so remember to specify python2.7 when running.
+python2.7 ../MEME_individual_from_db.py -i ../homer_uniprobe_jaspar_edited.txt
+
+for file in *meme.txt 
+do
+    name=$(echo $file | awk -F"homer_uniprobe_jaspar_edited.txt_" '{print $1}')
+    mv $file ${name}meme.txt
+    
+done
+
+cd ..
+
+#tomtom all query factors against all others
+mkdir tomtom_all_query_factors
+cd tomtom_all_query_factors
+
+cat ../all_matched_motifs.txt | while read factor
+do
+    echo $factor
+    cp ../individual_memes/${factor}_meme.txt $PWD
+done
+
+#remove Ptf1a motif b/c it's a forced palindrome
+rm Ptf1a_homer_meme.txt
+#remove Tal1:Tcf3 motif b/c motif doesn't make biological sense - looks like neither Tal1 nor Tcf3
+rm TAL1::TCF3_jaspar_meme.txt
+#remove ZNF740 motif
+rm ZNF740_jaspar_meme.txt
+#remove Pitx1:Ebox b/c it's conflated with TWIST1
+rm Pitx1:Ebox_homer_meme.txt
+
+cat *meme.txt > ../all_query_factors_meme.txt
+
+#define motif families
+module load gcc/9.2.0  openmpi/3.1.6 meme/5.3.3
+for meme in *meme.txt
+do
+    name=$(echo $meme | awk -F".txt_" '{print $NF}' | awk -F"_meme.txt" '{print $1}')
+    #echo $name
+    tomtom -no-ssc -o $name.tomtom_output -verbosity 1  -incomplete-scores -min-overlap 1 -dist ed -evalue -thresh 0.0005 $meme ../all_query_factors_meme.txt
+    cd $name.tomtom_output
+    cut -f1,2,5 tomtom.tsv | tail -n +2 | sed '$d' | sed '$d' | sed '$d' | sed '$d' >> ../3_col_combined_motif_db_pre.txt
+    cd ..
+done
+
+grep -v '#' 3_col_combined_motif_db_pre.txt > 3_col_combined_motif_db.txt
+rm 3_col_combined_motif_db_pre.txt
+cp 3_col_combined_motif_db.txt ..
+cd ..
+
+module purge
+module load gcc/9.2.0  openmpi/3.1.6 R/4.2.1
+Rscript fimo_denovo_sort.R
+@
+
+\noindent Next we generate composite motifs for each family. We used to use ceqlogo from the MEME package to create sequence logos from composite .fasta files, however ceqlogo is no longer part of the package.
+
+<<generate-composites, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/tomtom_output_to_composite.py
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/meme_header.txt
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/generate_composite_motif.R
+
+mkdir composite_motifs
+cd composite_motifs
+
+#query tomtom for each factor against all others within each family
+
+for txt in ../PSWM_family*.txt
+do
+
+    dir_name=$(echo $txt | awk -F'../' '{print $2}' | awk -F'.txt' '{print $1}')
+    echo $dir_name
+    mkdir $dir_name
+    cd $dir_name
+    
+    cat ../$txt | while read line
+    do
+    	echo $line
+	    cp ../../individual_memes/${line}_meme.txt $PWD
+    done
+    echo ''
+    
+    query_factor=`head -1 ../$txt`
+    
+    if [[ $(wc -l < ../$txt) -ge 2 ]]
+    then   	
+	    cat ../$txt | { while read line
+			 do
+			    query_factor=$line
+			    rm ref_factors_meme.txt
+			    mv ${query_factor}_meme.txt ..
+			    cat *_meme.txt > ref_factors_meme.txt
+			    mv ../${query_factor}_meme.txt $PWD
+			    module purge
+          module load gcc/9.2.0  openmpi/3.1.6 meme/5.3.3
+			    tomtom -no-ssc -o ${query_factor}.tomtom_output -verbosity 1 -incomplete-scores \
+			    -min-overlap 1 -dist ed -evalue -thresh 0.0005 ${query_factor}_meme.txt ref_factors_meme.txt
+			    
+			    if [[ $(wc -l < ${query_factor}.tomtom_output/tomtom.tsv) -ge $max_motif ]]
+			    then
+				    max_motif=$(wc -l < ${query_factor}.tomtom_output/tomtom.tsv)
+				    final_query=$query_factor
+			    fi
+			done
+			
+			echo FINAL_QUERY IS $final_query
+			wc -l ${final_query}.tomtom_output/tomtom.tsv
+			cd ${final_query}.tomtom_output
+			
+			module load gcc/7.1.0  openmpi/3.1.4 python/2.7.16
+			python2.7 ../../../tomtom_output_to_composite.py -i tomtom.xml
+			mv tomtom.xml_test_index_pswm.txt ../composite.values.txt
+			mv tomtom.xml_test_index_rc_offset.txt ../composite.index.txt
+			cd ../..
+	}
+    fi
+    
+    cd ..
+    
+done
+
+cd ..
+
+module purge
+module load gcc/9.2.0  openmpi/3.1.6 R/4.2.1
+
+for family in PSWM*
+do
+    cd $family
+    num=$(ls *txt | wc -l)
+
+    if [[ $num -ge 2 ]]
+    then
+	    #generate composite PSWM
+	    Rscript ../../generate_composite_motif.R $family
+	    cat ../../meme_header.txt ${family}_composite_PSWM.txt > ${family}_meme.txt	
+    else
+	    line=`grep MOTIF *meme.txt`
+	    cp *meme.txt ${family}_meme.txt
+	    sed -i "s;${line};MOTIF   Composite;g" ${family}_meme.txt
+    fi
+    
+    #generate logo
+    #module load gcc/7.1.0 meme/4.10.2
+    #ceqlogo -i ${family}_meme.txt -m Composite -o ${family}.eps
+    #ceqlogo -i ${family}_meme.txt -m Composite -o ${family}.rc.eps -r
+    cd ..
+    
+done
+
+cd ..
+
+@
+
+\subsection{Separating KLF and SP motif instances}
+
+The KLF and SP motifs are very similar and will be sorted into the same family by TOMTOM. However in our dataset, KLF motifs are associated with increases in accessibility and SP motifs are associated with decreases. The following code more confidently distinguishes SP from KLF motifs.
+
+<<separate-KLF-SP, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+
+#downlaod all relevant scripts
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/generate_composite_motif.KLF.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/generate_composite_motif.SP.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/prep.SP.KLF.fimo.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/SP_KLF_split.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/extract.motifs.from.combined.family.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/post.composite.fimo.supp.R
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/plot.motif.enrichment.supp.R
+
+#generate new directory
+rm -r SP_KLF_split
+mkdir SP_KLF_split
+cd SP_KLF_split
+
+echo Generate composite SP and KLF motifs
+
+#separating SP motifs
+mkdir SP
+cd SP
+
+motifs=`grep -E 'SP|Sp' ../../PSWM_family_7.txt`
+
+for motif in $motifs
+do
+    cp  /scratch/abd3x/ATAC/individual_memes/$motif*meme.txt $PWD
+done
+
+max_motif=0
+final_query=''
+
+#query tomtom for each SP factor against all others
+for line in *meme.txt
+do
+    name=$(echo $line | awk -F"_meme.txt" '{print $1}')
+    echo $name
+    query_factor=$line
+    mv ${query_factor} ..
+    rm ref_factors.txt
+    cat *_meme.txt > ref_factors.txt
+    mv ../${query_factor} $PWD
+    #increased e-value threshold to 0.05!
+    
+    module purge
+    module load gcc/9.2.0  openmpi/3.1.6 meme/5.3.3
+    
+    tomtom -no-ssc -oc $name.tomtom_output -verbosity 1 -min-overlap 5 -mi 1 -dist pearson -evalue -thresh 0.05 ${query_factor} ref_factors.txt
+    if [[ $(wc -l < $name.tomtom_output/tomtom.tsv) -ge $max_motif ]]
+    then
+	max_motif=$(wc -l < $name.tomtom_output/tomtom.tsv)
+	final_query=$name
+    fi
+done
+
+echo FINAL_QUERY IS $final_query
+wc -l $final_query.tomtom_output/tomtom.tsv
+cd $final_query.tomtom_output
+
+module purge
+module load gcc/7.1.0  openmpi/3.1.4 python/2.7.16
+
+python2.7 ../../../tomtom_output_to_composite.py -i tomtom.xml
+mv tomtom.xml_test_index_pswm.txt ../composite.values.txt
+mv tomtom.xml_test_index_rc_offset.txt ../composite.index.txt
+cd ..
+
+module purge
+module load gcc/9.2.0  openmpi/3.1.6 R/4.2.1
+
+#generate composite SP PSWM
+Rscript ../../generate_composite_motif.SP.R
+
+cat ../../meme_header.txt SP_composite_PSWM.txt > SP_composite_meme.txt	
+
+#module load gcc/7.1.0 meme/4.10.2
+
+#generate composite SP logo
+#ceqlogo -i SP_composite_meme.txt -m Composite -o SP_composite.eps
+#ceqlogo -i SP_composite_meme.txt -m Composite -o SP_composite.rc.eps -r
+
+cd ..
+
+#separating KLF motifs
+mkdir KLF
+cd KLF
+
+module load gcc/9.2.0  mvapich2/2.3.3 meme/5.1.0
+
+motifs=`grep -E 'KLF|Klf' ../../PSWM_family_7.txt`
+
+for motif in $motifs
+do
+    cp  /scratch/abd3x/ATAC/individual_memes/$motif*meme.txt $PWD
+done
+
+max_motif=0
+final_query=''
+
+#query tomtom for each KLF factor against all others
+for line in *meme.txt
+do
+    name=$(echo $line | awk -F"_meme.txt" '{print $1}')
+    echo $name
+    query_factor=$line
+    mv ${query_factor} ..
+    rm ref_factors.txt
+    cat *_meme.txt > ref_factors.txt
+    mv ../${query_factor} $PWD
+    #increased e-value threshold to 0.05!
+    
+    module purge
+    module load gcc/9.2.0  openmpi/3.1.6 meme/5.3.3
+    
+    tomtom -no-ssc -oc $name.tomtom_output -verbosity 1 -min-overlap 5 -mi 1 -dist pearson -evalue -thresh 0.05 ${query_factor} ref_factors.txt
+    if [[ $(wc -l < $name.tomtom_output/tomtom.tsv) -ge $max_motif ]]
+    then
+	max_motif=$(wc -l < $name.tomtom_output/tomtom.tsv)
+	final_query=$name
+    fi
+done
+
+echo FINAL_QUERY IS $final_query
+wc -l $final_query.tomtom_output/tomtom.tsv
+cd $final_query.tomtom_output
+
+module purge
+module load gcc/7.1.0  openmpi/3.1.4 python/2.7.16
+
+python2.7 ../../../tomtom_output_to_composite.py -i tomtom.xml
+mv tomtom.xml_test_index_pswm.txt ../composite.values.txt
+mv tomtom.xml_test_index_rc_offset.txt ../composite.index.txt
+cd ..
+
+#generate composite KLF PSWM
+
+module purge
+module load gcc/9.2.0  openmpi/3.1.6 R/4.2.1
+
+Rscript ../../generate_composite_motif.KLF.R
+
+cat ../../meme_header.txt KLF_composite_PSWM.txt > KLF_composite_meme.txt	
+
+#module load gcc/7.1.0 meme/4.10.2
+
+#generate composite KLF logo
+#ceqlogo -i KLF_composite_meme.txt -m Composite -o KLF_composite.eps
+#ceqlogo -i KLF_composite_meme.txt -m Composite -o KLF_composite.rc.eps -r
+
+cd ..
+
+@
+
+\noindent Now we use FIMO to find the top 2 million instances of each motif. As with alignments, we submit a .slurm script for each motif family. 
+
+\noindent fimo\textunderscore script.sh
+<<fimo-script-sh, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+rm -r fimo_composites
+mkdir fimo_composites
+
+wget https://raw.githubusercontent.com/guertinlab/adipogenesis/master/fimo_footer.txt
+
+for i in PSWM*txt
+do
+    name=$(echo $i | awk -F".txt" '{print $1}')
+    echo $name
+    echo '#SBATCH -o' $name'.fimo.out' > temp.txt
+    echo 'i='../composite_motifs/$name/${name}_meme.txt > temp2.txt
+    cat header_1.txt temp.txt temp2.txt fimo_footer.txt > $name.fimo.slurm
+    sbatch $name.fimo.slurm                           
+    rm temp.txt
+    rm temp2.txt
+done
+@
+
+We rename the FIMO .bed files to be more informative.
+
+<<fimo-rename-sh, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+
+module load gcc/9.2.0 bedtools/2.29.2
+
+cd /scratch/abd3x/ATAC/fimo_composites
+
+for i in *_2M.txt
+do
+    name=$(echo $i | awk -F"/" '{print $NF}' | awk -F"_2M.txt" '{print $1}')
+    echo $name
+    intersectBed -loj -a ../dynamic_peaks.bed -b $i > ${name}_fimo.bed
+    intersectBed -loj -a ../nondynamic_peaks.bed -b $i > ${name}_fimo_nondyn.bed
+    intersectBed -loj -a ../all_peaks.bed -b $i > ${name}_fimo_all.bed
+    cat $i | cut -f1-3,5 | sort -k1,1 -k2,2n > ${name}_2M.bed 
+done
+
+#transfer bed files for AP1, GR, CEBP, and TWIST into main figures directory
+#check that family number matches up to corresponding motif
+
+rm -r main_figure_beds
+mkdir main_figure_beds
+
+cp PSWM_family_1_fimo.bed main_figure_beds/AP1_fimo.bed
+cp PSWM_family_3_fimo.bed main_figure_beds/GR_fimo.bed
+cp PSWM_family_5_fimo.bed main_figure_beds/CEBP_fimo.bed
+cp PSWM_family_18_fimo.bed main_figure_beds/TWIST_fimo.bed
+
+cp PSWM_family_1_2M.bed main_figure_beds/AP1_2M.bed
+cp PSWM_family_3_2M.bed main_figure_beds/GR_2M.bed
+cp PSWM_family_5_2M.bed main_figure_beds/CEBP_2M.bed
+cp PSWM_family_18_2M.bed main_figure_beds/TWIST_2M.bed
+
+#rename 2M files for generating final ATAC dataframe
+#skip SP/KLF (family 7)
+cp PSWM_family_1_fimo_all.bed BHLH_fimo_all.bed
+cp PSWM_family_2_fimo_all.bed TCF21_fimo_all.bed
+cp PSWM_family_3_fimo_all.bed GR_fimo_all.bed
+cp PSWM_family_4_fimo_all.bed BHLHA15_fimo_all.bed
+cp PSWM_family_5_fimo_all.bed CEBP_fimo_all.bed
+cp PSWM_family_6_fimo_all.bed CTFCL_fimo_all.bed
+#cp PSWM_family_7_fimo_all.bed SPKLF_fimo_all.bed
+cp PSWM_family_8_fimo_all.bed ETS_fimo_all.bed
+cp PSWM_family_9_fimo_all.bed ZBTB33_fimo_all.bed
+cp PSWM_family_10_fimo_all.bed MAZ_fimo_all.bed
+cp PSWM_family_11_fimo_all.bed NFIC_fimo_all.bed
+cp PSWM_family_12_fimo_all.bed NFY_fimo_all.bed
+cp PSWM_family_13_fimo_all.bed NRF_fimo_all.bed
+cp PSWM_family_14_fimo_all.bed NUR77_fimo_all.bed
+cp PSWM_family_15_fimo_all.bed STAT_fimo_all.bed
+cp PSWM_family_16_fimo_all.bed TFAP2A_fimo_all.bed
+cp PSWM_family_17_fimo_all.bed TEAD_fimo_all.bed
+cp PSWM_family_18_fimo_all.bed TWIST_fimo_all.bed
+cp PSWM_family_19_fimo_all.bed ZNF263_fimo_all.bed
+@
+
+\noindent Last steps to separate SP and KLF motifs.
+<<klf-sp-split, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='bash' >>=
+cd /scratch/abd3x/ATAC/SP_KLF_split
+
+module load gcc/9.2.0  openmpi/3.1.6 R/4.2.1 meme/5.3.3 bedtools/2.29.2
+
+echo Starting prep R script
+
+#generate sp_fimo.txt, sp_fimo_nondyn.txt, and sp_klf_2M.txt
+#caution: it is suggested to run this Rscript manually to verify slope and intercept of dataset; may vary depending on input
+Rscript ../prep.SP.KLF.fimo.R
+
+echo Starting SP FIMO
+fimo --thresh 0.01 --text SP/SP_composite_meme.txt sp_fimo.txt > output_sp1.txt
+echo Starting KLF FIMO
+fimo --thresh 0.01 --text KLF/KLF_composite_meme.txt sp_fimo.txt > output_klf.txt
+
+#Query top 2 million FIMO hits of SP/KLF against their composite meme
+cp /scratch/abd3x/ATAC/fimo_composites/PSWM_family_7_2M.bed $PWD/sp_klf_2M.bed
+bedtools getfasta -fi /project/genomes/Mus_musculus/UCSC/mm10/Sequence/WholeGenomeFasta/genome.fa -bed sp_klf_2M.bed > sp_klf_2M.fasta
+
+fimo --thresh 0.01 --text SP/SP_composite_meme.txt sp_klf_2M.txt > output_sp1_2M.txt
+fimo --thresh 0.01 --text KLF/KLF_composite_meme.txt sp_klf_2M.txt > output_klf_2M.txt
+
+echo Starting split R script
+
+#Generate SP_unsorted.bed and KLF_unsorted.bed
+Rscript ../SP_KLF_split.R
+Rscript ../extract.motifs.from.combined.family.R
+
+echo DONE
+
+@
+
+\subsection{Create ATAC data frame}
+
+\noindent Now we create a data frame that contains all the relevant information for our ATAC peaks including accessibility over the time course, motif presence, and pairwise accessibility comparisons. Since the computationally intensive steps are complete we can move to the local system, although one can continue working on the cluster if preferred. The final step of adding distributions (e.g. promoter v. intergenic v. intragenic) can only be done after primary transcript annotation of the PRO-seq data.
+
+<<create-atac-df, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='R' >>=
+library(DESeq2)
+
+categorize.deseq.df <- function(df, fdr = 0.05, log2fold = 0.0, treat
+                                = 'Auxin') {
+    
+    df.effects.lattice = df
+    df.effects.lattice$response = 'All Other Peaks'
+    
+    if(nrow(df.effects.lattice[df.effects.lattice$padj < fdr & !is.na(df.effects.lattice$padj) & df.effects.lattice$log2FoldChange > log2fold,]) > 0) {
+        df.effects.lattice[df.effects.lattice$padj < fdr & !is.na(df.effects.lattice$padj) & df.effects.lattice$log2FoldChange > log2fold,]$response = 'Increased'
+    }
+    if(nrow(df.effects.lattice[df.effects.lattice$padj < fdr & !is.na(df.effects.lattice$padj) & df.effects.lattice$log2FoldChange < log2fold,]) > 0) {
+        df.effects.lattice[df.effects.lattice$padj < fdr & !is.na(df.effects.lattice$padj) & df.effects.lattice$log2FoldChange < log2fold,]$response = 'Decreased'
+    }
+    if(nrow(df.effects.lattice[df.effects.lattice$padj > 0.5 & !is.na(df.effects.lattice$padj) & abs(df.effects.lattice$log2FoldChange) < 0.25,]) > 0) {
+        df.effects.lattice[df.effects.lattice$padj > 0.5 & !is.na(df.effects.lattice$padj) & abs(df.effects.lattice$log2FoldChange) < 0.25,]$response = 'Unchanged'
+    }
+    
+    return(df.effects.lattice)
+}
+
+setwd("/Users/guertinlab/Adipogenesis/ATAC_analysis_redo")
+
+peaks = unique(read.table('all_peaks.bed',sep='\t'))
+
+peaks$location = paste0(peaks$V1,':',peaks$V2,'-',peaks$V3)
+
+df = data.frame(row.names = peaks$location,chr=peaks[,1],start=peaks[,2],end=peaks[,3])
+
+#add counts
+load('normalized.counts.atac.Rdata')
+
+zero.min = c()
+twenty.min = c()
+forty.min = c()
+sixty.min = c()
+onetwenty.min = c()
+oneeighty.min = c()
+twoforty.min = c()
+genes = c()
+
+print('Getting ATAC means')
+for (i in 1:nrow(normalized.counts.atac)) {
+    zero.min = append(zero.min, mean(normalized.counts.atac[i,19:21]))
+    twenty.min = append(twenty.min, mean(normalized.counts.atac[i,1:3]))
+    forty.min = append(forty.min, mean(normalized.counts.atac[i,10:12]))
+    sixty.min = append(sixty.min, mean(normalized.counts.atac[i,16:18]))
+    onetwenty.min = append(onetwenty.min,mean(normalized.counts.atac[i,4:6]))
+    oneeighty.min = append(oneeighty.min, mean(normalized.counts.atac[i,7:9]))
+    twoforty.min = append(twoforty.min, mean(normalized.counts.atac[i,13:15]))
+    genes = append(genes,rownames(normalized.counts.atac)[i])
+}
+
+atac.means = data.frame(row.names = genes, min.0 = zero.min, min.20 = twenty.min,
+                   min.40 = forty.min, min.60 = sixty.min, min.120 = onetwenty.min,
+                   min.180 = oneeighty.min, min.240 = twoforty.min)
+
+save(atac.means,file='atac.means.Rdata')
+
+df = merge(df,atac.means,by='row.names',all=TRUE)
+rownames(df) = df[,1]
+df = df[,-1]
+
+#add cluster information
+print('Adding Cluster Info')
+print(head(df))
+
+supercluster.df = data.frame(cluster=c(12,16,18,9,23,11,8,4,1,5,2,13,7,3,6,10,14,24),
+                             supercluster=c(rep('up.flat',5),rep('grad.up',4),
+                                            rep('up.down',3),rep('grad.down',5),rep('down.up',1)))
+
+cluster.df = data.frame()
+for (file in Sys.glob(file.path(paste0('cluster_bed_cluster*.bed')))) {
+    cluster = as.numeric(strsplit(strsplit(file,'cluster_bed_cluster')[[1]][2],'.bed')[[1]][1])
+    print(cluster)
+    sc = supercluster.df[supercluster.df$cluster == cluster,]$supercluster
+    x = read.table(file)
+    x$location = paste0(x$V1,':',x$V2,'-',x$V3)
+    cluster.df = rbind(cluster.df,data.frame(peak=x$location,cluster=cluster,supercluster=sc))
+}
+
+df = merge(df,cluster.df,by.x='row.names',by.y=1,all.x=TRUE)
+rownames(df) = df[,1]
+df = df[,-1]
+
+#add TF family scores
+print('Adding TF Family Scores')
+print(head(df))
+
+scores.df = data.frame()
+for (file in Sys.glob('fimo_composites/*_fimo_all.bed')) {
+    factor = strsplit(strsplit(file,'/')[[1]][2],'_fimo_all.bed')[[1]][1]
+    print(factor)
+    x = read.table(file,sep='\t')
+    x = x[x$V5 != -1,]
+    if(factor %in% c('SP','KLF')) {
+        y = aggregate(as.numeric(V7)~V1+V2+V3, data=x, FUN=sum)
+    } else {
+        y = aggregate(as.numeric(V8)~V1+V2+V3, data=x, FUN=sum)
+    }
+    colnames(y) = c('chr', 'start', 'end', factor)
+    rownames(y) = paste0(y[,1], ':', y[,2], '-', y[,3])
+    
+    scores.df = rbind(scores.df,data.frame(peak = rownames(y),score=y[,4],factor = factor))
+}
+
+fimo.scores.all.atac = data.frame(peak = unique(scores.df$peak))
+
+for(factor in unique(scores.df$factor)) {
+    temp = scores.df[scores.df$factor == factor,]
+    temp = temp[,c(1,2)]
+    fimo.scores.all.atac = merge(fimo.scores.all.atac,temp,by='peak',all.x=TRUE)
+    colnames(fimo.scores.all.atac)[ncol(fimo.scores.all.atac)] = factor
+}
+
+rownames(fimo.scores.all.atac) = fimo.scores.all.atac$peak
+fimo.scores.all.atac = fimo.scores.all.atac[,-1]
+save(fimo.scores.all.atac,file='fimo.scores.all.atac.Rdata')
+
+df = merge(df,fimo.scores.all.atac,by = 'row.names',all = TRUE)
+rownames(df) = df$Row.names
+df = df[,-1]
+
+#add pairwise comparisons
+print('Adding Pairwise Comparisons')
+print(head(df))
+
+load('df.preadipo.Rdata')
+
+time.pts.key = data.frame(time.pts=c(rep(20,3),rep(120,3),rep(180,3),rep(40,3),rep(240,3),rep(60,3),rep(0,3)),
+                          cols = c(1:21))
+
+time.pts = c(0,20,40,60,120,180,240)
+
+comparisons.df = data.frame()
+for (i in 1:(length(time.pts)-1)) {
+    for (j in (i+1):length(time.pts)) {
+
+        print(paste0(time.pts[j],'.v.',time.pts[i]))
+        
+        a = time.pts.key[time.pts.key$time.pts == time.pts[i],]$cols
+        b = time.pts.key[time.pts.key$time.pts == time.pts[j],]$cols
+        merged.counts.small = df.preadipo[,c(a,b)]
+
+                                        # number of replicates per condition
+        unt = 3
+        trt = 3
+
+        sample.conditions = factor(c(rep("untreated",unt), rep("treated",trt)), levels=c("untreated","treated"))
+        mm.deseq.counts.table = DESeqDataSetFromMatrix(merged.counts.small, DataFrame(sample.conditions), ~ sample.conditions)
+
+        mm.atac = mm.deseq.counts.table
+        atac.size.factors = estimateSizeFactorsForMatrix(merged.counts.small)
+        
+        sizeFactors(mm.atac) = atac.size.factors
+        mm.atac = estimateDispersions(mm.atac)
+        mm.atac = nbinomWaldTest(mm.atac)
+        res.mm.atac = results(mm.atac)
+        
+        lattice = categorize.deseq.df(res.mm.atac, fdr = 0.001, log2fold = 0.0, treat = '')
+        lattice = as.data.frame(lattice[,c(2,6,7)])
+        colnames(lattice) = paste0(colnames(lattice),'.',time.pts[j],'.v.',time.pts[i])
+        
+        comparisons.df = merge(comparisons.df,lattice,by='row.names',all=TRUE)
+        rownames(comparisons.df) = comparisons.df$Row.names
+        comparisons.df = comparisons.df[,-1]
+    }
+}
+
+save(comparisons.df,file='comparisons.df.Rdata')
+
+df = merge(df,comparisons.df,by = 'row.names',all = TRUE)
+rownames(df) = df$Row.names
+df = df[,-1]
+
+print('Add baseMean and overall time course info')
+
+load('res.lrt.Rdata')
+res.lrt = as.data.frame(res.lrt[,c(1,2,6)])
+res.lrt$response = 'Nondynamic'
+res.lrt[res.lrt$padj < 0.00000001 & !is.na(res.lrt$padj),]$response = 'Dynamic'
+colnames(res.lrt) = paste0(colnames(res.lrt),'.time.course')
+
+df = merge(df,res.lrt,by = 'row.names',all = TRUE)
+rownames(df) = paste0(df$chr,':',df$start,'-',df$end)
+df = df[,-1]
+
+#The following can be done after primary transcript annotation
+#print('Add distribution')
+
+#df$distribution = 'Intergenic'
+
+#x = read.table('all_ATAC_peaks_intragenic.bed')
+#x$location = paste0(x$V1,':',x$V2,'-',x$V3)
+#df[rownames(df) %in% x$location,]$distribution = 'Intragenic'
+
+#x = read.table('all_ATAC_peaks_promoters.bed')
+#x$location = paste0(x$V1,':',x$V2,'-',x$V3)
+#df[rownames(df) %in% x$location,]$distribution = 'Promoter'
+
+final.atac.all.df=df
+save(final.atac.all.df,file='final.atac.all.df.Rdata')
+
+@
+
+\section{PRO-seq analysis}
+
+
+<<create-atac-df, echo=TRUE, prompt=FALSE, eval=FALSE, size="scriptsize", engine='R' >>=
+mkdir /scratch/bhn9by/PRO
+cd /scratch/bhn9by/PRO
+
+#upload sra.metadata.csv and SRR_Acc_List.txt to Rivanna
+#remove DOS \r\n\ artifact from .csv
+sed -i 's/\r$//' sra.metadata.csv
+
+#download .fastq
+#make a unique slurm file for each replicate and run them in parallel
+#caution: download connection is sometimes severed during slurm job
+#run 'head -1000 *.out' to check all files were downloaded without interruption
+cat SRR_Acc_List.txt | while read acc
+do
+    echo $acc
+    echo '#SBATCH -o' $acc'.out' > temp.txt
+    echo 'fasterq-dump' $acc > temp2.txt
+    echo 'gzip' $acc'.fastq' > temp3.txt
+    cat sra_slurm_header_1.txt temp.txt sra_slurm_header_2.txt temp2.txt temp3.txt > $acc.slurm
+    sbatch $acc.slurm
+    rm temp.txt
+    rm temp2.txt
+    rm temp3.txt
+done
+
+#Alternatively, you can run fasterq-dump and gzip in series.
+module load sratoolkit
+cat SRR_Acc_List.txt | while read acc
+do
+    echo $acc
+    fasterq-dump $acc
+    gzip $acc.fastq
+done
+module purge
+
+#After all jobs are done, rename files to actual sample names
+for fq in SRR*.fastq.gz
+do
+    name=$(echo $fq | awk -F".fastq.gz" '{print $1}')
+    echo $name
+    line=$(grep $name sra.metadata.csv)
+    treat=$(echo $line | awk -F',' '{print $31}')
+    echo $treat
+    mv $fq $treat
+done
+@
+
+
+
+%\begin{appendices}
+%\section{Appendix}
+%\crefalias{section}{appsec}
+%\subsection{Longer shell script example}\label{app:codeexample}
+%\lstinputlisting[language=bash]{/Users/guertinmj/Desktop/RNW/test2.sh}
+%\end{appendices}
+
+% when knitr is updated, this chunk will be updated; why?
+<<auto-bib, version=packageVersion('knitr'), echo=FALSE, message=FALSE, warning=FALSE>>=
+# write all packages in the current session to a bib file
+write_bib(c(.packages(), 'evaluate', 'formatR'), file = 'knitr-packages.bib')
+@
+
+%% \clearpage forces all pending "floats" ie figures to
+%% print before the bibliography or a new section begins
+%% without \nocite bibliography would only print
+%% referces that were cited via a \cite{} directive
+%% \nocite{*}
+%% TO GET THE BIBLIOGRAPHY TO WORK  you need to
+%% do the following stupid things:
+%% (0) make sure you have a .bib file and that it is
+%% referenced in the .Rnw file as below
+%% (1) under Tools->Options Sweave clear the box marked:
+%% "Clean auxiliary output after compile"
+%% (2) compile to pdf at least once
+%% (3) in shell window in the same directory as your
+%% .Rnw file, type:  bibtex silly   (where silly is
+%% the name of your .Rnw file without the Rnw siffix)
+%% (4) subsequent compilations to pdf should include
+%% the bibliography
+%% ref: http:##www.demog.berkeley.edu/213/Latex/silly.Rnw
+\bibliographystyle{jss}
+\bibliography{knitr-packages,bib_page}
+
+\end{document}
+
